@@ -199,11 +199,10 @@ where
 
 #[cfg(test)]
 mod tests{
-    use super::*;
+    use measure_time::MyDuration;
 
      #[test]
     fn test_precision(){
-        use measure_time::MyDuration;
         // use core_extensions::formatting::{write_unit,Precision};
         fn example(nanos:u64)->String{
             MyDuration::from_nano(nanos).to_string()

@@ -24,8 +24,6 @@
 use std_::cell::Cell;
 use std_::marker::PhantomData;
 
-use marker_traits::MarkerType;
-
 /// Type alias for a variant PhantomData with drop check.
 pub type VariantDropPhantom<T>=
     PhantomData<T>;
@@ -41,18 +39,3 @@ pub type InvariantPhantom<T>=
 /// Type alias for an PhantomData with an invariant lifetime.
 pub type InvariantRefPhantom<'a,T>=
     PhantomData<Cell<&'a T>>;
-
-
-/// Extension trait for VariantPhantom .
-pub trait VariantPhantomExt<T:?Sized>:MarkerType{
-    
-    /// Identity function for `T`.
-    fn identity_(self,other:T)->T
-    where T:Sized
-    {
-        other
-    }
-}
-
-
-impl<T:?Sized> VariantPhantomExt<T> for VariantPhantom<T>{}

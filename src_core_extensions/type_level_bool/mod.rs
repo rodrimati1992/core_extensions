@@ -70,42 +70,6 @@
 //! ```
 //!
 //!
-//! 
-//! # Example
-//! 
-//! Condional mutability with a wrapper type that uses [Boolean](self::Boolean)s.
-//!
-//! ```
-//! use core_extensions::type_level_bool::{True,False,MutableIfTrue};
-//!
-//! #[derive(Debug,PartialEq,Copy,Clone)]
-//! pub struct Point{
-//!     x:u32,
-//!     y:u32,
-//! }
-//!
-//! let mut point:MutableIfTrue<Point,True>=
-//!     MutableIfTrue::new(Point{x:0,y:0},True);
-//! 
-//! let point_1=Point{x:0,y:1};
-//! *point=point_1;
-//! assert_eq!(*point,point_1);
-//!
-//! let point:&mut MutableIfTrue<Point,False>=
-//!     point.freeze_mut();
-//! 
-//! // Neither of the lines bellow compile because mutability==`False`
-//! //**point=Point{x:0,y:1};
-//! //point.x=200;
-//! 
-//! let point_2=Point{x:101,y:202};
-//!
-//! //This compiles because it is replacing the entire MutableIfTrue<Point,False> value.
-//! *point=MutableIfTrue::new(point_2,point.mutability());
-//! 
-//! assert_eq!(**point,point_2);
-//! ```
-//!
 
 
 use VariantPhantom;

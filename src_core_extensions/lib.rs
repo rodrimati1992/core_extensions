@@ -225,7 +225,7 @@ pub mod prelude{
     pub use ::type_identity::{TypeIdentity,TIdentity};
 
     #[doc(inline)]
-    pub use ::phantom_variances::{VariantPhantom,VariantPhantomExt};
+    pub use ::phantom_variances::VariantPhantom;
 
     #[doc(inline)]
     pub use ::type_assert_panic::TypePanic;
@@ -265,7 +265,6 @@ pub use self::phantom_variances::{
     VariantPhantom,
     InvariantRefPhantom,
     InvariantPhantom,
-    VariantPhantomExt,
 };
 pub use self::option_result_ext::{
     OptionExt,
