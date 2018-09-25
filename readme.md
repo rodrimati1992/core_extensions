@@ -1,0 +1,32 @@
+This crate provides many extensions to core/std library types,
+and provides some new abstractions.
+
+This crate provides:
+
+- Extension traits for strings/slices/Option/Result/bool.
+
+- SelfOps:to extend all types with generic operations.
+
+- Type-level representations of bool and unsafe  .
+
+- Marker traits to encode invariants about types.
+
+- etc.
+
+
+# no-std support
+
+To use this crate in no_std contexts disable the default-feature.
+
+# Supported Rust versions
+
+This crate support Rust back to 1.20,
+using a build script to automatically enable features from newer versions.
+
+# Cargo Features
+
+"std":Enables standard library support.Enabled by default.
+
+"serde":Enables serde support.Disabled by default.
+
+"typenum":Enables trait impls for typenum types.Disabled by default.
