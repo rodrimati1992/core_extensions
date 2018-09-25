@@ -1,0 +1,41 @@
+[package]
+name = "core_extensions"
+version = "0.1.0"
+authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
+
+[features]
+default = ["std"]
+
+std=[]
+
+
+[dev-dependencies]
+rand = "0.4"
+rand_derive = "0.3"
+
+
+[dependencies.serde]
+version = "1.0"
+default-features = false
+optional=true
+
+[dependencies.typenum]
+version="1.10.0"
+features=["no_std"]
+default-features = false
+optional=true
+
+
+
+[build-dependencies]
+rustc_version = "0.2.2"
+
+
+[lib]
+name = "core_extensions"
+path = "src_core_extensions/lib.rs"
+
+
+# [[bin]]
+# name="core_extensions_main"
+# path="src_core_extensions/main.rs"
