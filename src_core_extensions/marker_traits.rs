@@ -108,6 +108,11 @@ impl_zero_sized_tuple!{A,B,C,D,E,F,G,H,I}
 impl_zero_sized_tuple!{A,B,C,D,E,F,G,H,I,J}
 impl_zero_sized_tuple!{A,B,C,D,E,F,G,H,I,J,K}
 impl_zero_sized_tuple!{A,B,C,D,E,F,G,H,I,J,K,L}
+impl_zero_sized_tuple!{A,B,C,D,E,F,G,H,I,J,K,L,M}
+impl_zero_sized_tuple!{A,B,C,D,E,F,G,H,I,J,K,L,M,N}
+impl_zero_sized_tuple!{A,B,C,D,E,F,G,H,I,J,K,L,M,N,O}
+impl_zero_sized_tuple!{A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P}
+
 
 
 #[cfg(feature="typenum")]
@@ -155,6 +160,22 @@ mod tests{
         assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
         assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
         assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!((PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,));
+        assert_size_align!(
+            (PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,)
+        );
+        assert_size_align!(
+            (PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,PD,
+        ));
 
         assert_size_align!([PD;0]);
         assert_size_align!([PD;1]);
