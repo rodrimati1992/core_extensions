@@ -11,5 +11,6 @@ matrix:
 script:
   - cd "${TRAVIS_BUILD_DIR}/core_extensions"
   - cargo build
+  - cargo build --release
   - cargo build --no-default-features
   - cargo test
