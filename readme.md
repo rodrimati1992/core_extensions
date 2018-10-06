@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rodrimati1992/core_extensions.svg?branch=master)](https://travis-ci.org/rodrimati1992/core_extensions)
+
 This crate provides many extensions to core/std library types,
 and provides some new abstractions.
 

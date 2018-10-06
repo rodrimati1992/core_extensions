@@ -10,7 +10,7 @@ keywords = ["no-std"]
 categories = [ "no-std" ]
 include = [
     "Cargo.toml", 
-    "src/**/*.rs", 
+    "src_core_extensions/**/*.rs", 
     "build.rs", 
     "./readme.md", 
     "./APACHE_license", "./MIT_license"

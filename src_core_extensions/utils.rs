@@ -2,7 +2,6 @@
 
 
 use std_::mem;
-use void::Void;
 
 /// Allows transmuting between types of different sizes.
 ///
@@ -113,6 +112,7 @@ pub unsafe fn impossible() -> ! {
     }
     #[cfg(not(debug_assertions))]
     {
+        use void::Void;
         match *(1 as *const Void) {}
     }
 }
