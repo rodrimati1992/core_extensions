@@ -2,7 +2,7 @@
 
 
 use std_::mem;
-
+use void::Void;
 
 /// Allows transmuting between types of different sizes.
 ///
