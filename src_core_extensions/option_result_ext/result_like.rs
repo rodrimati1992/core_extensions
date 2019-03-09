@@ -1,11 +1,11 @@
-use std_::fmt;
-#[cfg(feature="std")]
+#[cfg(feature = "std")]
 use std::panic;
+use std_::fmt;
 
-use ::void::Void;
-use ::utils::impossible;
+use utils::impossible;
+use void::Void;
 #[allow(unused_imports)]
-use ::SelfOps;
+use SelfOps;
 
 /// Trait for types with error and item values.
 ///
@@ -13,23 +13,23 @@ use ::SelfOps;
 /// so long as they have values that represent item and error.
 ///
 /// # For Implementors.
-/// 
+///
 /// There are some things that implementors of this trait must ensure:
 /// - [to_result_](#tymethod.to_result_) can't panic ,
-/// - that if [ResultLike::is_item](#associatedtype.Item) ==true then 
+/// - that if [ResultLike::is_item](#associatedtype.Item) ==true then
 ///        [to_result_](#tymethod.to_result_)
 ///        returns Ok ([Self::Item](#associatedtype.Item))).
-/// - that if [ResultLike::is_error](#associatedtype.Error)==true then 
+/// - that if [ResultLike::is_error](#associatedtype.Error)==true then
 ///        [to_result_](#tymethod.to_result_)
 ///        returns Err([Self::Error](#associatedtype.Error)).
-/// - that [ResultLike::is_error](#method.is_error)(&this) != 
+/// - that [ResultLike::is_error](#method.is_error)(&this) !=
 ///         [ResultLike::is_item](#tymethod.is_item)(&this)
 ///
 /// # Example
 /// ```
 /// use core_extensions::ResultLike;
-/// 
-/// 
+///
+///
 /// #[derive(Debug,Clone,Copy,Eq,PartialEq)]
 /// pub struct ShouldBeEven(pub u64);
 ///
@@ -38,7 +38,7 @@ use ::SelfOps;
 ///
 /// #[derive(Debug,Clone,Eq,PartialEq)]
 /// pub struct Even(pub u64);
-/// 
+///
 /// impl ResultLike for ShouldBeEven{
 ///     type Item=Even;
 ///     type Error=WasOddError;
@@ -66,7 +66,7 @@ pub trait ResultLike: Sized {
     type Error;
 
     /// Converts `self` to a Result.
-    /// 
+    ///
     /// # Panic
     ///
     /// Implementors of this method must ensure that it does not panic.
@@ -83,7 +83,7 @@ pub trait ResultLike: Sized {
     /// assert_eq!(Ok::<i32,()>(0).to_result_(),Ok(0));
     /// assert_eq!(Err::<(),i32>(3).to_result_(),Err(3));
     /// ```
-    fn to_result_(self)->Result<Self::Item,Self::Error>;
+    fn to_result_(self) -> Result<Self::Item, Self::Error>;
 
     /// Queries whether `self` is an item value.
     ///
@@ -101,7 +101,7 @@ pub trait ResultLike: Sized {
     /// assert_eq!(None::<()>.is_item(),false);
     ///
     /// ```
-    fn is_item(&self)->bool;
+    fn is_item(&self) -> bool;
 
     /// Queries whether `self` is an error value.
     ///
@@ -120,7 +120,7 @@ pub trait ResultLike: Sized {
     ///
     /// ```
     #[inline]
-    fn is_error(&self)->bool{
+    fn is_error(&self) -> bool {
         !self.is_item()
     }
 
@@ -139,9 +139,9 @@ pub trait ResultLike: Sized {
     /// assert_eq!(Ok::<&str,()>("hello").unwrap_(),"hello");
     ///
     /// ```
-    /// 
+    ///
     /// # Example,panicking
-    /// 
+    ///
     /// ```should_panic
     /// use core_extensions::ResultLike;
     ///
@@ -151,7 +151,7 @@ pub trait ResultLike: Sized {
     #[inline]
     fn unwrap_(self) -> Self::Item
     where
-        Self::Error: fmt::Debug
+        Self::Error: fmt::Debug,
     {
         self.to_result_().unwrap()
     }
@@ -169,7 +169,7 @@ pub trait ResultLike: Sized {
     /// assert_eq!(Err::<(),&str>("hello").unwrap_err(),"hello");
     ///
     /// ```
-    /// 
+    ///
     /// # Example,panicking
     /// ```should_panic
     /// use core_extensions::ResultLike;
@@ -180,21 +180,21 @@ pub trait ResultLike: Sized {
     #[inline]
     fn unwrap_err_(self) -> Self::Error
     where
-        Self::Item: fmt::Debug
+        Self::Item: fmt::Debug,
     {
         self.to_result_().unwrap_err()
     }
 
-    #[cfg(any(feature="std",test))]
+    #[cfg(any(feature = "std", test))]
     #[inline]
     /// Unwraps the item if it is the item value,
     /// otherwise it prints the Error and aborts the process.
     ///
     /// # Panic-safety
-    /// 
+    ///
     /// This method can only panic if `ResultLike::to_result_` panics.
     ///
-    /// # Example 
+    /// # Example
     /// ```
     /// use core_extensions::ResultLike;
     ///
@@ -202,13 +202,14 @@ pub trait ResultLike: Sized {
     /// assert_eq!(Ok::<&str,()>(string_).unwrap_or_abort(),string_);
     /// ```
     fn unwrap_or_abort(self) -> Self::Item
-    where 
-        Self::Error:fmt::Debug,
+    where
+        Self::Error: fmt::Debug,
     {
         self.to_result_().unwrap_or_else(|e| {
-            panic::catch_unwind(panic::AssertUnwindSafe(||{
+            panic::catch_unwind(panic::AssertUnwindSafe(|| {
                 println!("{:#?}", e);
-            })).drop_();
+            }))
+            .drop_();
             ::std::process::abort();
         })
     }
@@ -230,7 +231,7 @@ pub trait ResultLike: Sized {
     /// }
     /// ```
     #[inline]
-    unsafe fn unwrap_unchecked(self) -> Self::Item{
+    unsafe fn unwrap_unchecked(self) -> Self::Item {
         match self.to_result_() {
             Ok(value) => value,
             Err(_) => impossible(),
@@ -253,7 +254,7 @@ pub trait ResultLike: Sized {
     /// }
     /// ```
     #[inline]
-    unsafe fn unwrap_err_unchecked(self) -> Self::Error{
+    unsafe fn unwrap_err_unchecked(self) -> Self::Error {
         match self.to_result_() {
             Ok(_) => impossible(),
             Err(e) => e,

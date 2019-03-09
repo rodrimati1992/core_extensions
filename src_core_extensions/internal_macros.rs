@@ -1,4 +1,4 @@
-// Used because this crate supports Rust down to 1.20.0 
+// Used because this crate supports Rust down to 1.20.0
 // when `?` for Option was stabilized in Rust 1.22.0
 macro_rules! try_opt {
     ($expr:expr) => {
@@ -6,5 +6,5 @@ macro_rules! try_opt {
             Some(v) => v,
             None => return None,
         }
-    }
+    };
 }

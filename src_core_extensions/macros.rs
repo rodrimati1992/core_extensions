@@ -1,17 +1,16 @@
 //! A variety of macros.
 
-
 /// Macro that evaluates to true if the expression matches any of the patterns
 /// (this macro can have multiple patterns).
-/// 
+///
 /// # Example
 /// ```
 /// # #[macro_use]
 /// # extern crate core_extensions;
 /// # fn main(){
-/// 
+///
 /// use std::num::ParseIntError;
-/// 
+///
 /// #[derive(Debug,Copy,Clone)]
 /// pub struct Even(u64);
 ///
@@ -47,7 +46,7 @@
 ///     assert!( ! matches!( Err(_)=parsed ));
 /// }
 /// assert_eq!(even_nums,6);
-/// 
+///
 /// assert!(   matches!( Ok(Some(Even(0))) =Even::parse("0") ));
 /// assert!( ! matches!( Ok(None)          =Even::parse("0") ));
 ///
@@ -71,7 +70,7 @@
 /// assert!(   matches!( | | Err(_)            =Even::parse("-1") ));
 /// assert!( ! matches!( | | Ok (_)            =Even::parse("-1") ));
 ///
-/// 
+///
 /// # }
 /// ```
 #[macro_export]
@@ -84,24 +83,6 @@ macro_rules! matches{
     };
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

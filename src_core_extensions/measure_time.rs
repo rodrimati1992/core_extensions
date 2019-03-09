@@ -2,28 +2,21 @@
 //!
 
 use std::fmt;
-use std::ops::{
-    Deref,
-    DerefMut,
-};
+use std::ops::{Deref, DerefMut};
 
-#[cfg(any(enable_duration,feature="std"))]
+#[cfg(any(enable_duration, feature = "std"))]
 use std::time::Duration;
 
-use integer_extensions::{
-    ToTime,
-};
+use integer_extensions::ToTime;
 #[allow(unused_imports)]
 use SelfOps;
 
-
-/// Wrapper type for ::std::time::Duration which is 
+/// Wrapper type for ::std::time::Duration which is
 /// specialized for measuring code execution time.
 ///
-/// This type implements the [Units](../formatting/trait.Units.html) trait,used for displaying 
+/// This type implements the [Units](../formatting/trait.Units.html) trait,used for displaying
 /// types with many units.
 #[derive(Debug, Default, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature="serde",derive(Serialize,Deserialize))]
 pub struct MyDuration(pub Duration);
 
 impl MyDuration {
@@ -54,15 +47,15 @@ impl MyDuration {
 
     /// How many nanoseconds this is.
     pub fn nanoseconds(self) -> u64 {
-        self.0.subsec_nanos()as u64+self.0.as_secs()*1_000_000_000
+        self.0.subsec_nanos() as u64 + self.0.as_secs() * 1_000_000_000
     }
     /// How many microseconds this is.
     pub fn microseconds(self) -> u64 {
-        self.0.subsec_nanos()as u64/1000+self.0.as_secs()*1_000_000
+        self.0.subsec_nanos() as u64 / 1000 + self.0.as_secs() * 1_000_000
     }
     /// How many miliseconds this is.
     pub fn miliseconds(self) -> u64 {
-        self.0.subsec_nanos()as u64/1_000_000+self.0.as_secs()*1_000
+        self.0.subsec_nanos() as u64 / 1_000_000 + self.0.as_secs() * 1_000
     }
     /// How many seconds this is.
     pub fn seconds(self) -> u64 {
@@ -70,60 +63,102 @@ impl MyDuration {
     }
     /// How many minutes this is.
     pub fn minutes(self) -> u64 {
-        self.0.as_secs()/60
+        self.0.as_secs() / 60
     }
     /// How many hours this is.
     pub fn hours(self) -> u64 {
-        self.0.as_secs()/3600
+        self.0.as_secs() / 3600
     }
 
     /// Maps the underlying Duration.
-    pub fn map<F>(self,f:F)->Self
-    where F:FnOnce(Duration)->Duration
+    pub fn map<F>(self, f: F) -> Self
+    where
+        F: FnOnce(Duration) -> Duration,
     {
         f(self.into()).into()
     }
 }
 
+#[cfg(feature = "serde_")]
+mod duration_serde{
+    use super::*;
 
-impl Deref for MyDuration{
-    type Target=Duration;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-    fn deref(&self)->&Self::Target{
+    #[derive(Serialize, Deserialize)]
+    struct SerdeDuration{
+        subsec_nanos:u32,
+        seconds:u64,
+    }
+
+    impl<'de> Deserialize<'de> for MyDuration {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            SerdeDuration::deserialize(deserializer)?
+                .piped(|d|Duration::new(d.seconds,d.subsec_nanos))
+                .piped(MyDuration)
+                .piped(Ok)
+        }
+    }
+
+    /// This impl is only enabled if the "serde_" feature is enabled.
+    ///
+    impl Serialize for MyDuration {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            SerdeDuration{
+                subsec_nanos:self.0.subsec_nanos(),
+                seconds:self.0.as_secs(),
+            }.serialize(serializer)
+        }
+    }
+}
+
+
+
+
+
+impl Deref for MyDuration {
+    type Target = Duration;
+
+    fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
-impl DerefMut for MyDuration{
-    fn deref_mut(&mut self)->&mut Self::Target{
+impl DerefMut for MyDuration {
+    fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-
 impl fmt::Display for MyDuration {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        fn split(dec:&mut u64,dur:&mut u64,factor:u64)->bool{
-            let old_dur=*dur;
-            *dec=old_dur%factor;
-            *dur=old_dur/factor;
+        fn split(dec: &mut u64, dur: &mut u64, factor: u64) -> bool {
+            let old_dur = *dur;
+            *dec = old_dur % factor;
+            *dur = old_dur / factor;
             *dur < factor
         }
 
-        let mut decimal=0;
-        let mut dur=self.nanoseconds();
+        let mut decimal = 0;
+        let mut dur = self.nanoseconds();
 
-        let unit=if dur < 1000 {
+        let unit = if dur < 1000 {
             "ns"
-        }else if split(&mut decimal,&mut dur,1000) {
+        } else if split(&mut decimal, &mut dur, 1000) {
             "μs"
-        }else if split(&mut decimal,&mut dur,1000) {
+        } else if split(&mut decimal, &mut dur, 1000) {
             "ms"
-        }else {
-            split(&mut decimal,&mut dur,1000);
+        } else {
+            split(&mut decimal, &mut dur, 1000);
             "s"
         };
 
-        let mut dec_digits=3;
+        let mut dec_digits = 3;
 
         loop {
             if decimal == 0 {
@@ -137,11 +172,16 @@ impl fmt::Display for MyDuration {
             }
         }
 
-        write!(f,"{}",dur)?;
-        if decimal!=0 {
-            write!(f,".{:0decimal_digits$}",decimal,decimal_digits = dec_digits )?;
+        write!(f, "{}", dur)?;
+        if decimal != 0 {
+            write!(
+                f,
+                ".{:0decimal_digits$}",
+                decimal,
+                decimal_digits = dec_digits
+            )?;
         }
-        write!(f,"{}",unit)?;
+        write!(f, "{}", unit)?;
         Ok(())
     }
 }
@@ -152,13 +192,11 @@ impl From<Duration> for MyDuration {
     }
 }
 
-
-impl From<MyDuration> for Duration{
-    fn from(this:MyDuration) -> Duration {
+impl From<MyDuration> for Duration {
+    fn from(this: MyDuration) -> Duration {
         this.0
     }
 }
-
 
 /// Measures the time taken by `f` to execute, returning a pair of (`MyDuration`,`T`).
 #[inline(never)]
@@ -189,47 +227,36 @@ where
     }
 }
 
-
-
-
-
-
-
-
-
 #[cfg(test)]
-mod tests{
+mod tests {
     use measure_time::MyDuration;
 
-     #[test]
-    fn test_precision(){
+    #[test]
+    fn test_precision() {
         // use core_extensions::formatting::{write_unit,Precision};
-        fn example(nanos:u64)->String{
+        fn example(nanos: u64) -> String {
             MyDuration::from_nano(nanos).to_string()
         }
-        
-        assert_eq!(example(100),"100ns");
-        assert_eq!(example(100),"100ns");
-        assert_eq!(example(100),"100ns");
-        assert_eq!(example(1000),"1μs");
-        assert_eq!(example(1001),"1.001μs");
-        assert_eq!(example(1010),"1.01μs");
-        assert_eq!(example(1200),"1.2μs");
-        assert_eq!(example(1230),"1.23μs");
-        assert_eq!(example(1234),"1.234μs");
-        assert_eq!(example(12340),"12.34μs");
-        assert_eq!(example(12345),"12.345μs");
-        assert_eq!(example(               10),"10ns"); 
-        assert_eq!(example(               10),"10ns");
-        assert_eq!(example(    1_000_000_000),"1s");
-        assert_eq!(example(    1_200_000_000),"1.2s");
-        assert_eq!(example(    1_230_000_000),"1.23s");
-        assert_eq!(example(   12_300_000_000),"12.3s");
-        assert_eq!(example(  123_000_000_000),"123s");
-        assert_eq!(example(  123_567_000_000),"123.567s");
+
+        assert_eq!(example(100), "100ns");
+        assert_eq!(example(100), "100ns");
+        assert_eq!(example(100), "100ns");
+        assert_eq!(example(1000), "1μs");
+        assert_eq!(example(1001), "1.001μs");
+        assert_eq!(example(1010), "1.01μs");
+        assert_eq!(example(1200), "1.2μs");
+        assert_eq!(example(1230), "1.23μs");
+        assert_eq!(example(1234), "1.234μs");
+        assert_eq!(example(12340), "12.34μs");
+        assert_eq!(example(12345), "12.345μs");
+        assert_eq!(example(10), "10ns");
+        assert_eq!(example(10), "10ns");
+        assert_eq!(example(1_000_000_000), "1s");
+        assert_eq!(example(1_200_000_000), "1.2s");
+        assert_eq!(example(1_230_000_000), "1.23s");
+        assert_eq!(example(12_300_000_000), "12.3s");
+        assert_eq!(example(123_000_000_000), "123s");
+        assert_eq!(example(123_567_000_000), "123.567s");
     }
 
-
-
 }
-

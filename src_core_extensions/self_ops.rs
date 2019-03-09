@@ -2,22 +2,23 @@
 
 use std_::marker::PhantomData;
 
-use ::phantom_variances::*;
+use phantom_variances::*;
+use TypeIdentity;
 
 // use std::mem;
 
 /// Extension trait for every type.
-/// 
+///
 /// The most importand methods in this are:
 ///
-/// - [piped](#method.piped): 
+/// - [piped](#method.piped):
 ///      Allows emulating the pipeline operator.
 ///
 /// - [mutated](#method.mutated):
 ///      Allows mutating `self` with a closure passing it along the method chain
 ///
 /// - [observe](./trait.SelfOps.html#method.observe):
-///     Observes the value of `self` with a closure passing 
+///     Observes the value of `self` with a closure passing
 ///     it along the method chain unmodified.
 ///
 /// - [into_](#method.into_),
@@ -45,33 +46,34 @@ pub trait SelfOps {
     /// Represents Self by using a VariantDropPhantom<Self>,for specialized cases.
     ///
     /// For advanced use cases when one needs a drop check on a PhantomData.
-    const T_D: VariantPhantom<Self> = PhantomData;
+    const T_D: VariantDropPhantom<Self> = PhantomData;
 
     #[inline(always)]
     /// Asserts that `other` is the same type as `self`.
-    fn assert_ty(self,_other:VariantPhantom<Self>)->Self
-    where Self:Sized
-    {
-        self
-    }
-    
-    #[inline(always)]
-    /// Asserts that `other` is the same type as `self`.
-    fn assert_ty_ref(&self,_other:VariantPhantom<Self>)->&Self
-    where Self:Sized
+    fn assert_ty(self, _other: VariantPhantom<Self>) -> Self
+    where
+        Self: Sized,
     {
         self
     }
 
-
     #[inline(always)]
     /// Asserts that `other` is the same type as `self`.
-    fn assert_ty_mut(&mut self,_other:VariantPhantom<Self>)->&mut Self
-    where Self:Sized
+    fn assert_ty_ref(&self, _other: VariantPhantom<Self>) -> &Self
+    where
+        Self: Sized,
     {
         self
     }
 
+    #[inline(always)]
+    /// Asserts that `other` is the same type as `self`.
+    fn assert_ty_mut(&mut self, _other: VariantPhantom<Self>) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self
+    }
 
     #[inline(always)]
     /// Equivalent to [SelfOps::T](#associatedconstant.T),as a method.
@@ -79,7 +81,7 @@ pub trait SelfOps {
     /// Reasons for calling this method instead:
     ///
     /// - The type is longer that the code required to instantiate it.
-    /// 
+    ///
     /// - To assert that 2 variables have the same type,using `var0.ty_()==var1.ty_()`.
     ///
     fn ty_(&self) -> VariantPhantom<Self> {
@@ -90,19 +92,19 @@ pub trait SelfOps {
     /// Equivalent to [Self::ty_],for specialized cases.
     ///
     /// For specialized cases when one needs a drop check on a PhantomData.
-    fn ty_d(&self) -> VariantDropPhantom<Self>{
+    fn ty_d(&self) -> VariantDropPhantom<Self> {
         PhantomData
     }
 
     #[inline(always)]
     /// Equivalent to [Self::ty_] with an invariant type.
-    fn ty_inv(&self) -> InvariantPhantom<Self>{
+    fn ty_inv(&self) -> InvariantPhantom<Self> {
         PhantomData
     }
 
     #[inline(always)]
     /// Equivalent to [Self::ty_] with an invariant lifetime.
-    fn ty_inv_ref(&self)-> InvariantRefPhantom<Self>{
+    fn ty_inv_ref(&self) -> InvariantRefPhantom<Self> {
         PhantomData
     }
 
@@ -110,7 +112,7 @@ pub trait SelfOps {
     ///
     /// Comparing the address of `self` with the address of `other`.
     ///
-    /// # Example 
+    /// # Example
     ///
     /// ```
     /// use core_extensions::SelfOps;
@@ -132,7 +134,7 @@ pub trait SelfOps {
     /// Emulates the pipeline operator,allowing method syntax in more places.
     ///
     /// Allows calling functions as part of a method chain.
-    /// 
+    ///
     ///
     /// # Example
     ///
@@ -148,7 +150,7 @@ pub trait SelfOps {
     ///
     /// assert_eq!(hello.lock().unwrap().as_str(),"hello_world");
     /// ```
-    /// 
+    ///
     /// # Example,calling functions
     /// ```
     /// use core_extensions::SelfOps;
@@ -160,7 +162,7 @@ pub trait SelfOps {
     /// #
     /// "what"
     ///     .piped(|x|opposed(x)+"-")
-    ///     .observe(|s| assert_eq!(s,"whattahw-") ) 
+    ///     .observe(|s| assert_eq!(s,"whattahw-") )
     ///     .piped(opposed)
     ///     .observe(|s| assert_eq!(s,"whattahw--whattahw") );
     /// ```
@@ -173,7 +175,7 @@ pub trait SelfOps {
     {
         f(self)
     }
-    
+
     /// The same as `piped` except that the function takes `&Self`
     /// Useful for functions that take `&Self` instead of `Self`.
     ///
@@ -191,24 +193,24 @@ pub trait SelfOps {
     /// ```
     ///
     #[inline(always)]
-    fn piped_ref<'a,F, U>(&'a self, f: F) -> U
+    fn piped_ref<'a, F, U>(&'a self, f: F) -> U
     where
         F: FnOnce(&'a Self) -> U,
     {
         f(self)
     }
-    
+
     /// The same as `piped` except that the function takes `&mut Self`.
     /// Useful for functions that take `&mut Self` instead of `Self`.
     ///
     #[inline(always)]
-    fn piped_mut<'a,F, U>(&'a mut self, f: F) -> U
+    fn piped_mut<'a, F, U>(&'a mut self, f: F) -> U
     where
         F: FnOnce(&'a mut Self) -> U,
     {
         f(self)
     }
-    
+
     /// Mutates self using a closure taking self by mutable reference,
     /// passing it along the method chain.
     ///
@@ -227,10 +229,10 @@ pub trait SelfOps {
     ///
     /// ```
     ///
-    /// # Example of mutating in a method chain 
+    /// # Example of mutating in a method chain
     /// ```
     /// use core_extensions::SelfOps;
-    /// 
+    ///
     /// "what".to_string()
     ///     .mutated(|v| v.push_str(" the") )
     ///     .observe(|v| assert_eq!(v,"what the") );
@@ -281,12 +283,12 @@ pub trait SelfOps {
     /// ```
     /// use core_extensions::SelfOps;
     /// use std::borrow::Cow;
-    /// 
+    ///
     /// let word="hello";
     /// assert_eq!(word,word.into_(Cow::T));
     /// assert_eq!(word,word.into_(Cow::<str>::T));
     /// assert_eq!(word,word.into_(String::T));
-    /// 
+    ///
     /// let vec_=||vec![0,1,2,3];
     /// assert_eq!(vec_().into_(Cow::T)           ,vec_());
     /// assert_eq!(vec_().into_(Cow::<[usize]>::T),vec_());
@@ -301,7 +303,7 @@ pub trait SelfOps {
     {
         self.into()
     }
-    
+
     /// Performs a reference to reference conversion using AsRef,
     /// using the turbofish `.as_ref_::<_>()` syntax.
     ///
@@ -337,15 +339,15 @@ pub trait SelfOps {
     }
     /// Drops `self` using method notation.
     /// Alternative to `std::mem::drop`.
-    /// 
+    ///
     /// # Example,ignore #\[must_use\] values.
     /// ```
     /// #![deny(unused_must_use)]
     /// use std::fmt::Write;
     /// use core_extensions::SelfOps;
-    /// 
+    ///
     /// let mut buff=String::new();
-    /// 
+    ///
     /// buff.write_str("hello_").drop_();
     /// buff.write_str("world").drop_();
     /// assert_eq!(buff,"hello_world");
@@ -358,8 +360,14 @@ pub trait SelfOps {
     {
     }
 
+    #[doc(hidden)]
+    #[allow(dead_code)]
+    /// Prevents creating a trait object of this trait
+    fn _dummy_generic_method_preventing_trait_object<F>(self: &Self)
+    where
+        F: TypeIdentity<Type = Self>,
+    {
+
+    }
 }
 impl<T: ?Sized> SelfOps for T {}
-
-
-

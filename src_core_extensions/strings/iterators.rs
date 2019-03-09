@@ -16,11 +16,12 @@ where
     if s.is_empty() {
         return None;
     }
-    let end =
-        s.find(|c| {
+    let end = s
+        .find(|c| {
             next = pred(c);
             *last != next
-        }).map_or(s.len(), |v| v);
+        })
+        .map_or(s.len(), |v| v);
     let (ret, new_s) = s.split_at(end);
     *s = new_s;
     let key = mem::replace(last, next);
@@ -40,11 +41,12 @@ where
     if s.is_empty() {
         return None;
     }
-    let left =
-        s.rfind(|c| {
+    let left = s
+        .rfind(|c| {
             next = pred(c);
             *last != next
-        }).map_or(0, |v| s.next_char_boundary(v));
+        })
+        .map_or(0, |v| s.next_char_boundary(v));
     let (new_s, ret) = s.split_at(left);
     *s = new_s;
     let key = mem::replace(last, next);
@@ -54,11 +56,11 @@ where
 //-------------------------------------------------------------------------------------------
 
 /// KeyStr is a pair of (str_slice,key) returned from the (R)SplitWhile iterators.
-/// 
+///
 /// `str_slice` is the string slice in which `mapper` returned the same key for every character.
-/// 
+///
 /// `key` is the last value returned by `mapper`
-/// 
+///
 /// `mapper` is a closure of the type `impl FnMut(char) -> T`
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct KeyStr<'a, T> {
@@ -78,7 +80,7 @@ impl<'a, T> KeyStr<'a, T> {
 //-------------------------------------------------------------------------------------------
 
 /// Iterator that returns string slices for the ranges in which `mapper` returns the same value.
-/// 
+///
 /// Look [here](::strings::StringExt::split_while) for details and examples.
 #[derive(Debug, Clone)]
 pub struct SplitWhile<'a, P, T> {
@@ -111,7 +113,7 @@ where
 
 /// Iterator that returns string slices for the ranges in which `mapper` returns the same value
 /// ,from the end.
-/// 
+///
 /// Look [here](::strings::StringExt::rsplit_while) for details and examples.
 #[derive(Debug, Clone)]
 pub struct RSplitWhile<'a, P, T> {
@@ -188,4 +190,3 @@ impl<'a> CharIndicesFrom<'a> {
         self.iter.as_str()
     }
 }
-

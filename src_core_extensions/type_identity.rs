@@ -1,16 +1,14 @@
 use std_::mem;
 
-
-#[cfg(feature="std")]
+#[cfg(feature = "std")]
 use std::rc::Rc;
-#[cfg(feature="std")]
+#[cfg(feature = "std")]
 use std::sync::Arc;
-
 
 use utils::transmute_ignore_size;
 
 /// Allows converting `Self` to
-/// [`Self::Type`](./trait.Identity.html#associatedtype.Type) 
+/// [`Self::Type`](./trait.Identity.html#associatedtype.Type)
 /// by proving that both types are equal.
 ///
 /// For extension methods of types,
@@ -83,7 +81,7 @@ use utils::transmute_ignore_size;
 /// struct Example<T>(T);
 ///
 /// impl<T,Target0,Target1> Deref for Example<T>
-/// where 
+/// where
 ///     T:Deref,
 ///     <T as Deref>::Target:TypeIdentity<Type=Target0>,
 ///     Target0:Deref,
@@ -99,11 +97,11 @@ use utils::transmute_ignore_size;
 /// ```
 ///
 ///
-pub trait TypeIdentity{
+pub trait TypeIdentity {
     /// The same type as Self.
     ///
     /// Used in bounds to require that a generic type is a particular type.
-    type Type:?Sized;
+    type Type: ?Sized;
     /// Converts a value back to the original type.
     #[inline(always)]
     fn into_type_val(self) -> Self::Type
@@ -111,7 +109,7 @@ pub trait TypeIdentity{
         Self: Sized,
         Self::Type: Sized,
     {
-        unsafe{ transmute_ignore_size(self) }
+        unsafe { transmute_ignore_size(self) }
     }
     /// Converts a reference back to the original type.
     #[inline(always)]
@@ -124,27 +122,27 @@ pub trait TypeIdentity{
         unsafe { mem::transmute_copy::<&mut Self, &mut Self::Type>(&self) }
     }
     /// Converts a box back to the original type.
-    #[cfg(feature="std")]
+    #[cfg(feature = "std")]
     #[inline(always)]
-    fn into_type_box(self:Box<Self>) -> Box<Self::Type> {
-        unsafe{ transmute_ignore_size(self) }
+    fn into_type_box(self: Box<Self>) -> Box<Self::Type> {
+        unsafe { transmute_ignore_size(self) }
     }
     /// Converts an Arc back to the original type.
-    #[cfg(feature="std")]
+    #[cfg(feature = "std")]
     #[inline(always)]
-    fn into_type_arc(this:Arc<Self>) -> Arc<Self::Type> {
-        unsafe{ transmute_ignore_size(this) }
+    fn into_type_arc(this: Arc<Self>) -> Arc<Self::Type> {
+        unsafe { transmute_ignore_size(this) }
     }
     /// Converts an Rc back to the original type.
-    #[cfg(feature="std")]
+    #[cfg(feature = "std")]
     #[inline(always)]
-    fn into_type_rc(this:Rc<Self>) -> Rc<Self::Type> {
-        unsafe{ transmute_ignore_size(this) }
+    fn into_type_rc(this: Rc<Self>) -> Rc<Self::Type> {
+        unsafe { transmute_ignore_size(this) }
     }
 
     /// Converts a value back to the original type.
     #[inline(always)]
-    fn from_type_val(this:Self::Type) -> Self
+    fn from_type_val(this: Self::Type) -> Self
     where
         Self: Sized,
         Self::Type: Sized,
@@ -154,39 +152,47 @@ pub trait TypeIdentity{
     }
     /// Converts a reference back to the original type.
     #[inline(always)]
-    fn from_type_ref(this:&Self::Type) -> &Self {
+    fn from_type_ref(this: &Self::Type) -> &Self {
         unsafe { mem::transmute_copy::<&Self::Type, &Self>(&this) }
     }
     /// Converts a mutable reference back to the original type.
     #[inline(always)]
-    fn from_type_mut(this:&mut Self::Type) -> &mut Self {
+    fn from_type_mut(this: &mut Self::Type) -> &mut Self {
         unsafe { mem::transmute_copy::<&mut Self::Type, &mut Self>(&this) }
     }
     /// Converts a box back to the original type.
-    #[cfg(feature="std")]
+    #[cfg(feature = "std")]
     #[inline(always)]
-    fn from_type_box(this:Box<Self::Type>) -> Box<Self> {
-        unsafe{ transmute_ignore_size(this) }
+    fn from_type_box(this: Box<Self::Type>) -> Box<Self> {
+        unsafe { transmute_ignore_size(this) }
     }
     /// Converts an Arc back to the original type.
-    #[cfg(feature="std")]
+    #[cfg(feature = "std")]
     #[inline(always)]
-    fn from_type_arc(this:Arc<Self::Type>) -> Arc<Self> {
-        unsafe{ transmute_ignore_size(this) }
+    fn from_type_arc(this: Arc<Self::Type>) -> Arc<Self> {
+        unsafe { transmute_ignore_size(this) }
     }
     /// Converts an Rc back to the original type.
-    #[cfg(feature="std")]
+    #[cfg(feature = "std")]
     #[inline(always)]
-    fn from_type_rc(this:Rc<Self::Type>) -> Rc<Self> {
-        unsafe{ transmute_ignore_size(this) }
+    fn from_type_rc(this: Rc<Self::Type>) -> Rc<Self> {
+        unsafe { transmute_ignore_size(this) }
+    }
+
+    #[doc(hidden)]
+    #[allow(dead_code)]
+    /// Prevents creating a trait object of this trait
+    fn _dummy_generic_method_preventing_trait_object<F>(self: &Self)
+    where
+        F: TypeIdentity<Type = Self>,
+    {
+
     }
 }
 
 impl<T: ?Sized> TypeIdentity for T {
-    type Type=T;
+    type Type = T;
 }
 
-
 /// A type-level identity function
-pub type TIdentity<Type>=
-    <Type as TypeIdentity>::Type;
+pub type TIdentity<Type> = <Type as TypeIdentity>::Type;

@@ -4,7 +4,7 @@
 //!
 //!
 //! # Example
-//! 
+//!
 //! Access of privileges based on renamed Boolean types.
 //!
 //! ```
@@ -16,8 +16,8 @@
 //!     False as Unprivileged ,
 //!     True as Privileged ,
 //! };
-//! 
-//! 
+//!
+//!
 //!
 //! #[derive(Debug)]
 //! struct User<P>{
@@ -29,7 +29,7 @@
 //!     fn new(name:String,privilege_level:P)->Self{
 //!         Self{ name , privilege_level:PhantomData }
 //!     }
-//!     fn name(&self)->&str{ 
+//!     fn name(&self)->&str{
 //!         &self.name
 //!     }
 //!     fn into_unprivileged(self)->User<Unprivileged>{
@@ -57,10 +57,10 @@
 //! {
 //!     let user:&mut User<Unprivileged>=
 //!         user.as_unprivileged();
-//! 
+//!
 //!     // Unprivileged Users can't change their name.
-//!     // user.set_name("james".into()); 
-//! 
+//!     // user.set_name("james".into());
+//!
 //!     assert_eq!(user.name(),"paul");
 //! }
 //!
@@ -71,38 +71,34 @@
 //!
 //!
 
-
 use VariantPhantom;
-
 
 use std_::fmt::Debug;
 use std_::ops;
 
-use ::marker_traits::MarkerType;
+use marker_traits::MarkerType;
 /// Represents a type-level `true`
-#[derive(Debug,Copy,Clone,Default)]
-pub struct True ;
-
+#[derive(Debug, Copy, Clone, Default)]
+pub struct True;
 
 /// Represents a type-level `false`
-#[derive(Debug,Copy,Clone,Default)]
-pub struct False ;
+#[derive(Debug, Copy, Clone, Default)]
+pub struct False;
 
 /// Used to represent a type-level boolean when used as a type parameter.
-#[derive(Debug,Copy,Clone,Default)]
+#[derive(Debug, Copy, Clone, Default)]
 pub struct BooleanType;
 
-
-mod sealed{
-    use super::{True,False};
-    pub trait Sealed{}
-    impl Sealed for True{}
-    impl Sealed for False{}
+mod sealed {
+    use super::{False, True};
+    pub trait Sealed {}
+    impl Sealed for True {}
+    impl Sealed for False {}
 }
 use self::sealed::Sealed;
 
-unsafe impl MarkerType for True{}
-unsafe impl MarkerType for False{}
+unsafe impl MarkerType for True {}
+unsafe impl MarkerType for False {}
 
 /// Represents a type-level `bool`
 ///
@@ -111,17 +107,21 @@ unsafe impl MarkerType for False{}
 /// For examples look at [the module-level documentation](./index.html).
 ///
 /// This trait is sealed and cannot be implemented for types outside this crate.
-pub trait Boolean: 
-    Sealed+
-    MarkerType+
-    Default+
-    Sized+
-    Debug+
-    Copy+Clone+
-    ops::BitAnd<True>+ops::BitAnd<False>+
-    ops::BitOr <True>+ops::BitOr <False>+
-    ops::BitXor<True>+ops::BitXor<False>+
-    ops::Not+
+pub trait Boolean:
+    Sealed
+    + MarkerType
+    + Default
+    + Sized
+    + Debug
+    + Copy
+    + Clone
+    + ops::BitAnd<True>
+    + ops::BitAnd<False>
+    + ops::BitOr<True>
+    + ops::BitOr<False>
+    + ops::BitXor<True>
+    + ops::BitXor<False>
+    + ops::Not
 {
     /// The negation of this type.
     type Not: Boolean<Not = Self>;
@@ -129,26 +129,29 @@ pub trait Boolean:
     const VALUE: bool;
 
     /// If Self==True,runs the closure and returns Some , otherwise returns None.
-    fn if_true <U,F: FnOnce()->U>(_: F)-> Option<U> { None }
+    fn if_true<U, F: FnOnce() -> U>(_: F) -> Option<U> {
+        None
+    }
     /// If Self==False,runs the closure and returns Some , otherwise returns None.
-    fn if_false<U,F: FnOnce()->U>(_: F)-> Option<U> { None }
+    fn if_false<U, F: FnOnce() -> U>(_: F) -> Option<U> {
+        None
+    }
 }
 
 impl Boolean for True {
     type Not = False;
     const VALUE: bool = true;
-    fn if_true<U,F: FnOnce()->U>(f: F)-> Option<U> {
+    fn if_true<U, F: FnOnce() -> U>(f: F) -> Option<U> {
         Some(f())
     }
 }
 impl Boolean for False {
     type Not = True;
     const VALUE: bool = false;
-    fn if_false<U,F: FnOnce()->U>(f: F)-> Option<U> {
+    fn if_false<U, F: FnOnce() -> U>(f: F) -> Option<U> {
         Some(f())
     }
 }
-
 
 ///
 pub mod internals {
@@ -156,7 +159,7 @@ pub mod internals {
 
     /// Type that a Boolean operation evaluates to.
     pub trait BooleanOp {
-        /// 
+        ///
         type Value;
     }
 
@@ -170,56 +173,69 @@ pub mod internals {
         type Value = True;
     }
 
-    impl ops::Not for True{
-        type Output=False;
-        fn not(self)->Self::Output{ Default::default() }
+    impl ops::Not for True {
+        type Output = False;
+        fn not(self) -> Self::Output {
+            Default::default()
+        }
     }
-    impl ops::Not for False{
-        type Output=True;
-        fn not(self)->Self::Output{ Default::default() }
-    }
-
-    impl<B> ops::BitAnd<B> for False{
-        type Output=False;
-        fn bitand(self,_:B)->Self::Output{ Default::default() }
-    }
-    impl<B> ops::BitAnd<B> for True{
-        type Output=B;
-        fn bitand(self,v:B)->Self::Output{ v }
+    impl ops::Not for False {
+        type Output = True;
+        fn not(self) -> Self::Output {
+            Default::default()
+        }
     }
 
-    impl<B> ops::BitOr<B> for True{
-        type Output=True;
-        fn bitor(self,_:B)->Self::Output{ Default::default() }
+    impl<B> ops::BitAnd<B> for False {
+        type Output = False;
+        fn bitand(self, _: B) -> Self::Output {
+            Default::default()
+        }
     }
-    impl<B> ops::BitOr<B> for False{
-        type Output=B;
-        fn bitor(self,v:B)->Self::Output{ v }
+    impl<B> ops::BitAnd<B> for True {
+        type Output = B;
+        fn bitand(self, v: B) -> Self::Output {
+            v
+        }
     }
 
-    impl<B:Boolean> ops::BitXor<B> for True{
-        type Output=B::Not;
-        fn bitxor(self,_:B)->Self::Output{ Default::default() }
+    impl<B> ops::BitOr<B> for True {
+        type Output = True;
+        fn bitor(self, _: B) -> Self::Output {
+            Default::default()
+        }
     }
-    impl<B> ops::BitXor<B> for False{
-        type Output=B;
-        fn bitxor(self,v:B)->Self::Output{ v }
+    impl<B> ops::BitOr<B> for False {
+        type Output = B;
+        fn bitor(self, v: B) -> Self::Output {
+            v
+        }
+    }
+
+    impl<B: Boolean> ops::BitXor<B> for True {
+        type Output = B::Not;
+        fn bitxor(self, _: B) -> Self::Output {
+            Default::default()
+        }
+    }
+    impl<B> ops::BitXor<B> for False {
+        type Output = B;
+        fn bitxor(self, v: B) -> Self::Output {
+            v
+        }
     }
 
     /// Struct representing a type-level if.
-    pub struct IfElseOp<Cond,Then,Else>(
-        VariantPhantom<(Cond,Then,Else)>
-    );
-    impl<Then,Else> BooleanOp for IfElseOp<True, Then,Else> {
+    pub struct IfElseOp<Cond, Then, Else>(VariantPhantom<(Cond, Then, Else)>);
+    impl<Then, Else> BooleanOp for IfElseOp<True, Then, Else> {
         type Value = Then;
     }
-    impl<Then,Else> BooleanOp for IfElseOp<False, Then,Else> {
+    impl<Then, Else> BooleanOp for IfElseOp<False, Then, Else> {
         type Value = Else;
     }
 }
 
 pub use self::internals::*;
-
 
 /// Negates a [Boolean].
 ///
@@ -392,13 +408,13 @@ pub type NonImp<L, R> = And<L, Not<R>>;
 /// use core_extensions::type_level_bool::internals::{IfElseOp,BooleanOp};
 ///
 /// struct Conditional<ZST>
-/// where 
+/// where
 ///     IfElseOp<ZST,&'static str,usize>:BooleanOp,
 /// {
 ///     pub value:IfElse<ZST,&'static str,usize>,
 ///     pub cond:ZST,
 /// }
-/// 
+///
 /// let string_=Conditional{ value:"wtf" ,cond:True  };
 /// let int_   =Conditional{ value:99    ,cond:False };
 ///
@@ -406,10 +422,8 @@ pub type NonImp<L, R> = And<L, Not<R>>;
 /// // let string_=Conditional{ value:"wtf",cond:False };
 /// // let int_   =Conditional{ value:99   ,cond:True };
 /// ```
-/// 
 ///
 ///
 ///
-pub type IfElse<Cond,Then,Else>=
-    <IfElseOp<Cond,Then,Else> as BooleanOp>::Value;
-
+///
+pub type IfElse<Cond, Then, Else> = <IfElseOp<Cond, Then, Else> as BooleanOp>::Value;

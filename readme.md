@@ -29,7 +29,7 @@ using a build script to automatically enable features from newer versions.
 
 "std":Enables standard library support.Enabled by default.
 
-"serde":Enables serde support.Disabled by default.
+"serde_":Enables serde support.Disabled by default.
 
 "typenum":Enables trait impls for typenum types.Disabled by default.
 

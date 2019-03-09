@@ -1,26 +1,24 @@
 //! Contains implementable alternatives of the standard Fn/FnMut/FnOnce traits.
 
-
 /// implementable version of ::std::ops::Fn.
-pub trait CallRef<Params>:CallMut<Params>{
+pub trait CallRef<Params>: CallMut<Params> {
     /// calls this function
-    fn call_ref(&self,params:Params)->Self::Returns;
+    fn call_ref(&self, params: Params) -> Self::Returns;
 }
 
 /// implementable version of ::std::ops::FnMut.
-pub trait CallMut<Params>:CallInto<Params>{
+pub trait CallMut<Params>: CallInto<Params> {
     /// calls this function
-    fn call_mut(&mut self,params:Params)->Self::Returns;
+    fn call_mut(&mut self, params: Params) -> Self::Returns;
 }
 
 /// implementable version of ::std::ops::FnOnce.
-pub trait CallInto<Params>{
+pub trait CallInto<Params> {
     /// The return type of this function
     type Returns;
     /// calls this function
-    fn call_into(self,params:Params)->Self::Returns;
+    fn call_into(self, params: Params) -> Self::Returns;
 }
-
 
 macro_rules! impl_call {
     ( $( [$($ty:ident),+] )* ) => {
@@ -47,7 +45,7 @@ macro_rules! impl_call {
             where Func:FnOnce($($ty,)*)->Ret
             {
                 type Returns=Ret;
-                
+
                 #[allow(non_snake_case)]
                 fn call_into(self,($($ty,)*):($($ty,)*))->Ret{
                     self($($ty,)*)
@@ -58,34 +56,35 @@ macro_rules! impl_call {
     }
 }
 
-
-impl<F,Ret> CallRef<()> for F
-where F:Fn()->Ret
+impl<F, Ret> CallRef<()> for F
+where
+    F: Fn() -> Ret,
 {
-    fn call_ref(&self,_:())->Ret{
+    fn call_ref(&self, _: ()) -> Ret {
         self()
     }
 }
 
-impl<F,Ret> CallMut<()> for F
-where F:FnMut()->Ret
+impl<F, Ret> CallMut<()> for F
+where
+    F: FnMut() -> Ret,
 {
-    fn call_mut(&mut self,_:())->Ret{
+    fn call_mut(&mut self, _: ()) -> Ret {
         self()
     }
 }
 
-impl<F,Ret> CallInto<()> for F
-where F:FnOnce()->Ret
+impl<F, Ret> CallInto<()> for F
+where
+    F: FnOnce() -> Ret,
 {
-    type Returns=Ret;
-    fn call_into(self,_:())->Ret{
+    type Returns = Ret;
+    fn call_into(self, _: ()) -> Ret {
         self()
     }
 }
 
-
-impl_call!{
+impl_call! {
     [A]
     [A,B]
     [A,B,C]
@@ -100,9 +99,6 @@ impl_call!{
     [A,B,C,D,E,F,G,H,I,J,K,L]
 }
 
-
-
-
 /**
 This macro allows more ergonomically implementing the Call(Ref|Mut|Into) traits .
 
@@ -110,10 +106,10 @@ This macro allows more ergonomically implementing the Call(Ref|Mut|Into) traits 
 # Examples
 
 Implementing CallRef.
-The lifetime is written out explicitly because this macro desugars to 
+The lifetime is written out explicitly because this macro desugars to
 impl blocks,which don't elide lifetime parameters in Rust 2015 edition.
 
-```rust 
+```rust
 
 # #[macro_use]
 # extern crate core_extensions;
@@ -197,7 +193,7 @@ callable_impl!{
 
 
 
-# Syntax 
+# Syntax
 
 
 `$( ... )*` means repeated 0 or more times.
@@ -213,7 +209,7 @@ callable_impl!{
 
 $(#[$meta:meta])*
 
-// <fn_method_name> is one of (call_into|call_mut|call_ref),determining which trait 
+// <fn_method_name> is one of (call_into|call_mut|call_ref),determining which trait
 // is implemented.
 fn <fn_method_name>
 
@@ -223,7 +219,7 @@ $( [ $( <generic_parameter> )* ] )?
 // <self_ident> is the identifier used to access the closure environment.
 // <self_type> is the type of the closure environment,which is implementing the Call traits.
 // <function_parameter> are optional function parameters.
-(   <self_ident>:<self_type> 
+(   <self_ident>:<self_type>
     $( => $( <function_parameter> ),* )?
 )
 
@@ -257,15 +253,15 @@ macro_rules! callable_impl{
         {
             $( $fn_contents:tt )*
         }
-        
+
     )=>{
         callable_impl!{inner_fn;
             $(#[$meta])*
             fn $fn_kind
-            [ $( $( $fn_gen_params )* )* ] 
+            [ $( $( $fn_gen_params )* )* ]
             ( $( $fn_params )* )
             $(-> $ret_ty )*
-            where [ $( $( $where_preds )* )* ] 
+            where [ $( $( $where_preds )* )* ]
             {
                 $( $fn_contents )*
             }
@@ -311,16 +307,16 @@ macro_rules! callable_impl{
         $(#[$meta])*
         impl< $($fn_gen_params)* >
             $crate::callable::CallInto< callable_impl!{inner_param_ty; $($($rem_param)*)* } >
-        
+
         for $fn_ty
-        where 
+        where
             $( $where_preds )*
         {
             type Returns=($($ret_ty)*);
-    
+
             fn call_into(
-                self, 
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* } 
+                self,
+                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
             )->Self::Returns{
                 callable_impl!{inner_param; param, $($($rem_param)*)* }
                 let $self_=self;
@@ -342,30 +338,30 @@ macro_rules! callable_impl{
         }
     )=>{
         $(#[$meta])*
-        impl< $($fn_gen_params)* > 
-            $crate::callable::CallInto< callable_impl!{inner_param_ty; $($($rem_param)*)* }  > 
+        impl< $($fn_gen_params)* >
+            $crate::callable::CallInto< callable_impl!{inner_param_ty; $($($rem_param)*)* }  >
         for $fn_ty
         where $( $where_preds )*
         {
             type Returns=($($ret_ty)*);
-    
+
             fn call_into(
-                mut self, 
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* } 
+                mut self,
+                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
             )->Self::Returns{
                 self.call_mut(param)
             }
         }
 
         $(#[$meta])*
-        impl< $($fn_gen_params)* > 
-            $crate::callable::CallMut< callable_impl!{inner_param_ty; $($($rem_param)*)* }  > 
+        impl< $($fn_gen_params)* >
+            $crate::callable::CallMut< callable_impl!{inner_param_ty; $($($rem_param)*)* }  >
         for $fn_ty
         where $( $where_preds )*
         {
             fn call_mut(
                 &mut self,
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* } 
+                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
             )->Self::Returns{
                 callable_impl!{inner_param; param, $($($rem_param)*)* }
                 let $self_=self;
@@ -386,16 +382,16 @@ macro_rules! callable_impl{
         }
     )=>{
         $(#[$meta])*
-        impl< $($fn_gen_params)* > 
-            $crate::callable::CallInto< callable_impl!{inner_param_ty; $($($rem_param)*)* }  > 
+        impl< $($fn_gen_params)* >
+            $crate::callable::CallInto< callable_impl!{inner_param_ty; $($($rem_param)*)* }  >
         for $fn_ty
         where $( $where_preds )*
         {
             type Returns=($($ret_ty)*);
-    
+
             fn call_into(
-                self, 
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* } 
+                self,
+                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
             )->Self::Returns{
                 self.call_ref(param)
             }
@@ -403,7 +399,7 @@ macro_rules! callable_impl{
 
         $(#[$meta])*
         impl< $($fn_gen_params)* >
-            $crate::callable::CallMut< callable_impl!{inner_param_ty; $($($rem_param)*)* }  > 
+            $crate::callable::CallMut< callable_impl!{inner_param_ty; $($($rem_param)*)* }  >
         for $fn_ty
         where $( $where_preds )*
         {
@@ -414,16 +410,16 @@ macro_rules! callable_impl{
                 self.call_ref(param)
             }
         }
-        
+
         $(#[$meta])*
         impl< $($fn_gen_params)* >
-            $crate::callable::CallRef< callable_impl!{inner_param_ty; $($($rem_param)*)* }  > 
+            $crate::callable::CallRef< callable_impl!{inner_param_ty; $($($rem_param)*)* }  >
         for $fn_ty
         where $( $where_preds )*
         {
             fn call_ref(
                 &self,
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* } 
+                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
             )->Self::Returns{
                 callable_impl!{inner_param; param, $($($rem_param)*)* }
                 let $self_=self;
@@ -435,20 +431,19 @@ macro_rules! callable_impl{
     };
 }
 
-
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
-    
+
     use prelude::*;
-    
+
     use std::cmp::PartialEq;
 
     #[test]
-    fn test_call_ref(){
+    fn test_call_ref() {
         struct WhatRef<T>(T);
-     
-        callable_impl!{ 
+
+        callable_impl! {
             fn call_ref['a,T,U](this:WhatRef<T> => what:U )->bool
             where [ T:PartialEq<U>, ]
             {
@@ -456,42 +451,36 @@ mod tests{
             }
         }
 
-        let env=WhatRef("hello".to_string());
-        assert_eq!(env.call_ref("hello"),true);
-        assert_eq!(env.call_ref("hello".to_string()),true);
-        assert_eq!(env.call_ref("lo"),false);
-        
+        let env = WhatRef("hello".to_string());
+        assert_eq!(env.call_ref("hello"), true);
+        assert_eq!(env.call_ref("hello".to_string()), true);
+        assert_eq!(env.call_ref("lo"), false);
     }
-    
 
-    
     #[test]
-    fn test_call_mut(){
-        struct WhatMut{
-            state:usize,
+    fn test_call_mut() {
+        struct WhatMut {
+            state: usize,
         }
-     
-        callable_impl!{ 
+
+        callable_impl! {
             fn call_mut(this:WhatMut)->usize{
                 this.state+=1;
                 this.state
             }
         }
 
-
-        let mut env=WhatMut{state:0};
-        assert_eq!(env.call_mut(()),1);
-        assert_eq!(env.call_mut(()),2);
-        assert_eq!(env.call_mut(()),3);
-     
+        let mut env = WhatMut { state: 0 };
+        assert_eq!(env.call_mut(()), 1);
+        assert_eq!(env.call_mut(()), 2);
+        assert_eq!(env.call_mut(()), 3);
     }
 
-
-     #[test]
-    fn test_call_into(){
+    #[test]
+    fn test_call_into() {
         struct WhatInto<T>(T);
-     
-        callable_impl!{ 
+
+        callable_impl! {
             fn call_into[T,U](this:WhatInto<T> => _a:VariantPhantom<U>)->U
             where [ T:Into<U> ]
             {
@@ -499,11 +488,8 @@ mod tests{
             }
         }
 
-        assert_eq!(WhatInto("what").call_into(String::T) ,"what");
-        assert_eq!(WhatInto(1u8).call_into(u16::T) ,1);
-     
+        assert_eq!(WhatInto("what").call_into(String::T), "what");
+        assert_eq!(WhatInto(1u8).call_into(u16::T), 1);
     }
 
-    
 }
-

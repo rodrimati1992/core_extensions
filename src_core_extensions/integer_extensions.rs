@@ -1,24 +1,18 @@
 //! Extension traits for integers and types used in the traits.
-//! 
-//! 
-//! 
+//!
+//!
+//!
 
+use std_::{cmp, fmt, ops};
 
-use std_::{
-    cmp,
-    fmt,
-    ops,
-};
-
-
+#[cfg(all(not(core_duration), feature = "std"))]
+use std::time::Duration;
 #[cfg(core_duration)]
 use std_::time::Duration;
-#[cfg(all(not(core_duration),feature="std"))]
-use std::time::Duration;
 
 /// Extension trait for integers.
 pub trait IntegerExt:
-      ops::Add<Self, Output = Self>
+    ops::Add<Self, Output = Self>
     + ops::Sub<Self, Output = Self>
     + ops::Div<Self, Output = Self>
     + ops::Rem<Self, Output = Self>
@@ -61,7 +55,7 @@ pub trait IntegerExt:
     ///
     ///
     /// ```
-    fn from_u8(n:u8)->Self;
+    fn from_u8(n: u8) -> Self;
 
     /// Converts from a i8.
     ///
@@ -101,11 +95,11 @@ pub trait IntegerExt:
     ///
     ///
     /// ```
-    fn from_i8(n:i8)->Self;
+    fn from_i8(n: i8) -> Self;
 
     /// Raises `self` to the `n`th power.
-    /// 
-    /// # Panic 
+    ///
+    /// # Panic
     ///
     /// This has the same panicking behavior as u32::pow().
     fn power(self, n: u32) -> Self;
@@ -145,8 +139,12 @@ pub trait IntegerExt:
     /// ```
     ///
     #[inline]
-    fn get_sign(self) -> Sign{
-        if self < Self::from_u8(0) { Sign::Negative }else{ Sign::Positive }
+    fn get_sign(self) -> Sign {
+        if self < Self::from_u8(0) {
+            Sign::Negative
+        } else {
+            Sign::Positive
+        }
     }
     /// Non-panicking division which returns self if other==0.
     ///
@@ -164,11 +162,11 @@ pub trait IntegerExt:
     ///
     ///
     #[inline]
-    fn div_safe(self, other: Self) -> Self{
-        if other==Self::from_u8(0) {
+    fn div_safe(self, other: Self) -> Self {
+        if other == Self::from_u8(0) {
             self
-        }else{
-            self/other
+        } else {
+            self / other
         }
     }
 
@@ -193,10 +191,9 @@ pub trait IntegerExt:
     fn number_of_digits(self) -> u32;
 }
 
-
 /// Converts an integer to a Duration of the unit.
 ///
-#[cfg(any(core_duration,feature="std"))]
+#[cfg(any(core_duration, feature = "std"))]
 pub trait ToTime {
     /// Creates a [::std::time::Duration] of `self` hours.
     /// # Example
@@ -275,17 +272,17 @@ pub trait ToTime {
     fn nanoseconds(self) -> Duration;
 }
 
-#[cfg(any(core_duration,feature="std"))]
+#[cfg(any(core_duration, feature = "std"))]
 impl<T> ToTime for T
 where
     T: IntegerExt + Copy,
     <T as IntegerExt>::Unsigned: Into<u64>,
 {
-    fn hours(self) -> Duration{
-        Duration::from_secs(self.abs_unsigned().into()*3600)
+    fn hours(self) -> Duration {
+        Duration::from_secs(self.abs_unsigned().into() * 3600)
     }
-    fn minutes(self) -> Duration{
-        Duration::from_secs(self.abs_unsigned().into()*60)
+    fn minutes(self) -> Duration {
+        Duration::from_secs(self.abs_unsigned().into() * 60)
     }
     fn seconds(self) -> Duration {
         Duration::from_secs(self.abs_unsigned().into())
@@ -358,7 +355,6 @@ impl fmt::Display for Sign {
 
 //---------------------------------- IMPLS -------------------------------------------
 
-
 macro_rules! impl_absolute_unsigned_numbers {
     (from_u8;8,signed)=>{
         #[inline(always)]
@@ -424,7 +420,7 @@ macro_rules! impl_absolute_unsigned_numbers {
         fn power(self,n:u32)->Self{
             self.pow(n)
         }
-        
+
     };
 
     (  $([
@@ -493,8 +489,6 @@ impl_absolute_unsigned_numbers!(
     [isize,usize,bits=delegate,cast=UWord,]
 );
 
-
-
 //---------------------------------- TESTS  -------------------------------------------
 
 #[cfg(test)]
@@ -502,14 +496,14 @@ mod tests {
     use super::*;
 
     #[cfg(enable_128)]
-    type UMax=u128;
+    type UMax = u128;
     #[cfg(not(enable_128))]
-    type UMax=u64;
+    type UMax = u64;
 
     #[cfg(enable_128)]
-    const MAX_POWER:u32=38;
+    const MAX_POWER: u32 = 38;
     #[cfg(not(enable_128))]
-    const MAX_POWER:u32=19;
+    const MAX_POWER: u32 = 19;
 
     fn check_number_of_digits<I, N>(iter: I)
     where
@@ -523,8 +517,8 @@ mod tests {
     }
 
     fn generate_numbers() -> Vec<(UMax, u32)> {
-        let ten :UMax= 10;
-        let mut out:Vec<(UMax,u32)> = vec![(0, 1), (1, 1), (9, 1)];
+        let ten: UMax = 10;
+        let mut out: Vec<(UMax, u32)> = vec![(0, 1), (1, 1), (9, 1)];
 
         for power in 1..MAX_POWER {
             let digits = power + 1;
@@ -532,9 +526,9 @@ mod tests {
             out.push((ten.pow(power) + 1, digits));
             out.push((ten.pow(power + 1) - 1, digits));
         }
-        out.push((ten.pow(MAX_POWER), MAX_POWER+1));
-        out.push((ten.pow(MAX_POWER) + 1, MAX_POWER+1));
-        out.push((UMax::max_value(), MAX_POWER+1));
+        out.push((ten.pow(MAX_POWER), MAX_POWER + 1));
+        out.push((ten.pow(MAX_POWER) + 1, MAX_POWER + 1));
+        out.push((UMax::max_value(), MAX_POWER + 1));
 
         out
     }

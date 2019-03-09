@@ -1,9 +1,9 @@
-//! Allows defining traits whose functions/methods can be safe/unsafe 
+//! Allows defining traits whose functions/methods can be safe/unsafe
 //! to call depending on the implementor.
 //!
-//! # Example 
+//! # Example
 //! An alternative implementation of Default whose safety is determined by the implementor.
-//! 
+//!
 //! ```
 //! # #[macro_use]
 //! # extern crate core_extensions;
@@ -21,7 +21,7 @@
 //!     type Safety:MaybeUnsafe;
 //!
 //!     fn default(safety:&Self::Safety)->Self;
-//! } 
+//! }
 //!
 //! #[derive(Debug,PartialEq)]
 //! pub struct ZeroInit<T>(pub T);
@@ -83,8 +83,7 @@
 
 use std_::borrow::Borrow;
 
-
-/// The trait used to choose whether traits' function/method 
+/// The trait used to choose whether traits' function/method
 /// is safe(using IsSafe) or unsafe(using IsUnsafe) to call.
 ///
 /// When passing a MaybeUnsafe as a parameter it is recommended to use an
@@ -93,27 +92,28 @@ use std_::borrow::Borrow;
 /// This trait has a Sealed super trait to prevent users of this library from implementing it.
 ///
 /// For examples of how to use this [look at the module-level documentation](index.html).
-pub trait MaybeUnsafe:Sealed{
-    /// Constructs a MaybeUnsafe,and passes it by reference to prevent 
+pub trait MaybeUnsafe: Sealed {
+    /// Constructs a MaybeUnsafe,and passes it by reference to prevent
     /// it from escaping this function call.
     ///
     /// This is unsafe because it applies to both IsSafe and IsUnsafe.
-    unsafe fn with<F,U>(f:F)->U
-    where F:FnOnce(&Self)->U;
+    unsafe fn with<F, U>(f: F) -> U
+    where
+        F: FnOnce(&Self) -> U;
 }
-
 
 /// Represents the `safe` effect.
 ///
 /// Functions taking this as a parameter should not to be unsafe.
 ///
 /// For examples of how to use this [look at the module-level documentation](index.html).
-pub type IsSafe=();
+pub type IsSafe = ();
 
-impl MaybeUnsafe for IsSafe{
-    unsafe fn with<F,U>(f:F)->U
-    where F:FnOnce(&Self)->U
-    { 
+impl MaybeUnsafe for IsSafe {
+    unsafe fn with<F, U>(f: F) -> U
+    where
+        F: FnOnce(&Self) -> U,
+    {
         f(&())
     }
 }
@@ -123,35 +123,34 @@ impl MaybeUnsafe for IsSafe{
 /// Functions taking this as a parameter are equivalent to `unsafe fn`.
 ///
 /// For examples of how to use this [look at the module-level documentation](index.html).
-#[derive(Debug,PartialEq,Eq,Ord,PartialOrd,Hash)]
+#[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Hash)]
 pub struct IsUnsafe(());
 
-
-impl MaybeUnsafe for IsUnsafe{
-    unsafe fn with<F,U>(f:F)->U
-    where F:FnOnce(&Self)->U
-    { 
+impl MaybeUnsafe for IsUnsafe {
+    unsafe fn with<F, U>(f: F) -> U
+    where
+        F: FnOnce(&Self) -> U,
+    {
         f(&IsUnsafe(()))
     }
 }
 
-impl Borrow<IsSafe> for IsUnsafe{
-    fn borrow(&self)->&IsSafe{
-        static UNIT:&()=&();
+impl Borrow<IsSafe> for IsUnsafe {
+    fn borrow(&self) -> &IsSafe {
+        static UNIT: &() = &();
         UNIT
     }
 }
-
 
 /// Macro for correctly using unsafe{} blocks inside functions that take IsUnsafe references.
 ///
 /// This macro ensures that an IsUnsafe reference was provided to use an unsafe block.
 ///
-/// For more information about IsUnsafe/IsSafe/MaybeUnsafe look at the 
+/// For more information about IsUnsafe/IsSafe/MaybeUnsafe look at the
 /// [maybe_unsafe module](./maybe_unsafe/index.html)
 ///
-/// # Example 
-/// ``` 
+/// # Example
+/// ```
 /// # #[macro_use]
 /// # extern crate core_extensions;
 /// use core_extensions::maybe_unsafe::IsUnsafe;
@@ -159,12 +158,12 @@ impl Borrow<IsSafe> for IsUnsafe{
 ///
 /// # fn main(){
 /// /// Returns a zero initialized Copy value.
-/// /// 
+/// ///
 /// /// # Safety
-/// /// 
+/// ///
 /// /// 0 must be a valid bitpattern for the returned value.
 /// fn zeroed_copy<T>(safety:&IsUnsafe)->T
-/// where 
+/// where
 ///     T:Copy,
 /// {
 ///     unsafe_!{safety=>
@@ -173,7 +172,7 @@ impl Borrow<IsSafe> for IsUnsafe{
 /// }
 ///
 /// # }
-/// ``` 
+/// ```
 #[macro_export]
 macro_rules! unsafe_ {
     ($is_unsafe:expr=> $($tt:tt)* ) => {{
@@ -185,16 +184,14 @@ macro_rules! unsafe_ {
     }}
 }
 
-
 /////////////////////////////////////////////////////////////////////
 ///////                         SEALED              /////////////////
 /////////////////////////////////////////////////////////////////////
 
-mod sealed{
-    use super::{IsSafe,IsUnsafe};
-    pub trait Sealed{}
-    impl Sealed for IsSafe{}
-    impl Sealed for IsUnsafe{}
+mod sealed {
+    use super::{IsSafe, IsUnsafe};
+    pub trait Sealed {}
+    impl Sealed for IsSafe {}
+    impl Sealed for IsUnsafe {}
 }
 use self::sealed::Sealed;
-

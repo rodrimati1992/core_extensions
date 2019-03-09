@@ -1,17 +1,15 @@
 //! Iterator adaptors and constructors.
 
 // use bool_extensions::BoolExt;
-use ::VariantPhantom;
 use prelude::*;
+use VariantPhantom;
 
-use std_::mem;
 use std_::cmp::Ordering;
 use std_::iter::FromIterator;
-
-
+use std_::mem;
 
 /// Iterator that infinitelly produces a value by calling an `impl FnMut()->T`.
-/// 
+///
 /// Equivalent to [::std::iter::RepeatWith],which is stabilized in Rust 1.28.
 ///
 /// # Example
@@ -21,7 +19,7 @@ use std_::iter::FromIterator;
 ///
 /// let mut i=0;
 /// assert_eq!(
-///     Loop(move||{ i+=1; i }).take(5).collect::<Vec<_>>() , 
+///     Loop(move||{ i+=1; i }).take(5).collect::<Vec<_>>() ,
 ///     vec![1,2,3,4,5]
 /// );
 ///
@@ -93,133 +91,138 @@ where
     }
 }
 
-impl<F, T> ExactSizeIterator for LazyOnce<F>
-where
-    F: FnOnce() -> T,
-{
-}
+impl<F, T> ExactSizeIterator for LazyOnce<F> where F: FnOnce() -> T {}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug,Clone)]
-struct Unreplaced<T>{
-    nth:usize,
-    current:usize,
-    with:T,
+#[derive(Debug, Clone)]
+struct Unreplaced<T> {
+    nth: usize,
+    current: usize,
+    with: T,
 }
 
-#[derive(Debug,Clone)]
-enum ReplaceNthState<T>{
+#[derive(Debug, Clone)]
+enum ReplaceNthState<T> {
     Unreplaced(Unreplaced<T>),
     Replaced,
 }
 
 /// An Iterator that replaces the nth element with another value.
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct ReplaceNth<I>
-where I:Iterator
+where
+    I: Iterator,
 {
-    iter:I,
-    state:ReplaceNthState<I::Item>,
+    iter: I,
+    state: ReplaceNthState<I::Item>,
 }
 
 impl<I> ReplaceNth<I>
-where I:Iterator
+where
+    I: Iterator,
 {
     /// Constructs a ReplaceNth
-    pub fn new(iter:I,nth:usize,with:I::Item)->Self{
-        Self{ 
-            iter, 
-            state:ReplaceNthState::Unreplaced(Unreplaced{nth,current:0,with}),
+    pub fn new(iter: I, nth: usize, with: I::Item) -> Self {
+        Self {
+            iter,
+            state: ReplaceNthState::Unreplaced(Unreplaced {
+                nth,
+                current: 0,
+                with,
+            }),
         }
     }
 }
 
 impl<I> Iterator for ReplaceNth<I>
-where I:Iterator
+where
+    I: Iterator,
 {
-    type Item=I::Item;
+    type Item = I::Item;
 
-    fn next(&mut self)->Option<I::Item>{
+    fn next(&mut self) -> Option<I::Item> {
         use self::ReplaceNthState as RNS;
 
-        let mut ret=try_opt!(self.iter.next());
+        let mut ret = try_opt!(self.iter.next());
 
-        let replace=match self.state {
-            RNS::Unreplaced(ref mut unreplaced)=>
-                (unreplaced.nth==unreplaced.current)
-                    .observe(|v|if !v { unreplaced.current+=1 }),
-            RNS::Replaced=>
-                false,
+        let replace = match self.state {
+            RNS::Unreplaced(ref mut unreplaced) => {
+                (unreplaced.nth == unreplaced.current).observe(|v| {
+                    if !v {
+                        unreplaced.current += 1
+                    }
+                })
+            }
+            RNS::Replaced => false,
         };
         if replace {
-            if let RNS::Unreplaced(unreplaced)=mem::replace(&mut self.state,RNS::Replaced) {
-                ret=unreplaced.with;
+            if let RNS::Unreplaced(unreplaced) = mem::replace(&mut self.state, RNS::Replaced) {
+                ret = unreplaced.with;
             }
         }
         Some(ret)
     }
 
-    fn nth(&mut self,nth:usize)->Option<I::Item>{
+    fn nth(&mut self, nth: usize) -> Option<I::Item> {
         use self::ReplaceNthState as RNS;
 
-        let mut ret=try_opt!(self.iter.nth(nth));
+        let mut ret = try_opt!(self.iter.nth(nth));
 
-        let mut replace=Ordering::Greater;
-        if let RNS::Unreplaced(ref mut unreplaced)=self.state {
-            unreplaced.current+=nth;
-            replace=unreplaced.current.cmp(&unreplaced.nth);
-            if replace==Ordering::Less {
-                unreplaced.current+=1;
+        let mut replace = Ordering::Greater;
+        if let RNS::Unreplaced(ref mut unreplaced) = self.state {
+            unreplaced.current += nth;
+            replace = unreplaced.current.cmp(&unreplaced.nth);
+            if replace == Ordering::Less {
+                unreplaced.current += 1;
             }
         }
         match replace {
-            Ordering::Less =>{},
-            Ordering::Equal=>
-                if let RNS::Unreplaced(unreplaced)=mem::replace(&mut self.state,RNS::Replaced) {
-                    ret=unreplaced.with;
-                },
-            Ordering::Greater=> self.state=RNS::Replaced ,
+            Ordering::Less => {}
+            Ordering::Equal => {
+                if let RNS::Unreplaced(unreplaced) = mem::replace(&mut self.state, RNS::Replaced) {
+                    ret = unreplaced.with;
+                }
+            }
+            Ordering::Greater => self.state = RNS::Replaced,
         }
-        Some(ret)   
+        Some(ret)
     }
 
-    fn size_hint(&self)->(usize, Option<usize>){
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
 
-    fn count(self)->usize{
+    fn count(self) -> usize {
         self.iter.count()
     }
 }
 
-
 #[cfg(test)]
-mod test_replace_nth{
+mod test_replace_nth {
     use super::*;
     #[test]
-    fn nth_method(){
-        let list=vec![0,1,2,3,4,5,6,7,8,9];
+    fn nth_method() {
+        let list = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
         for i in 0..list.len() {
-            let mut iter=ReplaceNth::new(list.iter().cloned(),i,100);
-            println!("iteration:{}",i);
+            let mut iter = ReplaceNth::new(list.iter().cloned(), i, 100);
+            println!("iteration:{}", i);
             println!("values:{:?}", iter.clone().collect::<Vec<_>>());
-            if i!=0 {
-                let j=i-1;
-                assert_eq!(iter.nth(j).unwrap(),list[j])
+            if i != 0 {
+                let j = i - 1;
+                assert_eq!(iter.nth(j).unwrap(), list[j])
             }
-            assert_eq!(iter.next().unwrap(),100);
-            if i+1 < list.len() {
-                assert_eq!(iter.next().unwrap(),list[i+1]);
+            assert_eq!(iter.next().unwrap(), 100);
+            if i + 1 < list.len() {
+                assert_eq!(iter.next().unwrap(), list[i + 1]);
             }
-            if i+2 < list.len() {
-                assert_eq!(iter.next().unwrap(),list[i+2]);
+            if i + 2 < list.len() {
+                assert_eq!(iter.next().unwrap(), list[i + 2]);
             }
         }
     }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -288,7 +291,7 @@ pub trait IteratorExt: Iterator {
     /// # Example
     /// ```
     /// use core_extensions::iterators::IteratorExt;
-    /// 
+    ///
     /// let mut list=vec![101,102];
     /// (0..10)
     ///     .filter(|&v| v<5 )
@@ -298,20 +301,20 @@ pub trait IteratorExt: Iterator {
     ///
     /// ```
     #[inline(always)]
-    fn extending<C>(self,extend:&mut C)
-    where 
-        Self:Sized,
-        C:Extend<Self::Item>
+    fn extending<C>(self, extend: &mut C)
+    where
+        Self: Sized,
+        C: Extend<Self::Item>,
     {
         extend.extend(self);
     }
-    
+
     /// Collects into a pre-allocated collection,returning it by value.
-    /// 
+    ///
     /// # Example
     /// ```
     /// use core_extensions::iterators::IteratorExt;
-    /// 
+    ///
     /// let list=(0..10)
     ///     .filter(|&v| v<5 )
     ///     .map(|v| v*2 )
@@ -327,11 +330,11 @@ pub trait IteratorExt: Iterator {
     ///
     /// ```
     /// use core_extensions::iterators::IteratorExt;
-    /// 
+    ///
     /// let mut list=Vec::with_capacity(7);
     /// list.push(100);
     /// list.push(101);
-    /// 
+    ///
     /// let list=(0..10)
     ///     .filter(|&v| v<5 )
     ///     .map(|v| v*2 )
@@ -342,15 +345,14 @@ pub trait IteratorExt: Iterator {
     ///
     /// ```
     #[inline(always)]
-    fn collect_into<C>(self,mut extend:C)->C
-    where 
-        Self:Sized,
-        C:Extend<Self::Item>
+    fn collect_into<C>(self, mut extend: C) -> C
+    where
+        Self: Sized,
+        C: Extend<Self::Item>,
     {
         extend.extend(self);
         extend
     }
-
 
     /// An Iterator that replaces the nth element with another value.
     ///
@@ -372,33 +374,31 @@ pub trait IteratorExt: Iterator {
     ///
     /// ```
     #[inline(always)]
-    fn replace_nth(self,nth:usize,with:Self::Item)->ReplaceNth<Self>
-    where 
-        Self:Sized,
+    fn replace_nth(self, nth: usize, with: Self::Item) -> ReplaceNth<Self>
+    where
+        Self: Sized,
     {
-        ReplaceNth::new(self,nth,with)
+        ReplaceNth::new(self, nth, with)
     }
 }
 
-impl<I> IteratorExt for I 
-where I:Iterator
-{}
+impl<I> IteratorExt for I where I: Iterator {}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Constructs [Iterator]s using a closure.
 ///
-/// This can construct an Iterator (with IntoIterator::into_iter) 
+/// This can construct an Iterator (with IntoIterator::into_iter)
 /// multiple times if the closure is Copy.
 ///
 /// Closures can be Copy and/or Clone since Rust 1.26.
-/// 
+///
 /// # Example
 ///
 /// This example only runs from Rust 1.26 onwards,
 ///
-#[cfg_attr(not(enable_copy_closures),doc=r#" ```ignore"#)]
-#[cfg_attr(enable_copy_closures,doc=" ```")]
+#[cfg_attr(not(enable_copy_closures), doc = r#" ```ignore"#)]
+#[cfg_attr(enable_copy_closures, doc = " ```")]
 /// use core_extensions::iterators::IterConstructor;
 ///
 /// let list=vec!["hello","world"];
@@ -456,8 +456,8 @@ where
 ///
 /// This example only runs from Rust 1.26 onwards,
 ///
-#[cfg_attr(not(enable_copy_closures),doc=r#" ```ignore"#)]
-#[cfg_attr(enable_copy_closures,doc=" ```")]
+#[cfg_attr(not(enable_copy_closures), doc = r#" ```ignore"#)]
+#[cfg_attr(enable_copy_closures, doc = " ```")]
 ///
 /// #[macro_use]
 /// extern crate core_extensions;
@@ -495,8 +495,8 @@ macro_rules! iter_cloner {
 ///
 /// This example only runs from Rust 1.26 onwards,
 ///
-#[cfg_attr(not(enable_copy_closures),doc=r#" ```ignore"#)]
-#[cfg_attr(enable_copy_closures,doc=" ```")]
+#[cfg_attr(not(enable_copy_closures), doc = r#" ```ignore"#)]
+#[cfg_attr(enable_copy_closures, doc = " ```")]
 ///
 /// use core_extensions::iterators::IterCloner;
 ///

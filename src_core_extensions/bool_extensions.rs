@@ -3,7 +3,7 @@
 use type_identity::TypeIdentity;
 
 /// Extension trait for `bool`.
-pub trait BoolExt: TypeIdentity<Type=bool> + Sized {
+pub trait BoolExt: TypeIdentity<Type = bool> + Sized {
     /// Returns Some(`some`()) if self==true.Otherwise returns None.
     ///
     /// # Example

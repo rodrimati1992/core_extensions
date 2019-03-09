@@ -1,17 +1,12 @@
 //! Contains types and functions for impossible situations.
 
-
-
-use std_::{
-    fmt,
-    cmp,
-};
+use std_::{cmp, fmt};
 
 /// Type for impossible situations.
 ///
 /// Use this as a type parameter to enums to make the variants that use it unconstructible.
 ///
-/// This type is used in [ResultLike](../option_result_ext/trait.ResultLike.html) 
+/// This type is used in [ResultLike](../option_result_ext/trait.ResultLike.html)
 /// to unwrap values that can only be either the ok or error variants of the type.
 ///
 /// # Interaction with unsafe code
@@ -20,7 +15,7 @@ use std_::{
 /// it is undefined behavior to convert from any constructible type,even if zero-sized.
 ///
 /// # Example,infallible FromStr implementation.
-/// 
+///
 /// ```
 /// use std::str::FromStr;
 /// use core_extensions::{SelfOps,ResultLike,Void};
@@ -44,7 +39,7 @@ use std_::{
 /// ```
 ///
 /// # Example,infinite loop which only returns on error.
-/// 
+///
 /// ```
 /// use core_extensions::{ResultLike,Void};
 ///
@@ -71,14 +66,13 @@ use std_::{
 #[derive(Debug, Copy, Clone, Hash)]
 pub enum Void {}
 
-
-impl Void{
+impl Void {
     /// Converts a `Void` to any type.
     ///
     /// Note that because `Void` is impossible to construct,
     /// this method is unreachable.
-    pub fn to<T>(self)->T{
-        match self{  }
+    pub fn to<T>(self) -> T {
+        match self {}
     }
 }
 
@@ -88,7 +82,6 @@ impl Void{
 //         self.to()
 //     }
 // }
-
 
 #[cfg(std)]
 impl ::std::error::Error for Void {
@@ -105,8 +98,8 @@ impl fmt::Display for Void {
 
 impl Eq for Void {}
 
-impl<T:?Sized> PartialEq<T> for Void {
-    fn eq(&self,_:&T)->bool{
+impl<T: ?Sized> PartialEq<T> for Void {
+    fn eq(&self, _: &T) -> bool {
         self.to()
     }
 }
@@ -115,55 +108,56 @@ impl Ord for Void {
         self.to()
     }
 }
-impl<T:?Sized> PartialOrd<T> for Void {
+impl<T: ?Sized> PartialOrd<T> for Void {
     fn partial_cmp(&self, _: &T) -> Option<cmp::Ordering> {
         self.to()
     }
 }
 
-
-#[cfg(feature = "serde")]
+#[cfg(feature = "serde_")]
 pub use self::serde_impl::DeserializeVoidError;
-#[cfg(feature = "serde")]
-mod serde_impl{
+#[cfg(feature = "serde_")]
+mod serde_impl {
     use super::*;
-    use serde::{Serialize,Deserialize,Serializer,Deserializer};
     use serde::de::Error;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-    /// Represents a deserialization error,when trying to deserialize a struct or enum variant 
+    /// Represents a deserialization error,when trying to deserialize a struct or enum variant
     /// containing a `Void` field.
     ///
     /// Returned by serde::Deserialize::deserialize every time it's called.
-    #[derive(Debug,Copy,Clone)]
+    #[derive(Debug, Copy, Clone)]
     pub struct DeserializeVoidError;
 
     impl fmt::Display for DeserializeVoidError {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            f.write_str("Cant deserialize a struct or \
-                        enum variant containing a core_extensions::Void.")
+            f.write_str(
+                "Cant deserialize a struct or \
+                 enum variant containing a core_extensions::Void.",
+            )
         }
     }
 
-    /// This impl is only enabled if the "serde" feature is enabled.
+    /// This impl is only enabled if the "serde_" feature is enabled.
     ///
     /// This always Returns an `Err(D::Error::custom(DeserializeVoidError))`.
     impl<'de> Deserialize<'de> for Void {
         fn deserialize<D>(_: D) -> Result<Self, D::Error>
-            where D: Deserializer<'de>
+        where
+            D: Deserializer<'de>,
         {
             Err(D::Error::custom(DeserializeVoidError))
         }
     }
 
-    /// This impl is only enabled if the "serde" feature is enabled.
+    /// This impl is only enabled if the "serde_" feature is enabled.
     ///
-    impl Serialize for Void{
-        fn serialize<S>(&self,_: S) -> Result<S::Ok, S::Error>
-            where S: Serializer
+    impl Serialize for Void {
+        fn serialize<S>(&self, _: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
         {
             self.to()
         }
     }
 }
-
-
