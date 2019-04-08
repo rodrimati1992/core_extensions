@@ -149,7 +149,6 @@
 //!
 
 #![deny(missing_docs)]
-#![deny(unused_imports)]
 #![deny(unused_must_use)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
