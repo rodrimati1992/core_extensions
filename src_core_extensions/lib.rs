@@ -242,7 +242,7 @@ pub use self::option_result_ext::{OptionExt, ResultExt, ResultLike};
 pub use self::phantom_variances::{
     InvariantPhantom, InvariantRefPhantom, VariantDropPhantom, VariantPhantom,
 };
-pub use self::slices::SliceExt;
+pub use self::slices::{ValSliceExt,SliceExt};
 pub use self::transparent_newtype::TransparentNewtype;
 pub use self::try_from::{TryFrom, TryInto};
 #[doc(inline)]

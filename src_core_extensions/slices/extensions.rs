@@ -4,13 +4,148 @@
 //!
 
 // use ranges::RangeBounds;
-use super::{BiasDirection, SliceBias};
+use super::{BiasDirection, SliceBias,SplitSliceWhile,RSplitSliceWhile};
 #[allow(unused_imports)]
 use SelfOps;
 
+use std_::borrow::Borrow;
 use std_::cmp;
 use std_::mem;
 use std_::ops::Range;
+
+
+/// Extension trait for `[T]`.
+pub trait ValSliceExt<T>:Borrow<[T]>+SliceExt<T>{
+/**
+Returns an iterator over subslices whose elements were mapped to the same key by mapper.
+
+Returns an impl Iterator\<Item=[KeySlice](../struct.KeySlice.html)\<T\>>
+
+# Example
+
+```
+use core_extensions::ValSliceExt;
+use core_extensions::slices::KeySlice;
+
+fn func<'a,T,U,F>(s:&'a [T],f:F)->Vec<(U,Vec<T>)>
+where
+    T:Clone,
+    F:FnMut(&'a T)->U,
+    U:Eq+Clone,
+{
+    s.split_while(f).map(|v| (v.key,v.slice.to_vec()) ).collect()
+}
+
+{
+    let list=vec![0,1,2,3,4,5,6,7,8];
+
+    assert_eq!(
+        list.split_while(|x| x/4 ).collect::<Vec<_>>(),
+        vec![
+            KeySlice{key:0,slice:&[0,1,2,3]},
+            KeySlice{key:1,slice:&[4,5,6,7]},
+            KeySlice{key:2,slice:&[8]},
+        ]
+    );
+}
+
+{
+    let list=vec![0,4,1,5,9,8,7];
+
+    assert_eq!(
+        vec![(0,vec![0,4]), (1,vec![1,5,9]), (0,vec![8]), (3,vec![7])],
+        func(&list,|x| x%4 )
+    );
+}
+
+
+```
+
+
+*/
+    fn split_while<'a, P, U>(&'a self, mut mapper: P) -> SplitSliceWhile<'a, T, P, U>
+    where
+        P: FnMut(&'a T) -> U,
+        U: Eq + Clone,
+    {
+        let this:&'a [T]=self.borrow();
+        SplitSliceWhile {
+            last_left: this.first().map(&mut mapper),
+            last_right: this.last().map(&mut mapper),
+            mapper,
+            s: this,
+        }
+    }
+/**
+
+A variation of split_while that iterates
+from the right(the order of subslices is reversed).
+
+Returns an impl Iterator\<Item=[KeySlice](../struct.KeySlice.html)\<T\>>
+
+# Example
+
+```
+use core_extensions::ValSliceExt;
+use core_extensions::slices::KeySlice;
+
+fn func<'a,T,U,F>(s:&'a [T],f:F)->Vec<(U,Vec<T>)>
+where
+    T:Clone,
+    F:FnMut(&'a T)->U,
+    U:Eq+Clone,
+{
+    s.rsplit_while(f).map(|v| (v.key,v.slice.to_vec()) ).collect()
+}
+
+{
+    let list=vec![0,1,2,3,4,5,6,7,8];
+
+    assert_eq!(
+        list.rsplit_while(|x| x/4 ).collect::<Vec<_>>(),
+        vec![
+            KeySlice{key:2,slice:&[8]},
+            KeySlice{key:1,slice:&[4,5,6,7]},
+            KeySlice{key:0,slice:&[0,1,2,3]},
+        ]
+    );
+}
+
+{
+    let list=vec![0,4,1,5,9,8,7];
+
+    assert_eq!(
+        vec![ (3,vec![7]), (0,vec![8]), (1,vec![1,5,9]), (0,vec![0,4]) ],
+        func(&list,|x| x%4 )
+    );
+}
+
+
+
+```
+
+*/
+    fn rsplit_while<'a, P, U>(&'a self, mut mapper: P) -> RSplitSliceWhile<'a, T, P, U>
+    where
+        P: FnMut(&'a T) -> U,
+        U: Eq + Clone,
+    {
+        let this:&'a [T]=self.borrow();
+        RSplitSliceWhile {
+            last_left: this.first().map(&mut mapper),
+            last_right: this.last().map(&mut mapper),
+            mapper,
+            s: this,
+        }
+    }
+}
+
+impl<T,This> ValSliceExt<T> for This
+where
+    This:?Sized+Borrow<[T]>+SliceExt<T>,
+{}
+
+
 
 /// Extension trait for `[T]` and `str`.
 pub trait SliceExt<T> {
