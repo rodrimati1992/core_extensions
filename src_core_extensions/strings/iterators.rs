@@ -75,6 +75,11 @@ impl<'a, T> KeyStr<'a, T> {
     pub fn str(&self) -> &'a str {
         self.str
     }
+
+    /// Converts this KeyStr into a key/string slice pair
+    pub fn into_pair(self)->(T,&'a str){
+        (self.key,self.str)
+    }
 }
 
 //-------------------------------------------------------------------------------------------
