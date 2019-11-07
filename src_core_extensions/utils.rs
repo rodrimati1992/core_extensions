@@ -1,6 +1,6 @@
 //! Miscelaneous utility functions
 
-use std_::mem;
+use std_::mem::{self,ManuallyDrop};
 
 /// Allows transmuting between types of different sizes.
 ///
@@ -9,9 +9,8 @@ use std_::mem;
 /// This function has the same safety concerns as [::std::mem::transmute_copy].
 #[inline(always)]
 pub unsafe fn transmute_ignore_size<T, U>(v: T) -> U {
-    let ret: U = mem::transmute_copy::<T, U>(&v);
-    mem::forget(v);
-    ret
+    let v=ManuallyDrop::new(v);
+    mem::transmute_copy::<T, U>(&v)
 }
 
 #[inline(always)]

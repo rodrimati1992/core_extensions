@@ -120,7 +120,6 @@ pub trait IntegerExt:
     ///
     /// ```
     ///
-    #[inline]
     fn abs_unsigned(self) -> Self::Unsigned;
     /// Gets the sign of `self` which is either `Positive` or `Negative`.
     ///

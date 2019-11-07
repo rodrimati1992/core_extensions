@@ -163,6 +163,7 @@ pub extern crate core as std_;
 #[cfg(feature = "serde_")]
 extern crate serde;
 
+#[allow(unused_imports)]
 #[cfg(feature = "serde_")]
 #[macro_use]
 extern crate serde_derive;

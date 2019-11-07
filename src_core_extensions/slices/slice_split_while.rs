@@ -1,6 +1,6 @@
-use super::ValSliceExt;
-
 use std_::mem;
+
+use super::ValSliceExt;
 
 
 #[inline(always)]
@@ -161,6 +161,8 @@ where
 
 #[cfg(test)]
 mod test{
+    use super::ValSliceExt;
+
     use super::*;
     use std_::borrow::Borrow;
     use std_::cmp::min;

@@ -8,20 +8,25 @@
 //!
 //! It is always safe to convert from pointers to I,eg.:*const I,*mut I,&I,&mut I, to
 //! pointers to T (the same kind of pointer/reference).
-//! This also includes all smart pointers (Box,Rc,Arc,etc) in the standard library.
 //!
-//! Transmuting a generic type C\<I> to C\<T> is not always safe ,because
-//! some may store a \<I as SomeTrait>::AssocType instead of storing I directly.
+//! This also includes these smart pointers Box,Rc,Arc in the standard library.
+//!
+//! Transmuting a generic type C\<I> to C\<T> is not always safe ,because:
+//!
+//! - It may store a `\<I as SomeTrait>::AssocType` instead of storing `I` directly.
+//!
+//! - It has to be a type that doesn't change in layout when its type parameter changes.
+//!
 //! This has to be evaluated on an individual basis.
 //!
-//!
-//!
 //! # Example
-//! Casting a Vec\<T> to a Vec\<Wrapper\<T>>,to use its Debug implementation.
+//!
+//! Casting a `[T]` to a `[Wrapper<T>]`,to use its Debug implementation.
 //!
 //! ```
 //! use core_extensions::{SelfOps,TransparentNewtype};
 //! use std::fmt;
+//! use std::mem::ManuallyDrop;
 //!
 //! pub struct DebugFromDisplay<T:?Sized>(pub T);
 //!
@@ -33,17 +38,21 @@
 //! unsafe impl<T:?Sized> TransparentNewtype for DebugFromDisplay<T>{
 //!     type Inner=T;
 //! }
-//! fn vec_as<T>(v:&Vec<T>)->&Vec<DebugFromDisplay<T>>{
-//!     unsafe{ ::std::mem::transmute(v) }
+//! fn slice_as<T>(v:&[T])->&[DebugFromDisplay<T>]{
+//!     unsafe{
+//!         let ptr=v.as_ptr() as *const DebugFromDisplay<T>;
+//!         std::slice::from_raw_parts( ptr, v.len() )
+//!     }
 //! }
 //! let list=vec!["\"hello\"","\"world\""];
-//! for elem in list.piped_ref(vec_as) {
+//! for elem in slice_as(&list) {
 //!     assert_eq!(elem.0,format!("{:?}",elem));
 //! }
 //!
 //! ```
 //!
 //! # Example
+//!
 //! A totally ordered 32 bit float.
 //!
 //! ```
@@ -81,15 +90,19 @@
 //!     type Inner=f32;
 //! }
 //!
-//! fn vec_to(v:&mut Vec<f32>)->&mut Vec<TotalF32>{
-//!     unsafe{ ::std::mem::transmute(v) }
+//! fn mut_slice_as(v:&mut [f32])->&mut [TotalF32]{
+//!     unsafe{
+//!         let ptr=v.as_mut_ptr() as *mut TotalF32;
+//!         let len=v.len();
+//!         std::slice::from_raw_parts_mut(ptr,len)
+//!     }
 //! }
 //!
 //! let mut list=vec![1.0,0.0,2.0];
 //!
 //! // This avoids the problem with using sort_by_key ,
 //! // in which the borrow can't be returned from the closure.
-//! list.piped_mut(vec_to).sort();
+//! mut_slice_as(&mut list).sort();
 //!
 //! assert_eq!(list,vec![0.0,1.0,2.0]);
 //!
