@@ -1,5 +1,6 @@
 use std_::mem;
 
+#[allow(unused_imports)]
 use super::ValSliceExt;
 
 
@@ -161,11 +162,7 @@ where
 
 #[cfg(test)]
 mod test{
-    use super::ValSliceExt;
-
     use super::*;
-    use std_::borrow::Borrow;
-    use std_::cmp::min;
 
     fn func<'a,T,U,F>(s:&'a [T],f:F)->Vec<(U,Vec<T>)>
     where
