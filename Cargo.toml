@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "0.1.8"
+version = "0.1.9"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="This crate provides many extensions to core/std library types."
 license="MIT/Apache-2.0"
@@ -24,20 +24,15 @@ default = ["std","serde_"]
 
 std=[]
 
-serde_=["serde","serde_derive"]
+serde_=["serde"]
 
 
 [dev-dependencies]
 rand = "0.4"
 rand_derive = "0.3"
 
-
-[dependencies.serde_derive]
-version = "<=1.0.98"
-optional=true
-
 [dependencies.serde]
-version = "<=1.0.98"
+version = "1.0"
 default-features = false
 optional=true
 
