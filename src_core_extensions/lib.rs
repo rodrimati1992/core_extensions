@@ -192,8 +192,9 @@ pub mod slices;
 pub mod strings;
 pub mod transparent_newtype;
 pub mod try_from;
-mod type_assert_panic;
+mod type_panic;
 mod type_identity;
+pub mod type_asserts;
 pub mod type_level_bool;
 pub mod utils;
 pub mod void;
@@ -216,7 +217,7 @@ pub mod prelude {
     pub use phantom_variances::VariantPhantom;
 
     #[doc(inline)]
-    pub use type_assert_panic::TypePanic;
+    pub use type_panic::TypePanic;
 }
 
 pub use self::callable::{CallInto, CallMut, CallRef};
@@ -225,7 +226,7 @@ pub use self::self_ops::SelfOps;
 pub use self::strings::StringExt;
 
 #[doc(inline)]
-pub use type_assert_panic::TypePanic;
+pub use type_panic::TypePanic;
 
 pub use self::bool_extensions::BoolExt;
 pub use self::integer_extensions::IntegerExt;
