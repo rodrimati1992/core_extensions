@@ -17,6 +17,7 @@ use std_::marker::PhantomData;
 /// use core_extensions::type_asserts::AssertEq;
 ///
 /// let _:AssertEq<u32,u32>;
+/// let _=AssertEq::new( &0u32, &0u32 );
 ///
 /// ```
 ///
@@ -26,6 +27,7 @@ use std_::marker::PhantomData;
 /// use core_extensions::type_asserts::AssertEq;
 ///
 /// let _:AssertEq<(),u32>;
+/// let _=AssertEq::new( &(), &0u32 );
 ///
 /// ```
 ///
@@ -33,15 +35,26 @@ use std_::marker::PhantomData;
 /// use core_extensions::type_asserts::AssertEq;
 ///
 /// let _:AssertEq<u32,()>;
+/// let _=AssertEq::new( &0u32, &() );
 ///
 /// ```
 ///
 pub struct AssertEq<L:?Sized,R:?Sized>
 where L:TypeIdentity<Type=R>
 {
-    _marker0:PhantomData<L>,
-    _marker1:PhantomData<R>,
+    _marker:PhantomData<(
+        PhantomData<L>,
+        PhantomData<R>,
+    )>,
 }
+
+impl<A> AssertEq<A,A>{
+    /// Constructs an AssertEq.
+    pub fn new(_:A,_:A)->Self{
+        Self{_marker:PhantomData}
+    }
+}
+
 
 /// Struct used to assert that its type parameters are the same type.
 ///
@@ -51,6 +64,7 @@ where L:TypeIdentity<Type=R>
 /// use core_extensions::type_asserts::AssertEq3;
 ///
 /// let _:AssertEq3<u32,u32,u32>;
+/// let _=AssertEq3::new( &0u32, &0u32, &0u32 );
 ///
 /// ```
 ///
@@ -59,16 +73,19 @@ where L:TypeIdentity<Type=R>
 /// ```compile_fail
 /// # use core_extensions::type_asserts::AssertEq3;
 /// let _:AssertEq3<(),u32,u32>;
+/// let _=AssertEq3::new( &(), &0u32, &0u32 );
 /// ```
 ///
 /// ```compile_fail
 /// # use core_extensions::type_asserts::AssertEq3;
 /// let _:AssertEq3<u32,(),u32>;
+/// let _=AssertEq3::new( &0u32, &(), &0u32 );
 /// ```
 ///
 /// ```compile_fail
 /// # use core_extensions::type_asserts::AssertEq3;
 /// let _:AssertEq3<u32,u32,()>;
+/// let _=AssertEq3::new( &0u32, &0u32, &() );
 /// ```
 ///
 pub struct AssertEq3<A:?Sized,B:?Sized,C:?Sized>
@@ -83,6 +100,14 @@ where
     )>,
 }
 
+impl<A> AssertEq3<A,A,A>{
+    /// Constructs an AssertEq3.
+    pub fn new(_:A,_:A,_:A)->Self{
+        Self{_marker:PhantomData}
+    }
+}
+
+
 /// Struct used to assert that its type parameters are the same type.
 ///
 /// # Example
@@ -91,6 +116,7 @@ where
 /// use core_extensions::type_asserts::AssertEq4;
 ///
 /// let _:AssertEq4<u32,u32,u32,u32>;
+/// let _=AssertEq4::new( &0u32, &0u32, &0u32, &0u32 );
 ///
 /// ```
 ///
@@ -99,21 +125,25 @@ where
 /// ```compile_fail
 /// # use core_extensions::type_asserts::AssertEq4;
 /// let _:AssertEq4<(),u32,u32,u32>;
+/// let _=AssertEq4::new( &(), &0u32, &0u32, &0u32 );
 /// ```
 ///
 /// ```compile_fail
 /// # use core_extensions::type_asserts::AssertEq4;
 /// let _:AssertEq4<u32,(),u32,u32>;
+/// let _=AssertEq4::new( &0u32, &(), &0u32, &0u32 );
 /// ```
 ///
 /// ```compile_fail
 /// # use core_extensions::type_asserts::AssertEq4;
 /// let _:AssertEq4<u32,u32,(),u32>;
+/// let _=AssertEq4::new( &0u32, &0u32, &(), &0u32 );
 /// ```
 ///
 /// ```compile_fail
 /// # use core_extensions::type_asserts::AssertEq4;
 /// let _:AssertEq4<u32,u32,u32,()>;
+/// let _=AssertEq4::new( &0u32, &0u32, &0u32, &() );
 /// ```
 ///
 pub struct AssertEq4<A:?Sized,B:?Sized,C:?Sized,D:?Sized>
@@ -129,6 +159,14 @@ where
         PhantomData<D>,
     )>,
 }
+
+impl<A> AssertEq4<A,A,A,A>{
+    /// Constructs an AssertEq4.
+    pub fn new(_:A,_:A,_:A,_:A)->Self{
+        Self{_marker:PhantomData}
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
