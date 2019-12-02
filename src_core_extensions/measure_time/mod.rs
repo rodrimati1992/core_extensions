@@ -1,11 +1,11 @@
 //! Time measurement,including functions and types.
 //!
 
-use std::fmt;
-use std::ops::{Deref, DerefMut};
+use std_::fmt;
+use std_::ops::{Deref, DerefMut};
 
 #[cfg(any(enable_duration, feature = "std"))]
-use std::time::Duration;
+use std_::time::Duration;
 
 use integer_extensions::ToTime;
 #[allow(unused_imports)]
@@ -204,7 +204,7 @@ pub fn measure<F, T>(f: F) -> (MyDuration, T)
 where
     F: FnOnce() -> T,
 {
-    let now = ::std::time::Instant::now();
+    let now = std_::time::Instant::now();
     let ret = f();
     let duration = now.elapsed();
     let microseconds = MyDuration::from(duration);
@@ -229,6 +229,8 @@ where
 #[cfg(test)]
 mod tests {
     use measure_time::MyDuration;
+
+    use alloc_::string::{String,ToString};
 
     #[test]
     fn test_precision() {

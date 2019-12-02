@@ -437,7 +437,9 @@ mod tests {
 
     use prelude::*;
 
-    use std::cmp::PartialEq;
+    use std_::cmp::PartialEq;
+
+    use alloc_::string::{String,ToString};
 
     #[test]
     fn test_call_ref() {

@@ -1,5 +1,5 @@
 #[cfg(feature = "std")]
-use std::panic;
+use std_::panic;
 use std_::fmt;
 
 use utils::impossible;
@@ -210,7 +210,7 @@ pub trait ResultLike: Sized {
                 println!("{:#?}", e);
             }))
             .drop_();
-            ::std::process::abort();
+            std_::process::abort();
         })
     }
 

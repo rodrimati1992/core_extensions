@@ -164,6 +164,8 @@ where
 mod test{
     use super::*;
 
+    use alloc_::vec::Vec;
+
     fn func<'a,T,U,F>(s:&'a [T],f:F)->Vec<(U,Vec<T>)>
     where
         T:Clone,

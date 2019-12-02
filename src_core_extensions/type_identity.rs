@@ -1,9 +1,11 @@
 use std_::mem;
 
-#[cfg(feature = "std")]
-use std::rc::Rc;
-#[cfg(feature = "std")]
-use std::sync::Arc;
+#[cfg(feature = "alloc")]
+use alloc_::boxed::Box;
+#[cfg(feature = "alloc")]
+use alloc_::rc::Rc;
+#[cfg(feature = "alloc")]
+use alloc_::sync::Arc;
 
 use utils::transmute_ignore_size;
 
@@ -122,19 +124,19 @@ pub trait TypeIdentity {
         unsafe { mem::transmute_copy::<&mut Self, &mut Self::Type>(&self) }
     }
     /// Converts a box back to the original type.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "alloc")]
     #[inline(always)]
     fn into_type_box(self: Box<Self>) -> Box<Self::Type> {
         unsafe { transmute_ignore_size(self) }
     }
     /// Converts an Arc back to the original type.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "alloc")]
     #[inline(always)]
     fn into_type_arc(this: Arc<Self>) -> Arc<Self::Type> {
         unsafe { transmute_ignore_size(this) }
     }
     /// Converts an Rc back to the original type.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "alloc")]
     #[inline(always)]
     fn into_type_rc(this: Rc<Self>) -> Rc<Self::Type> {
         unsafe { transmute_ignore_size(this) }
@@ -161,19 +163,19 @@ pub trait TypeIdentity {
         unsafe { mem::transmute_copy::<&mut Self::Type, &mut Self>(&this) }
     }
     /// Converts a box back to the original type.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "alloc")]
     #[inline(always)]
     fn from_type_box(this: Box<Self::Type>) -> Box<Self> {
         unsafe { transmute_ignore_size(this) }
     }
     /// Converts an Arc back to the original type.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "alloc")]
     #[inline(always)]
     fn from_type_arc(this: Arc<Self::Type>) -> Arc<Self> {
         unsafe { transmute_ignore_size(this) }
     }
     /// Converts an Rc back to the original type.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "alloc")]
     #[inline(always)]
     fn from_type_rc(this: Rc<Self::Type>) -> Rc<Self> {
         unsafe { transmute_ignore_size(this) }

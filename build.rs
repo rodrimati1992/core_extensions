@@ -18,4 +18,7 @@ fn main() {
     if Version::new(1, 30, 0) <= rver {
         println!("cargo:rustc-cfg=trim_left_right_method_deprecation");
     }
+    if Version::new(1, 36, 0) <= rver {
+        println!("cargo:rustc-cfg=rust_1_36");
+    }
 }

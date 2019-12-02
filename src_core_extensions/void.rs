@@ -84,7 +84,7 @@ impl Void {
 // }
 
 #[cfg(std)]
-impl ::std::error::Error for Void {
+impl std_::error::Error for Void {
     fn description(&self) -> &str {
         match *self {}
     }

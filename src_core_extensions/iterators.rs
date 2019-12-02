@@ -200,6 +200,8 @@ where
 
 #[cfg(test)]
 mod test_replace_nth {
+    use alloc_::vec::Vec;
+
     use super::*;
     #[test]
     fn nth_method() {

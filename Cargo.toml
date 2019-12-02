@@ -22,9 +22,11 @@ travis-ci = { repository =  "rodrimati1992/core_extensions/" }
 [features]
 default = ["std","serde_"]
 
-std=[]
+std=["alloc"]
+alloc=[]
 
 serde_=["serde"]
+colltraits=[]
 
 
 [dev-dependencies]

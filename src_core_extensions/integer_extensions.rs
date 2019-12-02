@@ -6,7 +6,7 @@
 use std_::{cmp, fmt, ops};
 
 #[cfg(all(not(core_duration), feature = "std"))]
-use std::time::Duration;
+use std_::time::Duration;
 #[cfg(core_duration)]
 use std_::time::Duration;
 
@@ -493,6 +493,8 @@ impl_absolute_unsigned_numbers!(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use alloc_::vec::Vec;
 
     #[cfg(enable_128)]
     type UMax = u128;

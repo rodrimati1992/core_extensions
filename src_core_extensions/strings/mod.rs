@@ -5,6 +5,9 @@ use std_::cmp;
 use std_::fmt;
 use std_::str::CharIndices;
 
+#[cfg(feature = "alloc")]
+use alloc_::string::String;
+
 mod iterators;
 
 pub use self::iterators::{CharIndicesFrom, KeyStr, RSplitWhile, SplitWhile};
@@ -556,8 +559,9 @@ pub trait StringExt: Borrow<str> {
     ///
     /// ```
     ///
-    #[cfg(feature = "std")]
+    #[cfg(feature = "alloc")]
     fn left_pad(&self, how_much: usize) -> String {
+        use alloc_::string::ToString;
         self.left_padder(how_much).to_string()
     }
     /// Pads the string on the left with `how_much` additional
@@ -580,7 +584,7 @@ pub trait StringExt: Borrow<str> {
     ///
     /// ```
     ///
-    #[cfg(any(core_str_methods, feature = "std"))]
+    #[cfg(any(core_str_methods, feature = "alloc"))]
     fn line_indentation(&self) -> usize {
         let this = self.borrow().lines().next().unwrap_or("");
         this.len() - this.trim_start_().len()
@@ -599,7 +603,7 @@ pub trait StringExt: Borrow<str> {
     ///
     /// ```
     ///
-    #[cfg(any(core_str_methods, feature = "std"))]
+    #[cfg(any(core_str_methods, feature = "alloc"))]
     fn min_indentation(&self) -> usize {
         self.borrow()
             .lines()
@@ -620,7 +624,7 @@ pub trait StringExt: Borrow<str> {
     ///
     /// ```
     ///
-    #[cfg(any(core_str_methods, feature = "std"))]
+    #[cfg(any(core_str_methods, feature = "alloc"))]
     fn max_indentation(&self) -> usize {
         self.borrow()
             .lines()
@@ -636,7 +640,7 @@ impl<T: ?Sized> StringExt for T where T: Borrow<str> {}
 
 
 pub(crate) trait StrMethods: Borrow<str> {
-    #[cfg(any(core_str_methods, feature = "std"))]
+    #[cfg(any(core_str_methods, feature = "alloc"))]
     fn trim_start_(&self)->&str{
         let this=self.borrow();
         #[cfg(not(trim_left_right_method_deprecation))]
@@ -648,7 +652,7 @@ pub(crate) trait StrMethods: Borrow<str> {
             this.trim_start()
         }
     }
-    #[cfg(any(core_str_methods, feature = "std"))]
+    #[cfg(any(core_str_methods, feature = "alloc"))]
     fn trim_end_(&self)->&str{
         let this=self.borrow();
         #[cfg(not(trim_left_right_method_deprecation))]
@@ -706,6 +710,9 @@ impl<'a> fmt::Display for LeftPadder<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use alloc_::vec::Vec;
+
     #[test]
     fn test_left_pad() {
         let s = "what\n  the\n    hell";

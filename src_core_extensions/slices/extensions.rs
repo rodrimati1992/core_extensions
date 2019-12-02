@@ -410,6 +410,9 @@ mod slice_impls {
 mod tests {
     use super::*;
 
+    use alloc_::vec::Vec;
+    use alloc_::string::String;
+
     #[test]
     fn contains_slice() {
         let list = vec![0, 1, 2, 3, 4, 5];

@@ -1,5 +1,8 @@
-#[cfg(any(feature = "std", test))]
+#[cfg(any(feature = "alloc", test))]
 use std_::fmt;
+
+#[cfg(any(feature = "alloc", test))]
+use alloc_::string::String;
 
 use super::ResultLike;
 use type_identity::TypeIdentity;
@@ -8,7 +11,7 @@ use SelfOps;
 
 /// Extension trait for [Result].
 pub trait ResultExt<T, E>: Sized + ResultLike + TypeIdentity<Type = Result<T, E>> {
-    #[cfg(any(feature = "std", test))]
+    #[cfg(any(feature = "alloc", test))]
     #[inline]
     /// Maps Err(e) to a Debug `{:?}` formated String.
     ///
@@ -30,7 +33,7 @@ pub trait ResultExt<T, E>: Sized + ResultLike + TypeIdentity<Type = Result<T, E>
     {
         self.into_type_val().map_err(|e| format!("{:?}", e))
     }
-    #[cfg(any(feature = "std", test))]
+    #[cfg(any(feature = "alloc", test))]
     /// Maps Err(e) to an alternate Debug `{:#?}` formated String.
     ///
     /// # Example
