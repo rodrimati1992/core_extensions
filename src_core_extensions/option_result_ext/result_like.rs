@@ -206,7 +206,7 @@ pub trait ResultLike: Sized {
         Self::Error: fmt::Debug,
     {
         self.to_result_().unwrap_or_else(|e| {
-            panic::catch_unwind(panic::AssertUnwindSafe(|| {
+            ::std_::panic::catch_unwind(::std_::panic::AssertUnwindSafe(|| {
                 println!("{:#?}", e);
             }))
             .drop_();

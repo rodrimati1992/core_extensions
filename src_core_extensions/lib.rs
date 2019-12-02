@@ -152,12 +152,14 @@
 #![deny(unused_must_use)]
 #![no_std]
 
-#[cfg(feature="std")]
+#[cfg(any(feature="std",all(not(rust_1_36),feature="alloc")))]
 #[macro_use]
 #[doc(hidden)]
 pub extern crate std as std_;
 
-#[cfg(not(feature = "std"))]
+#[cfg(not(
+    any(feature="std",all(not(rust_1_36),feature="alloc"))
+))]
 #[doc(hidden)]
 pub extern crate core as std_;
 
