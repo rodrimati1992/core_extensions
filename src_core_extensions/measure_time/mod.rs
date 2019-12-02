@@ -204,7 +204,7 @@ pub fn measure<F, T>(f: F) -> (MyDuration, T)
 where
     F: FnOnce() -> T,
 {
-    let now = std_::time::Instant::now();
+    let now = ::std_::time::Instant::now();
     let ret = f();
     let duration = now.elapsed();
     let microseconds = MyDuration::from(duration);

@@ -210,7 +210,7 @@ pub trait ResultLike: Sized {
                 println!("{:#?}", e);
             }))
             .drop_();
-            std_::process::abort();
+            ::std_::process::abort();
         })
     }
 
