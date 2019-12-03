@@ -129,3 +129,60 @@ array_impls!{
     ])
 
 }
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+
+    #[test]
+    fn cloned_core() {
+        assert_eq!( [&5].cloned_(), [5] );
+        assert_eq!( [&5,&8].cloned_(), [5,8] );
+        assert_eq!( [&5,&8,&13].cloned_(), [5,8,13] );
+        assert_eq!( [&5,&8,&13,&21].cloned_(), [5,8,13,21] );
+        assert_eq!(
+            [&1,&4,&9,&16,&25,&36,&49,&64,&81,&100,&121,&144].cloned_(),
+            [ 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144]
+        );
+    }
+
+    #[test]
+    #[cfg(feature="alloc")]
+    fn cloned_alloc() {
+        use alloc_::string::ToString;
+
+        assert_eq!( ["5"].cloned_(), ["5".to_string()] );
+        assert_eq!(
+            ["5","8"].cloned_(),
+            ["5".to_string(),"8".to_string()]
+        );
+        assert_eq!(
+            ["5","8","13"].cloned_(),
+            ["5".to_string(),"8".to_string(),"13".to_string()]
+        );
+        assert_eq!(
+            ["5","8","13","21"].cloned_(),
+            ["5".to_string(),"8".to_string(),"13".to_string(),"21".to_string()]
+        );
+    }
+
+    #[test]
+    fn into_array(){
+        macro_rules! into_array_tests {
+            ( $($array:expr,)* ) => (
+                $({
+                    let array=$array;
+                    assert_eq!( array.clone().into_array(), array );
+                })*
+            )
+        }
+        into_array_tests!{
+            [0],
+            [0,1],
+            [0;2],
+            [0;3],
+            [0;16],
+            [0;32],
+        }
+    }
+}
