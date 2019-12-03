@@ -28,6 +28,8 @@
 //!
 //! "typenum":Enables trait impls for typenum types.Disabled by default.
 //!
+//! "colltraits":Enables trait impls for the collection traits in the collection_traits module.
+//!
 //!
 //!
 //! <br></br>
@@ -199,7 +201,6 @@ mod internal_macros;
 
 pub mod bool_extensions;
 pub mod callable;
-#[cfg(feature="colltraits")]
 pub mod collection_traits;
 pub mod integer_extensions;
 pub mod iterators;

@@ -2,9 +2,13 @@
 Extension traits implemented for multiple types
 */
 
+#[cfg(feature="colltraits")]
 pub mod cloned_items;
 
+#[cfg(feature="colltraits")]
 mod array_impls;
+
+#[cfg(feature="colltraits")]
 mod tuple_impls;
 
 
@@ -12,7 +16,10 @@ mod tuple_impls;
 
 /// Clones a fixed-sized collection of references into a collection of values.
 ///
-/// # How features affect the trait impls
+/// # Features
+///
+/// This trait is only implemented for built-in/`core` types  
+/// if the "colltraits" cargo feature is enabled.
 ///
 /// Enabling the "alloc" or "std" features changes the impl from this crate from
 /// using `Clone` bounds to using `ToOwned`
@@ -25,7 +32,8 @@ mod tuple_impls;
 ///
 /// # Tuple Example
 ///
-/// ```
+#[cfg_attr(feature="colltraits",doc=" ```")]
+#[cfg_attr(not(feature="colltraits"),doc=" ```ignore")]
 /// use core_extensions::collection_traits::Cloned;
 ///
 /// assert_eq!( (&2,).cloned_(), (2,) );
@@ -48,9 +56,15 @@ pub trait Cloned{
 
 /// Converts a fixed length collection to an array.
 ///
+/// # Features
+///
+/// This trait is only implemented for built-in/`core` types  
+/// if the "colltraits" cargo feature is enabled.
+///
 /// # Example
 ///
-/// ```
+#[cfg_attr(feature="colltraits",doc=" ```")]
+#[cfg_attr(not(feature="colltraits"),doc=" ```ignore")]
 /// use core_extensions::collection_traits::IntoArray;
 ///
 /// assert_eq!( (2,).into_array(), [2] );

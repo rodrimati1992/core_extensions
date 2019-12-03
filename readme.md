@@ -33,6 +33,8 @@ using a build script to automatically enable features from newer versions.
 
 "typenum":Enables trait impls for typenum types.Disabled by default.
 
+"colltraits":Enables trait impls for the collection traits in the `collection_traits` module.
+
 # License
 
 core_extensions is licensed under either of
