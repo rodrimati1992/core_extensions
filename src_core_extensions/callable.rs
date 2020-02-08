@@ -312,6 +312,7 @@ macro_rules! callable_impl{
         where
             $( $where_preds )*
         {
+            #[allow(unused_parens)]
             type Returns=($($ret_ty)*);
 
             fn call_into(
@@ -343,6 +344,7 @@ macro_rules! callable_impl{
         for $fn_ty
         where $( $where_preds )*
         {
+            #[allow(unused_parens)]
             type Returns=($($ret_ty)*);
 
             fn call_into(
@@ -387,6 +389,7 @@ macro_rules! callable_impl{
         for $fn_ty
         where $( $where_preds )*
         {
+            #[allow(unused_parens)]
             type Returns=($($ret_ty)*);
 
             fn call_into(

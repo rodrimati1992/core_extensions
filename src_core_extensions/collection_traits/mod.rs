@@ -2,26 +2,25 @@
 Extension traits implemented for multiple types
 */
 
-#[cfg(feature="colltraits")]
+#[cfg(feature = "colltraits")]
 pub mod cloned_items;
 
-#[cfg(feature="colltraits")]
+#[cfg(feature = "colltraits")]
 mod array_impls;
 
-#[cfg(feature="colltraits")]
+#[cfg(feature = "colltraits")]
 mod tuple_impls;
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/// Clones a fixed-sized collection of references into a collection of values.
+/// Clones a collection of references into a collection of values.
 ///
 /// # Features
 ///
-/// This trait is only implemented for built-in/`core` types  
+/// This trait is only implemented
 /// if the "colltraits" cargo feature is enabled.
 ///
-/// Enabling the "alloc" or "std" features changes the impl from this crate from
+/// Enabling the "alloc" or "std" features changes the impl for references from
 /// using `Clone` bounds to using `ToOwned`
 /// (`ToOwned` is declared in the `alloc` crate).
 ///
@@ -32,8 +31,8 @@ mod tuple_impls;
 ///
 /// # Tuple Example
 ///
-#[cfg_attr(feature="colltraits",doc=" ```")]
-#[cfg_attr(not(feature="colltraits"),doc=" ```ignore")]
+#[cfg_attr(feature = "colltraits", doc = " ```")]
+#[cfg_attr(not(feature = "colltraits"), doc = " ```ignore")]
 /// use core_extensions::collection_traits::Cloned;
 ///
 /// assert_eq!( (&2,).cloned_(), (2,) );
@@ -43,28 +42,33 @@ mod tuple_impls;
 ///
 /// ```
 ///
-pub trait Cloned{
-    /// The type of this tuple with owned values instead of references to them.
+pub trait Cloned {
+    /// The type of this with owned values instead of references to them.
     type Cloned;
 
     /// Clones a tuple of references into a tuple of values.
-    fn cloned_(&self)->Self::Cloned;
+    fn cloned_(&self) -> Self::Cloned;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+/// The type that `This` is cloned into.
+///
+/// Eg: `&u32` is cloned into `u32`,
+/// `&str` is cloned into `String` (this example requires the "alloc" feature).
+pub type ClonedOut<This> = <This as Cloned>::Cloned;
 
+///////////////////////////////////////////////////////////////////////////////
 
 /// Converts a fixed length collection to an array.
 ///
 /// # Features
 ///
-/// This trait is only implemented for built-in/`core` types  
+/// This trait is only implemented
 /// if the "colltraits" cargo feature is enabled.
 ///
 /// # Example
 ///
-#[cfg_attr(feature="colltraits",doc=" ```")]
-#[cfg_attr(not(feature="colltraits"),doc=" ```ignore")]
+#[cfg_attr(feature = "colltraits", doc = " ```")]
+#[cfg_attr(not(feature = "colltraits"), doc = " ```ignore")]
 /// use core_extensions::collection_traits::IntoArray;
 ///
 /// assert_eq!( (2,).into_array(), [2] );
@@ -75,17 +79,12 @@ pub trait Cloned{
 /// ```
 ///
 ///
-pub trait IntoArray{
+pub trait IntoArray {
     /// The type of the array of the same length as the tuple
     type Array;
 
     /// Converts the tuple to an array..
-    fn into_array(self)->Self::Array;
+    fn into_array(self) -> Self::Array;
 }
 
-
-
-
 ///////////////////////////////////////////////////////////////////////////////
-
-

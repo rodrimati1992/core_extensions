@@ -1,5 +1,3 @@
-#[cfg(feature = "std")]
-use std_::panic;
 use std_::fmt;
 
 use utils::impossible;

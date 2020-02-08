@@ -1,20 +1,22 @@
-use super::{Cloned,IntoArray};
-use super::cloned_items::*;
+use super::{
+    Cloned,
+    IntoArray,
+};
 
 macro_rules! array_impls {
     (
         $( ( $size:expr,[$($elem:expr,)*] ) )*
     ) => (
         $(
-            impl<'a,T> Cloned for [&'a T;$size] 
+            impl<'a,T> Cloned for [T;$size]
             where
-                T: ?Sized + UsedCloneTrait
+                T: Cloned
             {
-                type Cloned=[ClonedType<T>;$size];
+                type Cloned=[T::Cloned;$size];
 
-                fn cloned_(&self)->[ClonedType<T>;$size] {
+                fn cloned_(&self)->[T::Cloned;$size] {
                     [
-                        $(clone_this(self[$elem]),)*
+                        $(self[$elem].cloned_(),)*
                     ]
                 }
             }
@@ -31,8 +33,6 @@ macro_rules! array_impls {
         )*
     )
 }
-
-
 
 /*
 
@@ -54,8 +54,7 @@ fn main() {
 
 */
 
-
-array_impls!{
+array_impls! {
     (0,[])
     (1,[0,])
     (2,[0,1,])
@@ -131,43 +130,55 @@ array_impls!{
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
 
     #[test]
     fn cloned_core() {
-        assert_eq!( [&5].cloned_(), [5] );
-        assert_eq!( [&5,&8].cloned_(), [5,8] );
-        assert_eq!( [&5,&8,&13].cloned_(), [5,8,13] );
-        assert_eq!( [&5,&8,&13,&21].cloned_(), [5,8,13,21] );
+        assert_eq!([&5].cloned_(), [5]);
+        assert_eq!([&5, &8].cloned_(), [5, 8]);
+        assert_eq!([&5, &8, &13].cloned_(), [5, 8, 13]);
+        assert_eq!([&5, &8, &13, &21].cloned_(), [5, 8, 13, 21]);
         assert_eq!(
-            [&1,&4,&9,&16,&25,&36,&49,&64,&81,&100,&121,&144].cloned_(),
-            [ 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144]
+            [&1, &4, &9, &16, &25, &36, &49, &64, &81, &100, &121, &144].cloned_(),
+            [1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144]
+        );
+
+        assert_eq!(
+            [Some(&1), Some(&4), Some(&9)].cloned_(),
+            [Some(1), Some(4), Some(9)]
+        );
+
+        assert_eq!(
+            [Some((&3, &5)), Some((&8, &13))].cloned_(),
+            [Some((3, 5)), Some((8, 13))]
         );
     }
 
     #[test]
-    #[cfg(feature="alloc")]
+    #[cfg(feature = "alloc")]
     fn cloned_alloc() {
         use alloc_::string::ToString;
 
-        assert_eq!( ["5"].cloned_(), ["5".to_string()] );
+        assert_eq!(["5"].cloned_(), ["5".to_string()]);
+        assert_eq!(["5", "8"].cloned_(), ["5".to_string(), "8".to_string()]);
         assert_eq!(
-            ["5","8"].cloned_(),
-            ["5".to_string(),"8".to_string()]
+            ["5", "8", "13"].cloned_(),
+            ["5".to_string(), "8".to_string(), "13".to_string()]
         );
         assert_eq!(
-            ["5","8","13"].cloned_(),
-            ["5".to_string(),"8".to_string(),"13".to_string()]
-        );
-        assert_eq!(
-            ["5","8","13","21"].cloned_(),
-            ["5".to_string(),"8".to_string(),"13".to_string(),"21".to_string()]
+            ["5", "8", "13", "21"].cloned_(),
+            [
+                "5".to_string(),
+                "8".to_string(),
+                "13".to_string(),
+                "21".to_string()
+            ]
         );
     }
 
     #[test]
-    fn into_array(){
+    fn into_array() {
         macro_rules! into_array_tests {
             ( $($array:expr,)* ) => (
                 $({
@@ -176,7 +187,7 @@ mod tests{
                 })*
             )
         }
-        into_array_tests!{
+        into_array_tests! {
             [0],
             [0,1],
             [0;2],

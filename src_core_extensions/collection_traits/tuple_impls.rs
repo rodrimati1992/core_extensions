@@ -1,7 +1,9 @@
 #![allow(non_snake_case)]
 
-use super::{Cloned,IntoArray};
-use super::cloned_items::*;
+use super::{
+    Cloned,
+    IntoArray,
+};
 
 macro_rules! impl_tuple {
     (l; $($anything:tt)* )=>{ 1 };
@@ -13,16 +15,16 @@ macro_rules! impl_tuple {
         impl_tuple!{into_array; all($($tup,)*) }
     );
     (cloned; all($($tup:ident,)*) ) => (
-        impl<'a,$($tup),*> Cloned for ($(&'a $tup,)*) 
+        impl<'a,$($tup),*> Cloned for ($($tup,)*)
         where
-            $($tup: ?Sized + UsedCloneTrait,)*
+            $($tup: Cloned,)*
         {
-            type Cloned=($(ClonedType<$tup>,)*);
+            type Cloned=($($tup::Cloned,)*);
 
             fn cloned_(&self)->Self::Cloned {
-                let ($($tup,)*)=*self;
+                let ($($tup,)*)=self;
                 (
-                    $(clone_this($tup),)*
+                    $($tup.cloned_(),)*
                 )
             }
         }
@@ -42,46 +44,45 @@ macro_rules! impl_tuple {
     );
 }
 
-impl_tuple!{
+impl_tuple! {
     ()
 }
-impl_tuple!{
+impl_tuple! {
     (C0,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,C2,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,C2,C3,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,C2,C3,C4,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,C2,C3,C4,C5,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,C2,C3,C4,C5,C6,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,C2,C3,C4,C5,C6,C7,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,C2,C3,C4,C5,C6,C7,C8,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,C2,C3,C4,C5,C6,C7,C8,C9,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,)
 }
-impl_tuple!{
+impl_tuple! {
     (C0,C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,)
 }
-
 
 #[cfg(test)]
 mod test {
@@ -89,38 +90,40 @@ mod test {
 
     #[test]
     fn cloned_core() {
-        assert_eq!( (&5,).cloned_(), (5,) );
-        assert_eq!( (&5,&8).cloned_(), (5,8) );
-        assert_eq!( (&5,&8,&13).cloned_(), (5,8,13) );
-        assert_eq!( (&5,&8,&13,&21).cloned_(), (5,8,13,21) );
+        assert_eq!((&5,).cloned_(), (5,));
+        assert_eq!((&5, &8).cloned_(), (5, 8));
+        assert_eq!((&5, &8, &13).cloned_(), (5, 8, 13));
+        assert_eq!((&5, &8, &13, &21).cloned_(), (5, 8, 13, 21));
         assert_eq!(
-            (&1,&4,&9,&16,&25,&36,&49,&64,&81,&100,&121,&144).cloned_(),
-            ( 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144)
+            (&1, &4, &9, &16, &25, &36, &49, &64, &81, &100, &121, &144).cloned_(),
+            (1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144)
         );
     }
 
     #[test]
-    #[cfg(feature="alloc")]
+    #[cfg(feature = "alloc")]
     fn cloned_alloc() {
         use alloc_::string::ToString;
 
-        assert_eq!( ("5",).cloned_(), ("5".to_string(),) );
+        assert_eq!(("5",).cloned_(), ("5".to_string(),));
+        assert_eq!(("5", "8").cloned_(), ("5".to_string(), "8".to_string()));
         assert_eq!(
-            ("5","8").cloned_(),
-            ("5".to_string(),"8".to_string())
+            ("5", "8", "13").cloned_(),
+            ("5".to_string(), "8".to_string(), "13".to_string())
         );
         assert_eq!(
-            ("5","8","13").cloned_(),
-            ("5".to_string(),"8".to_string(),"13".to_string())
-        );
-        assert_eq!(
-            ("5","8","13","21").cloned_(),
-            ("5".to_string(),"8".to_string(),"13".to_string(),"21".to_string())
+            ("5", "8", "13", "21").cloned_(),
+            (
+                "5".to_string(),
+                "8".to_string(),
+                "13".to_string(),
+                "21".to_string()
+            )
         );
     }
 
     #[test]
-    fn into_array(){
+    fn into_array() {
         macro_rules! into_array_tests {
             ( $([$($array:tt)*],)* ) => (
                 $({
@@ -128,7 +131,7 @@ mod test {
                 })*
             )
         }
-        into_array_tests!{
+        into_array_tests! {
             [5,],
             [5,8],
             [5,8,13],
@@ -137,5 +140,4 @@ mod test {
             [1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144],
         }
     }
-
 }
