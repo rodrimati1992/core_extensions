@@ -65,8 +65,8 @@ where
     type Cloned = Option<T::Cloned>;
 
     fn cloned_(&self) -> Self::Cloned {
-        match self {
-            Some(x) => Some(x.cloned_()),
+        match *self {
+            Some(ref x) => Some(x.cloned_()),
             None => None,
         }
     }
@@ -80,9 +80,9 @@ where
     type Cloned = Result<T::Cloned, E::Cloned>;
 
     fn cloned_(&self) -> Self::Cloned {
-        match self {
-            Ok(x) => Ok(x.cloned_()),
-            Err(x) => Err(x.cloned_()),
+        match *self {
+            Ok(ref x) => Ok(x.cloned_()),
+            Err(ref x) => Err(x.cloned_()),
         }
     }
 }

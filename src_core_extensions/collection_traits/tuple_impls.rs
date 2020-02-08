@@ -22,7 +22,7 @@ macro_rules! impl_tuple {
             type Cloned=($($tup::Cloned,)*);
 
             fn cloned_(&self)->Self::Cloned {
-                let ($($tup,)*)=self;
+                let ($(ref $tup,)*)=*self;
                 (
                     $($tup.cloned_(),)*
                 )
