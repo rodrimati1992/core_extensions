@@ -15,7 +15,10 @@ use std_::mem::ManuallyDrop;
 
 use std_::num::Wrapping;
 
-use std_::sync::atomic::{self,AtomicUsize,AtomicIsize,AtomicBool};
+use std_::sync::atomic::{AtomicUsize,AtomicIsize,AtomicBool};
+
+#[cfg(rust_1_24)]
+use std_::sync::atomic;
 
 /// A const equivalent of the `Default` trait.
 ///
@@ -260,7 +263,7 @@ impl_const_default!{
 
 #[cfg(rust_1_25)]
 impl_const_default!{
-    for[] std_::time::Duration = std_::time::Duration::from_secs(0),
+    for[] ::std_::time::Duration = ::std_::time::Duration::from_secs(0),
 }
 
 #[cfg(rust_1_26)]
