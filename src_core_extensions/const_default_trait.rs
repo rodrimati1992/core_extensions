@@ -17,7 +17,7 @@ use std_::num::Wrapping;
 
 use std_::sync::atomic::{AtomicUsize,AtomicIsize,AtomicBool};
 
-#[cfg(rust_1_24)]
+#[allow(unused_imports)]
 use std_::sync::atomic;
 
 /// A const equivalent of the `Default` trait.
