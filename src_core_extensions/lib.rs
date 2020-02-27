@@ -75,10 +75,13 @@
 //! [StringExt](./strings/trait.StringExt.html)Extension trait for `str`.
 //!
 //!
-//! ## Marker traits
+//! ## Construction traits
 //!
 //! [MarkerType](./marker_traits/trait.MarkerType.html):
 //! Represents a zero-sized marker type.
+//!
+//! [ConstDefault](./trait.ConstDefault.html):
+//! A const-equivalent of the Default trait.
 //!
 //! ## Other traits
 //!
@@ -202,6 +205,7 @@ mod internal_macros;
 pub mod bool_extensions;
 pub mod callable;
 pub mod collection_traits;
+pub mod const_default;
 pub mod integer_extensions;
 pub mod iterators;
 pub mod macros;
@@ -244,6 +248,7 @@ pub mod prelude {
     pub use type_panic::TypePanic;
 }
 
+pub use self::const_default::ConstDefault;
 pub use self::callable::{CallInto, CallMut, CallRef};
 #[doc(inline)]
 pub use self::self_ops::SelfOps;

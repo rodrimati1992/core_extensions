@@ -5,6 +5,9 @@
 
 use std_::marker::PhantomData;
 
+#[cfg(rust_1_29)]
+use std_::mem::ManuallyDrop;
+
 #[allow(dead_code)]
 union __Uninit<T: Copy> {
     uninit: (),
@@ -51,7 +54,7 @@ pub unsafe trait MarkerType: Copy + Sized {
         unsafe {
             const SOME_ADDRESS: usize = 1_000_000;
             // this is safe since implementing MarkerType guarantees that
-            // this type is a Zero Sized Type ,in which all pointers are valid.
+            // this type is a 1-aligned Zero Sized Type ,in which all pointers are valid.
             &*(SOME_ADDRESS as *const Self)
         }
     }
@@ -64,6 +67,13 @@ pub unsafe trait MarkerType: Copy + Sized {
 }
 
 unsafe impl<T: ?Sized> MarkerType for PhantomData<T> {}
+
+#[cfg(rust_1_29)]
+unsafe impl<T> MarkerType for ManuallyDrop<T> 
+where
+    T: ?Sized + MarkerType
+{}
+
 unsafe impl MarkerType for () {}
 
 macro_rules! impl_zero_sized_array {
@@ -125,17 +135,28 @@ mod typenum {
 #[cfg(test)]
 mod tests {
     use std_::marker::PhantomData;
-    use std_::mem::{align_of, size_of};
+    use std_::mem::{ManuallyDrop, align_of, size_of};
     macro_rules! assert_size_align {
         ($ty:ty) => {
             assert_eq!(size_of::<$ty>(), 0);
             assert_eq!(align_of::<$ty>(), 1);
+
+            assert_eq!(size_of::<ManuallyDrop<$ty>>(), 0);
+            assert_eq!(align_of::<ManuallyDrop<$ty>>(), 1);
         };
+    }
+    
+    type PD = PhantomData<u64>;
+
+    #[test]
+    #[cfg(rust_1_29)]
+    fn test_manuallydrop(){
+        assert_size_align!(ManuallyDrop<PD>);
+        assert_size_align!(ManuallyDrop<(PD,PD)>);
     }
 
     #[test]
     fn test_alignment_size() {
-        type PD = PhantomData<u64>;
 
         assert_size_align!(());
         assert_size_align!(PhantomData<()>);
