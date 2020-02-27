@@ -21,10 +21,35 @@ use std_::sync::atomic::{self,AtomicUsize,AtomicIsize,AtomicBool};
 ///
 /// # Example
 ///
-/// ```
+/// Implementing `ConstDefault` for a struct
 ///
+/// ```rust
+/// // use core_extensions::const_default; // in newer versions of Rust.
+/// #[macro_use(const_default)]
+/// extern crate core_extensions;
+///
+/// use core_extensions::ConstDefault;
 /// 
+/// #[derive(Debug,PartialEq)]
+/// struct Point<T>{
+///     x:T,
+///     y:T,
+/// }
 ///
+/// // `+ Copy` here is required for Rust 1.20 and 1.21,
+/// // and can be removed from Rust 1.22 onwards.
+/// impl<T> ConstDefault for Point<T>
+/// where
+///     T: ConstDefault + Copy
+/// {
+///     const DEFAULT: Self= Point{ x: T::DEFAULT,  y: T::DEFAULT };
+/// }
+///
+/// # fn main(){
+/// assert_eq!( const_default!(Point<u8>), Point{x:0, y:0} );
+/// assert_eq!( const_default!(Point<f32>), Point{x:0.0, y:0.0} );
+/// assert_eq!( const_default!(Point<Option<()>>), Point{x:None, y:None} );
+/// # }
 /// ```
 pub trait ConstDefault: Sized {
     /// The default value for `Self`.
@@ -220,14 +245,6 @@ impl_const_default!{
     for[] AtomicUsize = AtomicUsize::new(0),
     for[] AtomicIsize = AtomicIsize::new(0),
     for[] AtomicBool = AtomicBool::new(false),
-    for[] atomic::AtomicI8 = atomic::AtomicI8::new(0),
-    for[] atomic::AtomicU8 = atomic::AtomicU8::new(0),
-    for[] atomic::AtomicI16 = atomic::AtomicI16::new(0),
-    for[] atomic::AtomicU16 = atomic::AtomicU16::new(0),
-    for[] atomic::AtomicI32 = atomic::AtomicI32::new(0),
-    for[] atomic::AtomicU32 = atomic::AtomicU32::new(0),
-    for[] atomic::AtomicI64 = atomic::AtomicI64::new(0),
-    for[] atomic::AtomicU64 = atomic::AtomicU64::new(0),
     for[T: ConstDefault] Cell<T> = Cell::new(T::DEFAULT),
     for[T: ConstDefault] RefCell<T> = RefCell::new(T::DEFAULT),
     for[T: ConstDefault] UnsafeCell<T> = UnsafeCell::new(T::DEFAULT),
@@ -255,6 +272,18 @@ impl_const_default!{
 #[cfg(rust_1_32)]
 impl_const_default!{
     for[T: ConstDefault] ManuallyDrop<T> = ManuallyDrop::new(T::DEFAULT),
+}
+
+#[cfg(rust_1_34)]
+impl_const_default!{
+    for[] atomic::AtomicI8 = atomic::AtomicI8::new(0),
+    for[] atomic::AtomicU8 = atomic::AtomicU8::new(0),
+    for[] atomic::AtomicI16 = atomic::AtomicI16::new(0),
+    for[] atomic::AtomicU16 = atomic::AtomicU16::new(0),
+    for[] atomic::AtomicI32 = atomic::AtomicI32::new(0),
+    for[] atomic::AtomicU32 = atomic::AtomicU32::new(0),
+    for[] atomic::AtomicI64 = atomic::AtomicI64::new(0),
+    for[] atomic::AtomicU64 = atomic::AtomicU64::new(0),
 }
 
 #[cfg(all(feature = "alloc",rust_1_39))]
@@ -336,13 +365,18 @@ mod tests{
     #[test]
     #[cfg(rust_1_24)]
     fn for_rust_1_24(){
+        assert_eq!(const_def_assert!(Cell<Option<()>>).into_inner(), None);
+        assert_eq!(const_def_assert!(RefCell<Option<()>>).into_inner(), None);
+        assert_eq!(const_def_assert!(UnsafeCell<Option<()>>).into_inner(), None);
+    }
+
+    #[test]
+    #[cfg(rust_1_34)]
+    fn for_rust_1_34(){
         assert_eq!(const_def_assert!(atomic::AtomicU8).into_inner(), 0);
         assert_eq!(const_def_assert!(atomic::AtomicI8).into_inner(), 0);
         assert_eq!(const_def_assert!(atomic::AtomicU16).into_inner(), 0);
         assert_eq!(const_def_assert!(atomic::AtomicI16).into_inner(), 0);
-        assert_eq!(const_def_assert!(Cell<Option<()>>).into_inner(), None);
-        assert_eq!(const_def_assert!(RefCell<Option<()>>).into_inner(), None);
-        assert_eq!(const_def_assert!(UnsafeCell<Option<()>>).into_inner(), None);
     }
 
     #[test]
