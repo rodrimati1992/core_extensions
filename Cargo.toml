@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "0.1.15"
+version = "0.1.16"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="This crate provides many extensions to core/std library types."
 license="MIT/Apache-2.0"
@@ -30,8 +30,8 @@ colltraits=[]
 
 
 [dev-dependencies]
-rand = "0.4"
-rand_derive = "0.3"
+rand = "0.4.6"
+rand_derive = "0.3.1"
 
 [dependencies.serde]
 version = "1.0"
@@ -47,7 +47,7 @@ optional=true
 
 
 [build-dependencies]
-rustc_version = "0.2"
+rustc_version = "0.2.3"
 
 
 [lib]

@@ -7,6 +7,10 @@ matrix:
     - rust: nightly
     - rust: nightly
       script:
+        - cargo update -Z minimal-versions
+        - cargo build --all-features
+
+        - cargo update
         - cargo build --all-features
 
     - rust: 1.20.0
