@@ -277,7 +277,7 @@ impl_const_default!{
     for[T: ConstDefault] ManuallyDrop<T> = ManuallyDrop::new(T::DEFAULT),
 }
 
-#[cfg(rust_1_34)]
+#[cfg(all(rust_1_34, not(target_arch = "powerpc")))]
 impl_const_default!{
     for[] atomic::AtomicI8 = atomic::AtomicI8::new(0),
     for[] atomic::AtomicU8 = atomic::AtomicU8::new(0),
