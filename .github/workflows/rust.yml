@@ -15,9 +15,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        rust-version: ${{ matrix.rust }}
     - name: ci-all-versions
+    
       run: |
-        rustup override set ${{ matrix.rust }}
         cargo -V
         cargo build
         cargo build --no-default-features
@@ -32,9 +34,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        rust-version: nightly
     - name: ci-nighly
       run: |
-        rustup override set nightly
         cargo -V
         cargo update -Z minimal-versions
         cargo build --all-features
