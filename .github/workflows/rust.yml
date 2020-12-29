@@ -1,0 +1,43 @@
+name: Rust
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix: 
+        rust: [stable, beta, nightly, 1.20.0, 1.22.0, 1.26.0, 1.29.0, 1.34.0, 1.36.0]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: ci-all-versions
+      run: |
+        rustup override set ${{ matrix.rust }}
+        cargo -V
+        cargo build
+        cargo build --no-default-features
+        cargo build --no-default-features --features alloc
+        cargo build --no-default-features --features std
+        cargo test --features "colltraits"
+        cargo test --features "serde"
+        cargo test --features "serde colltraits"
+
+  nightly-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: ci-nighly
+      run: |
+        rustup override set nightly
+        cargo -V
+        cargo update -Z minimal-versions
+        cargo build --all-features
+
+        cargo update
+        cargo build --all-features
