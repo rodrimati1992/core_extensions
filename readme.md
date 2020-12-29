@@ -1,4 +1,4 @@
-![Rust](https://github.com/rodrimati1992/core_extensions/workflows/Rust/badge.svg)
+[![Rust](https://github.com/rodrimati1992/core_extensions/workflows/Rust/badge.svg)](https://github.com/rodrimati1992/core_extensions/actions)
 
 This crate provides many extensions to core/std library types,
 and provides some new abstractions.
