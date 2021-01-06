@@ -105,3 +105,200 @@ pub unsafe fn impossible() -> ! {
         match *(1 as *const Void) {}
     }
 }
+
+
+/////////////////////////////////////////////////////////
+
+
+/// A wrapper type to run a closure at the end of the scope.
+///
+/// This allows construction with an explicitly captured value,
+/// so that it can be used before the end of the scope.
+///
+/// ```rust
+/// use core_extensions::utils::RunOnDrop;
+///
+/// fn main() { 
+///     let mut guard = RunOnDrop::new("Hello".to_string(), |string|{
+///         assert_eq!(string, "Hello, world!");
+///     });
+///
+///     assert_eq!(guard.get(), "Hello");
+///     
+///     guard.get_mut().push_str(", world!");
+/// }   
+///
+/// ```
+pub struct RunOnDrop<T, F>
+where
+    F: FnOnce(T),
+{
+    value: ManuallyDrop<T>,
+    function: ManuallyDrop<F>,
+}
+
+impl<T, F> RunOnDrop<T, F>
+where
+    F: FnOnce(T),
+{
+    /// Constructs this RunOnDrop.
+    #[inline(always)]
+    pub fn new(value: T, function: F) -> Self {
+        Self {
+            value: ManuallyDrop::new(value),
+            function: ManuallyDrop::new(function),
+        }
+    }
+}
+
+impl<T, F> RunOnDrop<T, F>
+where
+    F: FnOnce(T),
+{
+    /// Reborrows the wrapped value.
+    #[inline(always)]
+    pub fn get(&self) -> &T {
+        &*self.value
+    }
+
+    /// Reborrows the wrapped value mutably.
+    #[inline(always)]
+    pub fn get_mut(&mut self) -> &mut T {
+        &mut *self.value
+    }
+
+    /// Extracts the wrapped value, preventing the closure from running at the end of the scope.
+    pub fn into_inner(self) -> T {
+        let mut this = ManuallyDrop::new(self);
+        unsafe{
+            let ret = take_manuallydrop(&mut this.value);
+            ManuallyDrop::drop(&mut this.function);
+            ret
+        }
+    }
+
+}
+
+impl<'a, T, F> Drop for RunOnDrop<T, F>
+where
+    F: FnOnce(T),
+{
+    #[inline(always)]
+    fn drop(&mut self) {
+        unsafe {
+            let value = take_manuallydrop(&mut self.value);
+            let function = take_manuallydrop(&mut self.function);
+            function(value);
+        }
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+/// Takes the contents out of a `ManuallyDrop<T>`.
+///
+/// # Safety
+///
+/// After this function is called `slot` becomes uninitialized and
+/// must not be used again.
+unsafe fn take_manuallydrop<T>(slot: &mut ManuallyDrop<T>) -> T {
+    #[cfg(feature = "rust_1_42")]
+    {
+        ManuallyDrop::take(slot)
+    }
+    #[cfg(not(feature = "rust_1_42"))]
+    {
+        ::std_::ptr::read(slot as *mut ManuallyDrop<T> as *mut T)
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+
+    use std_::cell::Cell;  
+    use test_utils::DecOnDrop;  
+
+    
+    #[test]
+    fn drop_guard() {
+        let count = Cell::new(0);
+        
+        {
+            let guard = RunOnDrop::new(DecOnDrop::new(&count), |rod|{
+                assert_eq!(count.get(), 15);
+                drop(rod);
+                assert_eq!(count.get(), 14);
+            });
+
+            assert_eq!(count.get(), 0);
+            count.set(16);
+
+            let clone = guard.get().clone();
+            assert_eq!(count.get(), 16);
+            drop(clone);
+            assert_eq!(count.get(), 15);
+
+        }
+
+        assert_eq!(count.get(), 14);
+    }
+
+    #[test]
+    fn unwrap_run_on_drop() {
+        let count = Cell::new(0);
+        
+        {
+            let guard = RunOnDrop::new(DecOnDrop::new(&count), |rod|{
+                assert_eq!(count.get(), 15);
+                drop(rod);
+                assert_eq!(count.get(), 14);
+            });
+
+            assert_eq!(count.get(), 0);
+            count.set(16);
+
+            let clone = guard.get().clone();
+            assert_eq!(count.get(), 16);
+            drop(clone);
+            assert_eq!(count.get(), 15);
+
+            let rod = guard.into_inner();
+            assert_eq!(count.get(), 15);
+            drop(rod);
+            assert_eq!(count.get(), 14);
+        }
+
+        assert_eq!(count.get(), 14);
+    }
+
+
+    #[test]
+    fn take_manuallydrop_test(){
+        let count = Cell::new(10);
+        let mut md = ManuallyDrop::new(DecOnDrop::new(&count));
+
+        assert_eq!(count.get(), 10);
+
+        let dod = unsafe{ take_manuallydrop(&mut md) };
+        assert_eq!(count.get(), 10);
+
+        drop(dod);
+        assert_eq!(count.get(), 9);
+    }
+
+}
+
+
+
+
+
+
+
+
