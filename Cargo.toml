@@ -31,6 +31,8 @@ colltraits=[]
 const_generics = []
 nightly_const_generics = ["const_generics"]
 
+docsrs = []
+
 
 [dev-dependencies]
 rand = "0.4.6"
@@ -55,6 +57,10 @@ rustc_version = "0.2.3"
 [lib]
 name = "core_extensions"
 path = "src_core_extensions/lib.rs"
+
+[package.metadata.docs.rs]
+features = ["serde", "colltraits", "const_generics", "docsrs"]
+
 
 
 # [[bin]]

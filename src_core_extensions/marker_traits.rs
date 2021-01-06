@@ -20,6 +20,11 @@ Represents a zero-sized marker type .
 Types implementing this trait are zero-sized and can safely be stored in any
 `#[repr(C)]` type without changing their layout.
 
+# Features
+
+Enabling the "const_generics" feature allows arrays of all lengths to implement this trait,
+otherwise it's only implemented for arrays up to 32 elements long.
+
 # Safety
 
 Implementors of this trait must ensure:
@@ -81,6 +86,9 @@ unsafe impl MarkerType for () {}
 #[cfg(feature = "const_generics")]
 macro_rules! impl_zero_sized_array {
     ()=>{
+        /// When the "const_params" feature is disabled,
+        /// the MarkerType trait is implemented for arrays up to 32 elements long.
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_params")))]
         unsafe impl<T, const N: usize> MarkerType for [T; N]
         where T: MarkerType
         {}

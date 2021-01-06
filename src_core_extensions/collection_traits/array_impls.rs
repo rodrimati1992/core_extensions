@@ -11,6 +11,9 @@ macro_rules! array_impls {
         use core::mem::MaybeUninit;
         use ::utils::RunOnDrop;
 
+        /// When the "const_params" feature is disabled,
+        /// the Cloned trait is implemented for arrays up to 32 elements long.
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_params")))]
         impl<'a, T, const N: usize> Cloned for [T; N]
         where
             T: Cloned

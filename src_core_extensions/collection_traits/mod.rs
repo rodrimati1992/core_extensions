@@ -3,6 +3,7 @@ Extension traits implemented for multiple types
 */
 
 #[cfg(feature = "colltraits")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "colltraits")))]
 pub mod cloned_items;
 
 #[cfg(feature = "colltraits")]
@@ -17,12 +18,14 @@ mod tuple_impls;
 ///
 /// # Features
 ///
-/// This trait is only implemented
-/// if the "colltraits" cargo feature is enabled.
+/// This trait is only implemented if the "colltraits" cargo feature is enabled.
 ///
 /// Enabling the "alloc" or "std" features changes the impl for references from
 /// using `Clone` bounds to using `ToOwned`
 /// (`ToOwned` is declared in the `alloc` crate).
+///
+/// Enabling the "const_generics" feature allows arrays of all lengths to implement this trait,
+/// otherwise it's only implemented for arrays up to 32 elements long.
 ///
 /// `ToOwned` is implemented for all types that implement `Clone`,
 /// and is not declared in `core`,

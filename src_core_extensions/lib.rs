@@ -22,17 +22,21 @@
 //!
 //! # Cargo Features
 //!
-//! "std":Enables standard library support.Enabled by default.
+//! `"std"`: Enables standard library support.Enabled by default.
 //!
-//! "serde_":Enables serde support.Disabled by default.
+//! `"serde_"`: Enables serde support.Disabled by default.
 //!
-//! "typenum":Enables trait impls for typenum types.Disabled by default.
+//! `"typenum"`: Enables trait impls for typenum types.Disabled by default.
 //!
-//! "colltraits":Enables trait impls for the collection traits in the collection_traits module.
+//! `"colltraits"`: Enables trait impls for the collection traits in the collection_traits module.
 //!
+//! `"const_generics"`:
+//! Enables impls of traits for all array lengths, 
+//! requires versions of Rust where const generics are stable.
 //!
-//!
-//! <br></br>
+//! `"nightly_const_generics"`: 
+//! Enables impls of traits for all array lengths in Rust nightly versions prior to 
+//! the stabilization of const generics.
 //!
 //! # **Contents**
 //!
@@ -157,6 +161,7 @@
 #![deny(unused_must_use)]
 #![no_std]
 #![cfg_attr(feature = "nightly_const_generics", feature(min_const_generics))]
+#![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 
 #[cfg(any(feature="std",all(not(rust_1_36),feature="alloc")))]
 #[macro_use]

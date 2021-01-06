@@ -22,6 +22,11 @@ use std_::sync::atomic;
 
 /// A const equivalent of the `Default` trait.
 ///
+/// # Features
+///
+/// Enabling the "const_generics" feature allows arrays of all lengths to implement this trait,
+/// otherwise it's only implemented for arrays up to 32 elements long.
+///
 /// # Example
 ///
 /// Implementing `ConstDefault` for a struct
@@ -77,6 +82,9 @@ macro_rules! const_default {
 #[cfg(feature = "const_generics")]
 macro_rules! impl_array_const_default {
     ()=>{
+        /// When the "const_params" feature is disabled,
+        /// the ConstDefault trait is implemented for arrays up to 32 elements long.
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_params")))]
         impl<T: ConstDefault, const N: usize> ConstDefault for [T; N] {
             const DEFAULT: Self = [T::DEFAULT; N];
         }
