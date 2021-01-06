@@ -229,7 +229,7 @@ mod tests {
         #[derive(Debug, Clone)]
         struct WithVal<'a>(u32, DecOnDrop<'a>);
 
-        impl<'a> std_::cmp::PartialEq for WithVal<'a> {
+        impl<'a> ::std_::cmp::PartialEq for WithVal<'a> {
             fn eq(&self, other: &Self) -> bool {
                 self.0 == other.0
             }
@@ -239,18 +239,19 @@ mod tests {
         
         let make = |x: u32| WithVal(x, DecOnDrop::new(&count));
 
-        let arr = [make(3), make(4), make(5)];
-        let refs = [&arr[0], &arr[1], &arr[2]];
-        let clone = refs.cloned_();
+        {
+            let arr = [make(3), make(4), make(5)];
+            let refs = [&arr[0], &arr[1], &arr[2]];
+            {
+                let clone = refs.cloned_();
 
-        assert_eq!(count.get(), 10);
-        assert_eq!(clone, [make(3), make(4), make(5)]);
-        assert_eq!(count.get(), 7);
+                assert_eq!(count.get(), 10);
+                assert_eq!(clone, [make(3), make(4), make(5)]);
+                assert_eq!(count.get(), 7);
+            }
+            assert_eq!(count.get(), 4);
+        }
 
-        drop(clone);
-        assert_eq!(count.get(), 4);
-
-        drop(arr);
         assert_eq!(count.get(), 1);
     }
 
