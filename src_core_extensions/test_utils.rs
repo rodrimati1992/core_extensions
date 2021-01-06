@@ -3,7 +3,7 @@ use std_::cell::Cell;
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Used to test that types that manually drop stuff do it correctly.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct DecOnDrop<'a> {
     counter: &'a Cell<usize>,
 }

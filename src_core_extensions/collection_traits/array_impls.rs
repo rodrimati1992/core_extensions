@@ -12,7 +12,7 @@ macro_rules! array_impls {
         use core::mem::MaybeUninit;
 
 
-        impl<'a,T,const N: usize> Cloned for [T; N]
+        impl<'a, T, const N: usize> Cloned for [T; N]
         where
             T: Cloned
         {
@@ -24,12 +24,12 @@ macro_rules! array_impls {
                     written: usize,
                 }
                 let mut guard = {
-                    let out = Written::<T, N>{
-                        array: MaybeUninit::uninit().assume_init(),
+                    let out = Written::<T::Cloned, N>{
+                        array: unsafe{ MaybeUninit::uninit().assume_init() },
                         written: 0,
                     };
                     RunOnDrop::new(out, |mut out|{
-                        let start = out.array.as_ptr_mut() as *mut T;
+                        let start = out.array.as_mut_ptr() as *mut T;
                         let slice = std_::ptr::slice_from_raw_parts_mut(start, out.written);
                         unsafe{
                             std_::ptr::drop_in_place(slice);
@@ -39,7 +39,7 @@ macro_rules! array_impls {
 
                 let out = guard.get_mut();
                 for (i, elem) in self.iter().enumerate() {
-                    out.array[i] = MaybeUninit::new(elem.cloned());
+                    out.array[i] = MaybeUninit::new(elem.cloned_());
                     out.written += 1;
                 }
 
@@ -50,7 +50,7 @@ macro_rules! array_impls {
             }
         }
 
-        impl<T> IntoArray for [T; N] {
+        impl<T, const N: usize> IntoArray for [T; N] {
             type Array = Self;
 
             fn into_array(self)->Self {
@@ -229,19 +229,19 @@ mod tests {
         #[derive(Debug, Clone)]
         struct WithVal<'a>(u32, DecOnDrop<'a>);
 
-        impl<'a> std::cmp::PartialEq for WithVal<'a> {
+        impl<'a> std_::cmp::PartialEq for WithVal<'a> {
             fn eq(&self, other: &Self) -> bool {
                 self.0 == other.0
             }
         }
 
-        let make = |x: u32| WithVal(x, DecOnDrop::new(&count));
-
         let count = Cell::new(10);
+        
+        let make = |x: u32| WithVal(x, DecOnDrop::new(&count));
 
         let arr = [make(3), make(4), make(5)];
         let refs = [&arr[0], &arr[1], &arr[2]];
-        let clone = refs.cloned();
+        let clone = refs.cloned_();
 
         assert_eq!(count.get(), 10);
         assert_eq!(clone, [make(3), make(4), make(5)]);
@@ -277,17 +277,20 @@ mod tests {
 
         #[cfg(feature = "const_generics")]
         {
+            use alloc_::string::String;
+            use alloc_::vec::Vec;
+
             use core::convert::TryInto;
 
             const LEN: usize = 65;
             
             let owned: Vec<String> = (0..LEN).map(|x| x.to_string()).collect();
-            let owned: [String; LEN] = owned.clone().try_into().unwrap()
+            let owned: [String; LEN] = owned.clone().try_into().unwrap();
             
             let borrowed: Vec<&str> = owned.iter().map(|x|x.as_str()).collect();
             let borrowed: [&str; LEN] = borrowed.try_into().unwrap();
 
-            assert!(borrowed.cloned_(), owned);
+            assert_eq!(borrowed.cloned_(), owned);
         }
     }
 
