@@ -40,4 +40,7 @@ fn main() {
     if Version::new(1, 39, 0) <= rver {
         println!("cargo:rustc-cfg=rust_1_39");
     }
+    if Version::new(1, 42, 0) <= rver {
+        println!("cargo:rustc-cfg=rust_1_42");
+    }
 }

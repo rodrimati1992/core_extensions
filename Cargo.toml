@@ -28,10 +28,12 @@ alloc=[]
 serde_=["serde"]
 colltraits=[]
 
+const_generics = []
+nightly_const_generics = ["const_generics"]
+
 
 [dev-dependencies]
 rand = "0.4.6"
-rand_derive = "0.3.1"
 
 [dependencies.serde]
 version = "1.0"
@@ -53,8 +55,6 @@ rustc_version = "0.2.3"
 [lib]
 name = "core_extensions"
 path = "src_core_extensions/lib.rs"
-
-[workspace]
 
 
 # [[bin]]
