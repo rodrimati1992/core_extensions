@@ -3,14 +3,13 @@ use super::{
     IntoArray,
 };
 
-use ::utils::RunOnDrop;
 
 
 #[cfg(feature = "const_generics")]
 macro_rules! array_impls {
     ()=>{
         use core::mem::MaybeUninit;
-
+        use ::utils::RunOnDrop;
 
         impl<'a, T, const N: usize> Cloned for [T; N]
         where
@@ -19,6 +18,7 @@ macro_rules! array_impls {
             type Cloned=[T::Cloned; N];
 
             fn cloned_(&self) -> [T::Cloned; N] {
+
                 struct Written<T, const N: usize> {
                     array: [MaybeUninit<T>; N],
                     written: usize,
@@ -29,8 +29,11 @@ macro_rules! array_impls {
                         written: 0,
                     };
                     RunOnDrop::new(out, |mut out|{
-                        let start = out.array.as_mut_ptr() as *mut T;
-                        let slice = std_::ptr::slice_from_raw_parts_mut(start, out.written);
+                        let start: *mut MaybeUninit<T::Cloned> = out.array.as_mut_ptr();
+                        let slice = std_::ptr::slice_from_raw_parts_mut(
+                            start as *mut T::Cloned,
+                            out.written,
+                        );
                         unsafe{
                             std_::ptr::drop_in_place(slice);
                         }
@@ -45,7 +48,9 @@ macro_rules! array_impls {
 
                 // Can't use transmute with generic types
                 unsafe{
-                    ::utils::transmute_ignore_size(guard.into_inner().array)
+                    ::utils::transmute_ignore_size::<[MaybeUninit<T::Cloned>; N], [T::Cloned; N]>(
+                        guard.into_inner().array
+                    )
                 }
             }
         }
@@ -199,6 +204,8 @@ array_impls! {
 mod tests {
     use super::*;
 
+    use ::test_utils::WithVal;
+
     #[test]
     fn cloned_core() {
         assert_eq!([&5].cloned_(), [5]);
@@ -226,15 +233,6 @@ mod tests {
         use std_::cell::Cell;
         use test_utils::DecOnDrop;
 
-        #[derive(Debug, Clone)]
-        struct WithVal<'a>(u32, DecOnDrop<'a>);
-
-        impl<'a> ::std_::cmp::PartialEq for WithVal<'a> {
-            fn eq(&self, other: &Self) -> bool {
-                self.0 == other.0
-            }
-        }
-
         let count = Cell::new(10);
         
         let make = |x: u32| WithVal(x, DecOnDrop::new(&count));
@@ -253,6 +251,34 @@ mod tests {
         }
 
         assert_eq!(count.get(), 1);
+    }
+
+
+    #[test]
+    #[cfg(feature = "std")]
+    fn cloned_panic() {
+        use std_::panic::AssertUnwindSafe;
+
+        use test_utils::{CloneLimit, MaxClones};
+
+        let limit = CloneLimit::new(2);
+        assert_eq!(limit.clone_count(), 0);
+        
+        let make = |x: u32| MaxClones::new(x, &limit);
+
+        {
+            let arr = [make(3), make(4), make(5)];
+            let refs = [&arr[0], &arr[1], &arr[2]];
+            assert_eq!(limit.clone_count(), 0);
+            assert_eq!(limit.drop_count(), 0);
+            let _ = std_::panic::catch_unwind(AssertUnwindSafe(||{
+                let _ = refs.cloned_();
+            })).unwrap_err();
+            assert_eq!(limit.clone_count(), 2);
+            assert_eq!(limit.drop_count(), 2);
+        }
+        assert_eq!(limit.clone_count(), 2);
+        assert_eq!(limit.drop_count(), 5);
     }
 
     #[test]

@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "0.1.17"
+version = "0.1.19"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="This crate provides many extensions to core/std library types."
 license="MIT/Apache-2.0"
