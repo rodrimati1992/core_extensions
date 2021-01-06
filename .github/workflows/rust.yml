@@ -41,3 +41,5 @@ jobs:
 
         cargo update
         cargo build --all-features
+        
+        cargo test --features "serde colltraits const_generics"
