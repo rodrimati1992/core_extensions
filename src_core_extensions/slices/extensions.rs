@@ -337,10 +337,15 @@ macro_rules! impl_common_slice_extensions {($T:ident) => {
     }
     fn get_index_of(&self,other:*const $T)->Option<usize>{
         let size_of:usize=mem::size_of::<$T>();
-        if size_of==0 { return Some(0); }
-        (other as *const $T as usize)
-            .checked_sub(self.as_ptr() as usize)
-            .map(|v| v/size_of )
+        if size_of == 0 { return Some(0); }
+        let sub = (other as *const $T as usize)
+            .wrapping_sub(self.as_ptr() as usize)
+            /size_of;
+        if sub >= self.len() {
+            None
+        } else {
+            Some(sub)
+        }
     }
 
 }}
@@ -449,20 +454,26 @@ mod tests {
         let list = vec![0, 1, 2, 3, 4, 5];
         let elem_0 = &list[0];
         let elem_3 = &list[3];
-        let outside = &0;
+        let zero = 0;
+        let outside = &zero;
+        let boxed = Box::new(zero);
         assert_eq!(list.index_of(elem_0), 0);
         assert_eq!(list.index_of(elem_3), 3);
         assert_eq!(list.index_of(outside), list.len());
+        assert_eq!(list.index_of(&*boxed), list.len());
     }
     #[test]
     fn get_index_of() {
         let list = vec![0, 1, 2, 3, 4, 5];
         let elem_0 = &list[0];
         let elem_3 = &list[3];
-        let outside = &0;
+        let zero = 0;
+        let outside = &zero;
+        let boxed = Box::new(zero);
         assert_eq!(list.get_index_of(elem_0), Some(0));
         assert_eq!(list.get_index_of(elem_3), Some(3));
         assert_eq!(list.get_index_of(outside), None);
+        assert_eq!(list.get_index_of(&*boxed), None);
     }
     #[test]
     fn slice_lossy_slice_examples() {
@@ -558,6 +569,8 @@ mod tests {
     }
 
     #[test]
+    // Too slow to run in miri, and there's no unsafe code here.
+    #[cfg(not(miri))]
     fn slice_lossy_slice_no_panic() {
         use rand::Rng;
 
@@ -582,6 +595,8 @@ mod tests {
     }
 
     #[test]
+    // Too slow to run in miri, and there's no unsafe code here.
+    #[cfg(not(miri))]
     fn slice_lossy_str_no_panic() {
         use rand::Rng;
 

@@ -159,7 +159,7 @@
 
 #![deny(missing_docs)]
 #![deny(unused_must_use)]
-#![no_std]
+#![cfg_attr(not(miri), no_std)]
 #![cfg_attr(feature = "nightly_const_generics", feature(min_const_generics))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 

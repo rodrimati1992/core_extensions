@@ -8,7 +8,7 @@ use super::{
 #[cfg(feature = "const_generics")]
 macro_rules! array_impls {
     ()=>{
-        use core::mem::MaybeUninit;
+        use std_::mem::MaybeUninit;
         use ::utils::RunOnDrop;
 
         /// When the "const_params" feature is disabled,
@@ -310,7 +310,7 @@ mod tests {
             use alloc_::string::String;
             use alloc_::vec::Vec;
 
-            use core::convert::TryInto;
+            use std_::convert::TryInto;
 
             const LEN: usize = 65;
             
