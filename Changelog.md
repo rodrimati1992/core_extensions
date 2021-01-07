@@ -12,6 +12,9 @@ Added utils::RunOnDrop type, to run code at the end of a scope.
 
 Fixed the MSRV for the `MarkerType` impl for `ManuallyDrop` to be Rust 1.22.
 
+Fixed implementations of  SliceExt::{contains_slice, get_index_of, and get_offset_of_slice methods},
+the bugs in those were discovered after writing more complete tests.
+
 ### 0.1.17
 
 Added support for cross-compiling to powerpc architecture,
