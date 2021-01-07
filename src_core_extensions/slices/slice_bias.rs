@@ -66,7 +66,6 @@
 ///
 ///
 /// ```
-#[cfg_attr(test, derive(Rand))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SliceBias {
     /// bias of the start bound
@@ -76,7 +75,6 @@ pub struct SliceBias {
 }
 
 /// The direction the range bound is biased towards.
-#[cfg_attr(test, derive(Rand))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BiasDirection {
     /// Means that the bound is biased to lower indices
@@ -141,6 +139,25 @@ impl From<(BiasDirection, BiasDirection)> for SliceBias {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    use rand::{Rand, Rng};
+
+    impl Rand for SliceBias {
+        fn rand<R: Rng>(rng: &mut R) -> Self {
+            fn rand_dir<R: Rng>(rng: &mut R) -> BiasDirection {
+                match rng.gen_range::<u8>(0, 2) {
+                    0 => BiasDirection::Left,
+                    _=> BiasDirection::Right,
+                }
+            }
+
+            SliceBias{
+                start: rand_dir(rng),
+                end: rand_dir(rng),
+            }
+        }
+    }
+
     #[test]
     fn doc_comments() {
         use SliceExt;

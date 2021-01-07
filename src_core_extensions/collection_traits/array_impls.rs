@@ -3,6 +3,78 @@ use super::{
     IntoArray,
 };
 
+
+
+#[cfg(feature = "const_generics")]
+macro_rules! array_impls {
+    ()=>{
+        use std_::mem::MaybeUninit;
+        use ::utils::RunOnDrop;
+
+        /// When the "const_params" feature is disabled,
+        /// the Cloned trait is implemented for arrays up to 32 elements long.
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_params")))]
+        impl<'a, T, const N: usize> Cloned for [T; N]
+        where
+            T: Cloned
+        {
+            type Cloned=[T::Cloned; N];
+
+            fn cloned_(&self) -> [T::Cloned; N] {
+
+                struct Written<T, const N: usize> {
+                    array: [MaybeUninit<T>; N],
+                    written: usize,
+                }
+                let mut guard = {
+                    let out = Written::<T::Cloned, N>{
+                        array: unsafe{ MaybeUninit::uninit().assume_init() },
+                        written: 0,
+                    };
+                    RunOnDrop::new(out, |mut out|{
+                        let start: *mut MaybeUninit<T::Cloned> = out.array.as_mut_ptr();
+                        let slice = std_::ptr::slice_from_raw_parts_mut(
+                            start as *mut T::Cloned,
+                            out.written,
+                        );
+                        unsafe{
+                            std_::ptr::drop_in_place(slice);
+                        }
+                    })                    
+                };
+
+                let out = guard.get_mut();
+                for (i, elem) in self.iter().enumerate() {
+                    out.array[i] = MaybeUninit::new(elem.cloned_());
+                    out.written += 1;
+                }
+
+                // Can't use transmute with generic types
+                unsafe{
+                    ::utils::transmute_ignore_size::<[MaybeUninit<T::Cloned>; N], [T::Cloned; N]>(
+                        guard.into_inner().array
+                    )
+                }
+            }
+        }
+
+        impl<T, const N: usize> IntoArray for [T; N] {
+            type Array = Self;
+
+            fn into_array(self)->Self {
+                self
+            }
+        }
+    }
+}
+
+#[cfg(feature = "const_generics")]
+array_impls!{}
+
+
+/////////////////////////////////////////////////
+
+#[cfg(not(feature = "const_generics"))]
 macro_rules! array_impls {
     (
         $( ( $size:expr,[$($elem:expr,)*] ) )*
@@ -28,8 +100,6 @@ macro_rules! array_impls {
                     self
                 }
             }
-
-
         )*
     )
 }
@@ -54,6 +124,7 @@ fn main() {
 
 */
 
+#[cfg(not(feature = "const_generics"))]
 array_impls! {
     (0,[])
     (1,[0,])
@@ -129,9 +200,14 @@ array_impls! {
 
 }
 
+/////////////////////////////////////////////////
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use ::test_utils::WithVal;
 
     #[test]
     fn cloned_core() {
@@ -156,6 +232,59 @@ mod tests {
     }
 
     #[test]
+    fn cloned_dest() {
+        use std_::cell::Cell;
+        use test_utils::DecOnDrop;
+
+        let count = Cell::new(10);
+        
+        let make = |x: u32| WithVal(x, DecOnDrop::new(&count));
+
+        {
+            let arr = [make(3), make(4), make(5)];
+            let refs = [&arr[0], &arr[1], &arr[2]];
+            {
+                let clone = refs.cloned_();
+
+                assert_eq!(count.get(), 10);
+                assert_eq!(clone, [make(3), make(4), make(5)]);
+                assert_eq!(count.get(), 7);
+            }
+            assert_eq!(count.get(), 4);
+        }
+
+        assert_eq!(count.get(), 1);
+    }
+
+
+    #[test]
+    #[cfg(feature = "std")]
+    fn cloned_panic() {
+        use std_::panic::AssertUnwindSafe;
+
+        use test_utils::{CloneLimit, MaxClones};
+
+        let limit = CloneLimit::new(2);
+        assert_eq!(limit.clone_count(), 0);
+        
+        let make = |x: u32| MaxClones::new(x, &limit);
+
+        {
+            let arr = [make(3), make(4), make(5)];
+            let refs = [&arr[0], &arr[1], &arr[2]];
+            assert_eq!(limit.clone_count(), 0);
+            assert_eq!(limit.drop_count(), 0);
+            let _ = ::std_::panic::catch_unwind(AssertUnwindSafe(||{
+                let _ = refs.cloned_();
+            })).unwrap_err();
+            assert_eq!(limit.clone_count(), 2);
+            assert_eq!(limit.drop_count(), 2);
+        }
+        assert_eq!(limit.clone_count(), 2);
+        assert_eq!(limit.drop_count(), 5);
+    }
+
+    #[test]
     #[cfg(feature = "alloc")]
     fn cloned_alloc() {
         use alloc_::string::ToString;
@@ -175,6 +304,24 @@ mod tests {
                 "21".to_string()
             ]
         );
+
+        #[cfg(feature = "const_generics")]
+        {
+            use alloc_::string::String;
+            use alloc_::vec::Vec;
+
+            use std_::convert::TryInto;
+
+            const LEN: usize = 65;
+            
+            let owned: Vec<String> = (0..LEN).map(|x| x.to_string()).collect();
+            let owned: [String; LEN] = owned.clone().try_into().unwrap();
+            
+            let borrowed: Vec<&str> = owned.iter().map(|x|x.as_str()).collect();
+            let borrowed: [&str; LEN] = borrowed.try_into().unwrap();
+
+            assert_eq!(borrowed.cloned_(), owned);
+        }
     }
 
     #[test]
@@ -194,6 +341,12 @@ mod tests {
             [0;3],
             [0;16],
             [0;32],
+        }
+
+        #[cfg(feature = "const_generics")]
+        into_array_tests! {
+            [0;33],
+            [0;65],
         }
     }
 }
