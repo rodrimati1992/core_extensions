@@ -73,7 +73,7 @@ pub unsafe trait MarkerType: Copy + Sized {
 
 unsafe impl<T: ?Sized> MarkerType for PhantomData<T> {}
 
-#[cfg(rust_1_29)]
+#[cfg(rust_1_22)]
 unsafe impl<T> MarkerType for ManuallyDrop<T> 
 where
     T: ?Sized + MarkerType
@@ -177,7 +177,7 @@ mod tests {
     type PD = PhantomData<u64>;
 
     #[test]
-    #[cfg(rust_1_29)]
+    #[cfg(rust_1_22)]
     fn test_manuallydrop(){
         assert_size_align!(ManuallyDrop<PD>);
         assert_size_align!(ManuallyDrop<(PD,PD)>);
