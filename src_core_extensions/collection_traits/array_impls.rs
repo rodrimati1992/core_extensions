@@ -274,7 +274,7 @@ mod tests {
             let refs = [&arr[0], &arr[1], &arr[2]];
             assert_eq!(limit.clone_count(), 0);
             assert_eq!(limit.drop_count(), 0);
-            let _ = std_::panic::catch_unwind(AssertUnwindSafe(||{
+            let _ = ::std_::panic::catch_unwind(AssertUnwindSafe(||{
                 let _ = refs.cloned_();
             })).unwrap_err();
             assert_eq!(limit.clone_count(), 2);

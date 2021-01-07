@@ -158,12 +158,11 @@ pub trait SliceExt<T> {
     /// ```
     /// use core_extensions::SliceExt;
     /// let list=vec![0,1,2,3,4,5];
-    /// let slice_0=&list[..0];
-    /// let slice_1=&list[3..];
-    ///
-    /// assert!( list.contains_slice(slice_0));
-    /// assert!( list.contains_slice(slice_1));
-    /// assert!(!list.contains_slice(&[]));
+    /// 
+    /// // Slices never contain empty slices
+    /// assert!(!list.contains_slice(&list[..0]));
+    /// assert!( list.contains_slice(&list[..1]));
+    /// assert!( list.contains_slice(&list[3..]));
     ///
     /// ```
     fn contains_slice(&self, other: &Self) -> bool;
@@ -173,7 +172,7 @@ pub trait SliceExt<T> {
     ///
     /// ```
     /// use core_extensions::SliceExt;
-    /// let list=vec![0,1,2,3,4,5];
+    /// let list = [0,1,2,3,4,5];
     /// let slice_0=&list[..0];
     /// let slice_1=&list[..];
     ///
@@ -210,13 +209,11 @@ pub trait SliceExt<T> {
     ///
     /// ```
     /// use core_extensions::SliceExt;
-    /// let list=vec![0,1,2,3,4,5];
-    /// let slice_0=&list[..0];
-    /// let slice_1=&list[3..];
+    /// let list = [0,1,2,3,4,5];
     ///
-    /// assert_eq!(list.get_offset_of_slice(slice_0),Some(0));
-    /// assert_eq!(list.get_offset_of_slice(slice_1),Some(3));
-    /// assert_eq!(list.get_offset_of_slice(&[])    ,None);
+    /// assert_eq!(list.get_offset_of_slice(&list[..0]), None);
+    /// assert_eq!(list.get_offset_of_slice(&list[1..]), Some(1));
+    /// assert_eq!(list.get_offset_of_slice(&list[3..]), Some(3));
     ///
     /// ```
     fn get_offset_of_slice(&self, other: &Self) -> Option<usize>;

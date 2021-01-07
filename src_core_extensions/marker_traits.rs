@@ -5,7 +5,7 @@
 
 use std_::marker::PhantomData;
 
-#[cfg(rust_1_29)]
+#[cfg(rust_1_22)]
 use std_::mem::ManuallyDrop;
 
 #[allow(dead_code)]
@@ -76,7 +76,7 @@ unsafe impl<T: ?Sized> MarkerType for PhantomData<T> {}
 #[cfg(rust_1_22)]
 unsafe impl<T> MarkerType for ManuallyDrop<T> 
 where
-    T: ?Sized + MarkerType
+    T: MarkerType
 {}
 
 unsafe impl MarkerType for () {}
