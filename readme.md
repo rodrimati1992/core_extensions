@@ -30,13 +30,13 @@ using a build script to automatically enable features from newer versions.
 
 # Cargo Features
 
-- "std":Enables standard library support.Enabled by default.
+- `"std"`:Enables standard library support.Enabled by default.
 
-- "serde_":Enables serde support.Disabled by default.
+- `"serde_"`:Enables serde support.Disabled by default.
 
-- "typenum":Enables trait impls for typenum types.Disabled by default.
+- `"typenum"`:Enables trait impls for typenum types.Disabled by default.
 
-- "colltraits":Enables trait impls for the collection traits in the `collection_traits` module.
+- `"colltraits"`:Enables trait impls for the collection traits in the `collection_traits` module.
 
 - `"const_generics"`: Enables impls of traits for all array lengths, requires versions of Rust where const generics are stable.
 
