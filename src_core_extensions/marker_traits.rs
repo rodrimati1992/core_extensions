@@ -5,7 +5,6 @@
 
 use std_::marker::PhantomData;
 
-#[cfg(rust_1_29)]
 use std_::mem::ManuallyDrop;
 
 #[allow(dead_code)]
@@ -68,7 +67,6 @@ pub unsafe trait MarkerType: Copy + Sized {
 
 unsafe impl<T: ?Sized> MarkerType for PhantomData<T> {}
 
-#[cfg(rust_1_29)]
 unsafe impl<T> MarkerType for ManuallyDrop<T> 
 where
     T: ?Sized + MarkerType
@@ -149,7 +147,6 @@ mod tests {
     type PD = PhantomData<u64>;
 
     #[test]
-    #[cfg(rust_1_29)]
     fn test_manuallydrop(){
         assert_size_align!(ManuallyDrop<PD>);
         assert_size_align!(ManuallyDrop<(PD,PD)>);

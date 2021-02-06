@@ -3,14 +3,12 @@
 //!
 //!
 
-#[cfg(rust_1_24)]
 use std_::cell::{Cell,RefCell,UnsafeCell};
 
 use std_::cmp::Reverse;
 
 use std_::marker::PhantomData;
 
-#[cfg(rust_1_32)]
 use std_::mem::ManuallyDrop;
 
 use std_::num::Wrapping;
@@ -100,10 +98,6 @@ macro_rules! impl_array_const_default {
         )*
     };
     ($($args:tt)*) => (
-        #[cfg(not(rust_1_22))]
-        impl_array_const_default_inner!{[Copy] $($args)* }
-
-        #[cfg(rust_1_22)]
         impl_array_const_default_inner!{[Sized] $($args)* }
     );
 }
@@ -162,10 +156,6 @@ impl_array_const_default! {
 
 macro_rules! impl_tuple_const_default {
     ($($ty:ident),*) => (
-        #[cfg(not(rust_1_22))]
-        impl_tuple_const_default!{@inner [Copy] $($ty),* }
-
-        #[cfg(rust_1_22)]
         impl_tuple_const_default!{@inner [Sized] $($ty),* }
     );
     (@inner [ $extra_bounds:ident ] $($ty:ident),*)=>{
@@ -232,18 +222,11 @@ impl_const_default!{
     for['a,T:'a] &'a [T] = &[],
 }
 
-#[cfg(not(rust_1_22))]
-impl_const_default!{
-    for[T: ConstDefault + Copy] Wrapping<T> = Wrapping(T::DEFAULT),
-    for[T: ConstDefault + Copy] Reverse<T> = Reverse(T::DEFAULT),
-}
-#[cfg(rust_1_22)]
 impl_const_default!{
     for[T: ConstDefault] Wrapping<T> = Wrapping(T::DEFAULT),
     for[T: ConstDefault] Reverse<T> = Reverse(T::DEFAULT),
 }
 
-#[cfg(rust_1_24)]
 impl_const_default!{
     for[] AtomicUsize = AtomicUsize::new(0),
     for[] AtomicIsize = AtomicIsize::new(0),
@@ -253,31 +236,20 @@ impl_const_default!{
     for[T: ConstDefault] UnsafeCell<T> = UnsafeCell::new(T::DEFAULT),
 }
 
-// Using the `*_INIT` constants conditionally to avoid deprecation warnings
-#[cfg(not(rust_1_24))]
-impl_const_default!{
-    for[] AtomicUsize = atomic::ATOMIC_USIZE_INIT,
-    for[] AtomicIsize = atomic::ATOMIC_ISIZE_INIT,
-    for[] AtomicBool = atomic::ATOMIC_BOOL_INIT,
-}
-
-#[cfg(rust_1_25)]
 impl_const_default!{
     for[] ::std_::time::Duration = ::std_::time::Duration::from_secs(0),
 }
 
-#[cfg(rust_1_26)]
 impl_const_default!{
     for[] i128=0,
     for[] u128=0,
 }
 
-#[cfg(rust_1_32)]
 impl_const_default!{
     for[T: ConstDefault] ManuallyDrop<T> = ManuallyDrop::new(T::DEFAULT),
 }
 
-#[cfg(all(rust_1_34, not(target_arch = "powerpc")))]
+#[cfg(not(target_arch = "powerpc"))]
 impl_const_default!{
     for[] atomic::AtomicI8 = atomic::AtomicI8::new(0),
     for[] atomic::AtomicU8 = atomic::AtomicU8::new(0),
@@ -289,7 +261,7 @@ impl_const_default!{
     for[] atomic::AtomicU64 = atomic::AtomicU64::new(0),
 }
 
-#[cfg(all(feature = "alloc",rust_1_39))]
+#[cfg(feature = "alloc")]
 impl_const_default!{
     for[T] ::alloc_::vec::Vec<T> = Self::new(),
     for[] ::alloc_::string::String = Self::new(),
@@ -306,7 +278,6 @@ mod tests{
     #[derive(Debug,PartialEq)]
     struct NonCopy;
 
-    #[cfg(rust_1_22)]
     impl ConstDefault for NonCopy{
         const DEFAULT:Self=NonCopy;
     }
@@ -353,7 +324,6 @@ mod tests{
     }
 
     #[test]
-    #[cfg(rust_1_22)]
     fn for_rust_1_22(){
         assert_eq!(const_def_assert!([NonCopy;2]), [NonCopy,NonCopy]);
         
@@ -366,7 +336,6 @@ mod tests{
         assert_eq!(const_def_assert!(Reverse<NonCopy>).0, NonCopy);
     }
     #[test]
-    #[cfg(rust_1_24)]
     fn for_rust_1_24(){
         assert_eq!(const_def_assert!(Cell<Option<()>>).into_inner(), None);
         assert_eq!(const_def_assert!(RefCell<Option<()>>).into_inner(), None);
@@ -374,7 +343,6 @@ mod tests{
     }
 
     #[test]
-    #[cfg(rust_1_34)]
     fn for_rust_1_34(){
         assert_eq!(const_def_assert!(atomic::AtomicU8).into_inner(), 0);
         assert_eq!(const_def_assert!(atomic::AtomicI8).into_inner(), 0);
@@ -383,7 +351,6 @@ mod tests{
     }
 
     #[test]
-    #[cfg(rust_1_25)]
     fn for_rust_1_25(){
         use std_::time::Duration;
 
@@ -391,14 +358,12 @@ mod tests{
     }
 
     #[test]
-    #[cfg(rust_1_26)]
     fn for_rust_1_26(){
         assert_eq!(const_def_assert!(i128), 0);
         assert_eq!(const_def_assert!(u128), 0);
     }
 
     #[test]
-    #[cfg(rust_1_32)]
     fn for_rust_1_32(){
         assert_eq!(const_def_assert!(ManuallyDrop<u8>), ManuallyDrop::new(0));
         assert_eq!(const_def_assert!(ManuallyDrop<bool>), ManuallyDrop::new(false));
@@ -406,7 +371,7 @@ mod tests{
     }
 
     #[test]
-    #[cfg(all(feature = "alloc",rust_1_39))]
+    #[cfg(feature = "alloc")]
     fn for_rust_1_39(){
         use alloc_::vec::Vec;
         use alloc_::string::String;

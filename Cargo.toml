@@ -37,18 +37,13 @@ rand_derive = "0.3.1"
 version = "1.0"
 default-features = false
 optional=true
+features = ["derive"]
 
 [dependencies.typenum]
 version="1.10"
 features=["no_std"]
 default-features = false
 optional=true
-
-
-
-[build-dependencies]
-rustc_version = "0.2.3"
-
 
 [lib]
 name = "core_extensions"

@@ -587,7 +587,7 @@ pub trait StringExt: Borrow<str> {
     #[cfg(any(core_str_methods, feature = "alloc"))]
     fn line_indentation(&self) -> usize {
         let this = self.borrow().lines().next().unwrap_or("");
-        this.len() - this.trim_start_().len()
+        this.len() - this.trim_start().len()
     }
 
     /// The minimum indentation of the string.
@@ -635,41 +635,6 @@ pub trait StringExt: Borrow<str> {
 }
 
 impl<T: ?Sized> StringExt for T where T: Borrow<str> {}
-
-//----------------------------------------------------------------------------------------
-
-
-pub(crate) trait StrMethods: Borrow<str> {
-    #[cfg(any(core_str_methods, feature = "alloc"))]
-    fn trim_start_(&self)->&str{
-        let this=self.borrow();
-        #[cfg(not(trim_left_right_method_deprecation))]
-        {
-            this.trim_left()
-        }
-        #[cfg(trim_left_right_method_deprecation)]
-        {
-            this.trim_start()
-        }
-    }
-    #[cfg(any(core_str_methods, feature = "alloc"))]
-    fn trim_end_(&self)->&str{
-        let this=self.borrow();
-        #[cfg(not(trim_left_right_method_deprecation))]
-        {
-            this.trim_right()
-        }
-        #[cfg(trim_left_right_method_deprecation)]
-        {
-            this.trim_end()
-        }
-    }
-}
-
-impl<T> StrMethods for T 
-where T:Borrow<str>+?Sized
-{}
-
 
 //----------------------------------------------------------------------------------------
 

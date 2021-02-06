@@ -11,9 +11,6 @@ use integer_extensions::ToTime;
 #[allow(unused_imports)]
 use SelfOps;
 
-#[cfg(feature="serde_")]
-mod serde_duration_expanded_impls;
-
 
 /// Wrapper type for ::std::time::Duration which is
 /// specialized for measuring code execution time.
@@ -86,9 +83,16 @@ impl MyDuration {
 #[cfg(feature = "serde_")]
 mod duration_serde{
     use super::*;
-    use super::serde_duration_expanded_impls::SerdeDuration;
 
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+
+    #[derive(Serialize, Deserialize)]
+    struct SerdeDuration {
+        subsec_nanos:u32,
+        seconds:u64,
+    }
+
 
     impl<'de> Deserialize<'de> for MyDuration {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

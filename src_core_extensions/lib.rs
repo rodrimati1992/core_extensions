@@ -157,30 +157,25 @@
 #![deny(unused_must_use)]
 #![no_std]
 
-#[cfg(any(feature="std",all(not(rust_1_36),feature="alloc")))]
+#[cfg(feature="std")]
 #[macro_use]
 #[doc(hidden)]
 pub extern crate std as std_;
 
-#[cfg(not(
-    any(feature="std",all(not(rust_1_36),feature="alloc"))
-))]
+#[cfg(not(feature="alloc"))]
 #[doc(hidden)]
 pub extern crate core as std_;
 
-#[cfg(all(rust_1_36,feature = "alloc"))]
+#[cfg(feature="alloc")]
 #[doc(hidden)]
 #[macro_use]
 pub extern crate alloc;
 
-#[cfg(all(not(feature = "std"),rust_1_36,feature = "alloc"))]
+#[cfg(all(not(feature = "std"),feature = "alloc"))]
 #[doc(hidden)]
 pub use alloc as alloc_;
 
-#[cfg(any(
-    all(not(rust_1_36),feature = "alloc"),
-    all(rust_1_36,feature = "std"),
-))]
+#[cfg(feature = "std")]
 #[doc(hidden)]
 pub use std_ as alloc_;
 
