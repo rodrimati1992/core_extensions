@@ -86,3 +86,31 @@ macro_rules! matches{
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/// For implementing the `TransparentNewtype` trait.
+#[macro_export]
+macro_rules! impl_transparent_newtype {
+    ($S:ty) => (
+        #[inline(always)]
+        fn from_inner_raw(from: *const <$S as $crate::TransparentNewtype>::Inner) -> *const $S {
+            from as _
+        }
+
+        #[inline(always)]
+        fn from_inner_raw_mut(from: *mut <$S as $crate::TransparentNewtype>::Inner) -> *mut $S {
+            from as _
+        }
+
+        fn as_inner_raw(this: *const $S) -> *const <$S as $crate::TransparentNewtype>::Inner {
+            this as _
+        }
+
+        fn as_inner_raw_mut(this: *mut $S) -> *mut <$S as $crate::TransparentNewtype>::Inner {
+            this as _
+        }
+    )
+}
+
+
+

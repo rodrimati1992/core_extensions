@@ -8,36 +8,6 @@ use std_::cmp::Ordering;
 use std_::iter::FromIterator;
 use std_::mem;
 
-/// Iterator that infinitelly produces a value by calling an `impl FnMut()->T`.
-///
-/// Equivalent to [::std::iter::RepeatWith],which is stabilized in Rust 1.28.
-///
-/// # Example
-///
-/// ```
-/// use core_extensions::iterators::Loop;
-///
-/// let mut i=0;
-/// assert_eq!(
-///     Loop(move||{ i+=1; i }).take(5).collect::<Vec<_>>() ,
-///     vec![1,2,3,4,5]
-/// );
-///
-/// ```
-#[derive(Copy, Clone)]
-pub struct Loop<F>(pub F);
-
-impl<F, T> Iterator for Loop<F>
-where
-    F: FnMut() -> T,
-{
-    type Item = T;
-    fn next(&mut self) -> Option<T> {
-        Some((self.0)())
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 
 /// Iterator,lazy version of [::std::iter::Once],only evaluating the item when
 /// [Iterator::next] is called.
@@ -393,14 +363,9 @@ impl<I> IteratorExt for I where I: Iterator {}
 /// This can construct an Iterator (with IntoIterator::into_iter)
 /// multiple times if the closure is Copy.
 ///
-/// Closures can be Copy and/or Clone since Rust 1.26.
-///
 /// # Example
 ///
-/// This example only runs from Rust 1.26 onwards,
-///
-#[cfg_attr(not(enable_copy_closures), doc = r#" ```ignore"#)]
-#[cfg_attr(enable_copy_closures, doc = " ```")]
+/// ```rust
 /// use core_extensions::iterators::IterConstructor;
 ///
 /// let list=vec!["hello","world"];

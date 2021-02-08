@@ -1,6 +1,9 @@
 //! Miscelaneous utility functions
 
-use std_::mem::{self,ManuallyDrop};
+#[cfg(feature = "alloc")]
+use alloc_::vec::Vec;
+
+use std_::mem::{self, ManuallyDrop};
 
 /// Allows transmuting between types of different sizes.
 ///
@@ -11,6 +14,21 @@ use std_::mem::{self,ManuallyDrop};
 pub unsafe fn transmute_ignore_size<T, U>(v: T) -> U {
     let v=ManuallyDrop::new(v);
     mem::transmute_copy::<T, U>(&v)
+}
+
+/// Transmutes a `Vec<T>` into a `Vec<U>`
+///
+/// # Safety
+///
+/// This function has the same safety requirements as [`std::mem::transmute`] 
+/// regarding transmuting from `T` to `U`.
+///
+/// [`std::mem::transmute`]: https://doc.rust-lang.org/std/mem/fn.transmute.html
+pub unsafe fn transmute_vec<T, U>(vector: Vec<T>) -> Vec<U> {
+    let len = vector.len();
+    let capacity = vector.capacity();
+    let mut vector = ManuallyDrop::new(vector);
+    Vec::from_raw_parts(vector.as_mut_ptr() as *mut U, len, capacity)
 }
 
 #[inline(always)]
@@ -32,8 +50,7 @@ pub fn as_slice_mut<T>(v: &mut T) -> &mut [T] {
 ///
 /// For a version which doesn't panic in debug builds but instead always causes
 /// undefined behaviour when reached use
-/// [unreachable_unchecked](::std::hint::unreachable_unchecked)
-/// which was stabilized in Rust 1.27.
+/// [unreachable_unchecked](::std::hint::unreachable_unchecked).
 ///
 /// # Safety
 ///
@@ -101,7 +118,6 @@ pub unsafe fn impossible() -> ! {
     }
     #[cfg(not(debug_assertions))]
     {
-        use void::Void;
-        match *(1 as *const Void) {}
+        std::hint::unreachable_unchecked()
     }
 }

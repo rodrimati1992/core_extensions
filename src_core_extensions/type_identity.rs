@@ -1,13 +1,13 @@
 use std_::mem;
 
 #[cfg(feature = "alloc")]
-use alloc_::boxed::Box;
-#[cfg(feature = "alloc")]
-use alloc_::rc::Rc;
-#[cfg(feature = "alloc")]
-use alloc_::sync::Arc;
+use alloc_::{
+    boxed::Box,
+    rc::Rc,
+    sync::Arc,
+};
 
-use utils::transmute_ignore_size;
+use crate::utils::{self, transmute_ignore_size};
 
 /// Allows converting `Self` to
 /// [`Self::Type`](./trait.Identity.html#associatedtype.Type)
@@ -127,19 +127,19 @@ pub trait TypeIdentity {
     #[cfg(feature = "alloc")]
     #[inline(always)]
     fn into_type_box(self: Box<Self>) -> Box<Self::Type> {
-        unsafe { transmute_ignore_size(self) }
+        unsafe { utils::transmute_ignore_size(self) }
     }
     /// Converts an Arc back to the original type.
     #[cfg(feature = "alloc")]
     #[inline(always)]
-    fn into_type_arc(this: Arc<Self>) -> Arc<Self::Type> {
-        unsafe { transmute_ignore_size(this) }
+    fn into_type_arc(self: Arc<Self>) -> Arc<Self::Type> {
+        unsafe { utils::transmute_ignore_size(self) }
     }
     /// Converts an Rc back to the original type.
     #[cfg(feature = "alloc")]
     #[inline(always)]
-    fn into_type_rc(this: Rc<Self>) -> Rc<Self::Type> {
-        unsafe { transmute_ignore_size(this) }
+    fn into_type_rc(self: Rc<Self>) -> Rc<Self::Type> {
+        unsafe { utils::transmute_ignore_size(self) }
     }
 
     /// Converts a value back to the original type.
@@ -166,19 +166,19 @@ pub trait TypeIdentity {
     #[cfg(feature = "alloc")]
     #[inline(always)]
     fn from_type_box(this: Box<Self::Type>) -> Box<Self> {
-        unsafe { transmute_ignore_size(this) }
+        unsafe { utils::transmute_ignore_size(this) }
     }
     /// Converts an Arc back to the original type.
     #[cfg(feature = "alloc")]
     #[inline(always)]
     fn from_type_arc(this: Arc<Self::Type>) -> Arc<Self> {
-        unsafe { transmute_ignore_size(this) }
+        unsafe { utils::transmute_ignore_size(this) }
     }
     /// Converts an Rc back to the original type.
     #[cfg(feature = "alloc")]
     #[inline(always)]
     fn from_type_rc(this: Rc<Self::Type>) -> Rc<Self> {
-        unsafe { transmute_ignore_size(this) }
+        unsafe { utils::transmute_ignore_size(this) }
     }
 
     #[doc(hidden)]

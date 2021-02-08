@@ -20,7 +20,8 @@ include = [
 travis-ci = { repository =  "rodrimati1992/core_extensions/" }
 
 [features]
-default = ["std","serde_"]
+# TODO: comment all of this out
+default = ["std", "rust_1_44"]
 
 std=["alloc"]
 alloc=[]
@@ -28,6 +29,10 @@ alloc=[]
 serde_=["serde"]
 colltraits=[]
 
+rust_1_44 = []
+
+# Enables indicators in the docs for what features are required to enable items.
+docsrs = []
 
 [dev-dependencies]
 rand = "0.4.6"

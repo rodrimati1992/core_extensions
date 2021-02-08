@@ -222,6 +222,8 @@ pub mod type_level_bool;
 pub mod utils;
 pub mod void;
 
+mod rust_version_assert;
+
 /// The items from this crate which are almost always used.
 pub mod prelude {
     #[doc(inline)]
@@ -264,7 +266,7 @@ pub use self::phantom_variances::{
     InvariantPhantom, InvariantRefPhantom, VariantDropPhantom, VariantPhantom,
 };
 pub use self::slices::{ValSliceExt,SliceExt};
-pub use self::transparent_newtype::TransparentNewtype;
+pub use self::transparent_newtype::{TransparentNewtype, TransparentNewtypeExt};
 pub use self::try_from::{TryFrom, TryInto};
 #[doc(inline)]
 pub use self::type_identity::{TIdentity, TypeIdentity};
