@@ -101,7 +101,7 @@ where
 {
     type Item = KeySlice<'a, T, U>;
     fn next(&mut self) -> Option<Self::Item> {
-        next_split(&mut self.mapper, &mut self.s,try_opt!(self.last_left.as_mut()))
+        next_split(&mut self.mapper, &mut self.s,self.last_left.as_mut()?)
     }
     fn size_hint(&self)->(usize,Option<usize>){
         let s=self.s;
@@ -115,7 +115,7 @@ where
     P: FnMut(&'a T) -> U,
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        next_rsplit(&mut self.mapper, &mut self.s, try_opt!(self.last_right.as_mut()))
+        next_rsplit(&mut self.mapper, &mut self.s, self.last_right.as_mut()?)
     }
 }
 
@@ -139,7 +139,7 @@ where
 {
     type Item = KeySlice<'a, T, U>;
     fn next(&mut self) -> Option<Self::Item> {
-        next_rsplit(&mut self.mapper, &mut self.s, try_opt!(self.last_right.as_mut()))
+        next_rsplit(&mut self.mapper, &mut self.s, self.last_right.as_mut()?)
     }
     fn size_hint(&self)->(usize,Option<usize>){
         let s=self.s;
@@ -153,7 +153,7 @@ where
     P: FnMut(&'a T) -> U,
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        next_split(&mut self.mapper, &mut self.s, try_opt!(self.last_left.as_mut()))
+        next_split(&mut self.mapper, &mut self.s, self.last_left.as_mut()?)
     }
 }
 

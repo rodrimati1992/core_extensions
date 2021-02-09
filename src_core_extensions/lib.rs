@@ -194,9 +194,6 @@ extern crate rand;
 #[macro_use]
 extern crate rand_derive;
 
-#[macro_use]
-mod internal_macros;
-
 pub mod bool_extensions;
 pub mod callable;
 pub mod collection_traits;
@@ -205,8 +202,6 @@ pub mod integer_extensions;
 pub mod iterators;
 pub mod macros;
 pub mod marker_traits;
-pub mod maybe_unsafe;
-#[cfg(any(enable_duration, feature = "std"))]
 pub mod measure_time;
 pub mod option_result_ext;
 pub mod phantom_variances;

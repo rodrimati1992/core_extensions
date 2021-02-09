@@ -7,43 +7,6 @@ use type_identity::TypeIdentity;
 
 /// Extension trait for [Option].
 pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
-    /// Allows using Option::filter before Rust 1.27.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use core_extensions::OptionExt;
-    ///
-    /// let text="what the ";
-    ///
-    /// assert_eq!(Some(text).filter_(|x| x.len()==9 ).is_some(),true);
-    ///
-    /// assert_eq!(
-    ///     text.split_whitespace().next()
-    ///         .filter_(|x| x.len()==4 ),
-    ///     Some("what"));
-    ///
-    /// assert_eq!(Some(text).filter_(|x| x.len()==20 ),None);
-    ///
-    /// assert_eq!(
-    ///     text.split_whitespace().next()
-    ///         .filter_(|x| x.len()==10 ),
-    ///     None);
-    ///
-    /// ```
-    ///
-    #[inline]
-    fn filter_<F>(self, predicate: F) -> Option<T>
-    where
-        F: FnOnce(&T) -> bool,
-    {
-        if let Some(v) = self.into_type_val() {
-            if predicate(&v) {
-                return Some(v);
-            }
-        }
-        None
-    }
     /// Maps as reference to the contents.
     ///
     /// # Example
@@ -145,12 +108,13 @@ impl error::Error for IsNoneError {
 ////////////////////////////////////////////////////////////////////////////////////
 
 /// Converts a type containing options into an option containing the type
+/// 
+/// # Example
+/// 
+/// TODO
+/// 
 pub trait ToOption {
     /// The type in which the `Option`s are unwrapped.
-    ///
-    /// Example:
-    /// Self==(Option<i32>,Option<i32>)
-    /// type Output=(i32,i32);
     type Output;
     /// Performs the conversion
     fn to_option(self) -> Option<Self::Output>;
@@ -163,45 +127,20 @@ impl<T> ToOption for Option<T> {
     }
 }
 
-impl<T> ToOption for (Option<T>, Option<T>) {
-    type Output = (T, T);
+macro_rules! for_tuple {
+    ($($t:ident $i:tt),*) => {
+        impl<$($t,)*> ToOption for ($(Option<$t>,)*) {
+            type Output = ($($t,)*);
 
-    fn to_option(self) -> Option<Self::Output> {
-        Some((try_opt!(self.0), try_opt!(self.1)))
-    }
+            fn to_option(self) -> Option<Self::Output> {
+                Some(($(self.$i?,)*))
+            }
+        }
+    };
 }
 
-impl<T> ToOption for (Option<T>, Option<T>, Option<T>) {
-    type Output = (T, T, T);
-
-    fn to_option(self) -> Option<Self::Output> {
-        Some((try_opt!(self.0), try_opt!(self.1), try_opt!(self.2)))
-    }
-}
-
-impl<T> ToOption for (Option<T>, Option<T>, Option<T>, Option<T>) {
-    type Output = (T, T, T, T);
-
-    fn to_option(self) -> Option<Self::Output> {
-        Some((
-            try_opt!(self.0),
-            try_opt!(self.1),
-            try_opt!(self.2),
-            try_opt!(self.3),
-        ))
-    }
-}
-
-impl<T> ToOption for (Option<T>, Option<T>, Option<T>, Option<T>, Option<T>) {
-    type Output = (T, T, T, T, T);
-
-    fn to_option(self) -> Option<Self::Output> {
-        Some((
-            try_opt!(self.0),
-            try_opt!(self.1),
-            try_opt!(self.2),
-            try_opt!(self.3),
-            try_opt!(self.4),
-        ))
-    }
-}
+for_tuple!{A 0}
+for_tuple!{A 0, B 1}
+for_tuple!{A 0, B 1, C 2}
+for_tuple!{A 0, B 1, C 2, D 3}
+for_tuple!{A 0, B 1, C 2, D 3, E 4}

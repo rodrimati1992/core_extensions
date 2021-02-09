@@ -709,7 +709,7 @@ mod tests {
         assert_eq!(
             vec![(0, "What"), (5, "is"), (8, "this?")],
             text.split_whitespace()
-                .filter_map(|w| Some((try_opt!(w.get_offset_inside_of(text)), w)))
+                .filter_map(|w| Some((w.get_offset_inside_of(text)?, w)))
                 .collect::<Vec<_>>()
         );
     }

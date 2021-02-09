@@ -114,7 +114,7 @@ where
     fn next(&mut self) -> Option<I::Item> {
         use self::ReplaceNthState as RNS;
 
-        let mut ret = try_opt!(self.iter.next());
+        let mut ret = self.iter.next()?;
 
         let replace = match self.state {
             RNS::Unreplaced(ref mut unreplaced) => {
@@ -137,7 +137,7 @@ where
     fn nth(&mut self, nth: usize) -> Option<I::Item> {
         use self::ReplaceNthState as RNS;
 
-        let mut ret = try_opt!(self.iter.nth(nth));
+        let mut ret = self.iter.nth(nth)?;
 
         let mut replace = Ordering::Greater;
         if let RNS::Unreplaced(ref mut unreplaced) = self.state {
