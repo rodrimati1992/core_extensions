@@ -10,7 +10,7 @@
 //! ```
 //! use std::mem;
 //! use std::marker::PhantomData;
-//! use core_extensions::VariantPhantom;
+//! use core_extensions::CovariantPhantom;
 //! pub use core_extensions::type_level_bool::{
 //!     Boolean as PrivilegeLevel,
 //!     False as Unprivileged ,
@@ -22,7 +22,7 @@
 //! #[derive(Debug)]
 //! struct User<P>{
 //!     name:String,
-//!     privilege_level:VariantPhantom<P>,
+//!     privilege_level:CovariantPhantom<P>,
 //! }
 //!
 //! impl<P:PrivilegeLevel> User<P>{
@@ -71,7 +71,7 @@
 //!
 //!
 
-use VariantPhantom;
+use CovariantPhantom;
 
 use std_::fmt::Debug;
 use std_::ops;
@@ -165,7 +165,7 @@ pub mod internals {
 
     #[doc(hidden)]
     /// Whether `B` is True or False.Usable for cases where either is required
-    pub struct IsTrueOrFalse<B: Boolean>(VariantPhantom<B>);
+    pub struct IsTrueOrFalse<B: Boolean>(CovariantPhantom<B>);
     impl BooleanOp for IsTrueOrFalse<True> {
         type Value = True;
     }
@@ -226,7 +226,7 @@ pub mod internals {
     }
 
     /// Struct representing a type-level if.
-    pub struct IfElseOp<Cond, Then, Else>(VariantPhantom<(Cond, Then, Else)>);
+    pub struct IfElseOp<Cond, Then, Else>(CovariantPhantom<(Cond, Then, Else)>);
     impl<Then, Else> BooleanOp for IfElseOp<True, Then, Else> {
         type Value = Then;
     }
@@ -403,7 +403,7 @@ pub type NonImp<L, R> = And<L, Not<R>>;
 /// this limitation will be lifted once specialization is stable.
 ///
 /// ```
-/// use core_extensions::VariantPhantom;
+/// use core_extensions::CovariantPhantom;
 /// use core_extensions::type_level_bool::{IfElse,Boolean,False,True};
 /// use core_extensions::type_level_bool::internals::{IfElseOp,BooleanOp};
 ///

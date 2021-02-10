@@ -2,11 +2,6 @@
 
 use std_::marker::PhantomData;
 
-use phantom_variances::*;
-use TypeIdentity;
-
-// use std::mem;
-
 /// Extension trait for every type.
 ///
 /// The most importand methods in this are:
@@ -27,90 +22,7 @@ use TypeIdentity;
 ///      Alternative syntax for the standard conversion methods.
 ///
 pub trait SelfOps {
-    /// Represents Self by using a VariantPhantom<Self>,
-    /// using the syntax `Type::T` to pass it in methods with `_:VariantPhantom<T>` parameters.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use core_extensions::{SelfOps,IteratorExt};
-    ///
-    /// assert_eq!((0..4).collect_(Vec::T       ),vec![0,1,2,3]);
-    /// assert_eq!((0..4).collect_(Vec::<_>::T  ),vec![0,1,2,3]);
-    /// assert_eq!((0..4).collect_(Vec::<i32>::T),vec![0,1,2,3]);
-    /// ```
-    ///
-    ///
-    const T: VariantPhantom<Self> = PhantomData;
-
-    /// Represents Self by using a VariantDropPhantom<Self>,for specialized cases.
-    ///
-    /// For advanced use cases when one needs a drop check on a PhantomData.
-    const T_D: VariantDropPhantom<Self> = PhantomData;
-
-    #[inline(always)]
-    /// Asserts that `other` is the same type as `self`.
-    fn assert_ty(self, _other: VariantPhantom<Self>) -> Self
-    where
-        Self: Sized,
-    {
-        self
-    }
-
-    #[inline(always)]
-    /// Asserts that `other` is the same type as `self`.
-    fn assert_ty_ref(&self, _other: VariantPhantom<Self>) -> &Self
-    where
-        Self: Sized,
-    {
-        self
-    }
-
-    #[inline(always)]
-    /// Asserts that `other` is the same type as `self`.
-    fn assert_ty_mut(&mut self, _other: VariantPhantom<Self>) -> &mut Self
-    where
-        Self: Sized,
-    {
-        self
-    }
-
-    #[inline(always)]
-    /// Equivalent to [SelfOps::T](#associatedconstant.T),as a method.
-    ///
-    /// Reasons for calling this method instead:
-    ///
-    /// - The type is longer that the code required to instantiate it.
-    ///
-    /// - To assert that 2 variables have the same type,using `var0.ty_()==var1.ty_()`.
-    ///
-    fn ty_(&self) -> VariantPhantom<Self> {
-        PhantomData
-    }
-
-    #[inline(always)]
-    /// Equivalent to [Self::ty_],for specialized cases.
-    ///
-    /// For specialized cases when one needs a drop check on a PhantomData.
-    fn ty_d(&self) -> VariantDropPhantom<Self> {
-        PhantomData
-    }
-
-    #[inline(always)]
-    /// Equivalent to [Self::ty_] with an invariant type.
-    fn ty_inv(&self) -> InvariantPhantom<Self> {
-        PhantomData
-    }
-
-    #[inline(always)]
-    /// Equivalent to [Self::ty_] with an invariant lifetime.
-    fn ty_inv_ref(&self) -> InvariantRefPhantom<Self> {
-        PhantomData
-    }
-
-    /// Identity comparison to another value of the same type.
-    ///
-    /// Comparing the address of `self` with the address of `other`.
+    /// Compares the address of `self` with the address of `other`.
     ///
     /// # Example
     ///
@@ -220,11 +132,13 @@ pub trait SelfOps {
     ///
     /// ```
     /// use core_extensions::SelfOps;
+    ///
     /// let list=Vec::new().mutated(|v|{
     ///     v.push("This");
     ///     v.push("is");
     ///     v.push("[redacted]");
     /// });
+    ///
     /// assert_eq!(list.join(" "),"This is [redacted]");
     ///
     /// ```
@@ -255,10 +169,12 @@ pub trait SelfOps {
     ///
     /// ```
     /// use core_extensions::SelfOps;
+    ///
     /// let v="1234"
     ///     .parse()
     ///     .observe(|d|assert_eq!(&Ok(1234),d))
     ///     .unwrap();
+    ///
     /// assert_eq!(v,1234);
     /// ```
     ///
@@ -272,12 +188,7 @@ pub trait SelfOps {
         self
     }
 
-    /// Performs a conversion using Into.
-    ///
-    /// This method is defined to allow using the `.into_(String::T)` syntax.
-    ///
-    /// type::T is an associated constant defined for every type
-    /// [here](#associatedconstant.T).
+    /// Performs a conversion using `Into`.
     ///
     /// # Example
     /// ```
@@ -285,19 +196,20 @@ pub trait SelfOps {
     /// use std::borrow::Cow;
     ///
     /// let word="hello";
-    /// assert_eq!(word,word.into_(Cow::T));
-    /// assert_eq!(word,word.into_(Cow::<str>::T));
-    /// assert_eq!(word,word.into_(String::T));
+    ///
+    /// assert_eq!(word, word.into_::<Cow<'_, _>>());
+    /// assert_eq!(word, word.into_::<Cow<'_, str>>());
+    /// assert_eq!(word, word.into_::<String>());
     ///
     /// let vec_=||vec![0,1,2,3];
-    /// assert_eq!(vec_().into_(Cow::T)           ,vec_());
-    /// assert_eq!(vec_().into_(Cow::<[usize]>::T),vec_());
-    /// assert_eq!(vec_().into_(Vec::T)           ,vec_());
-    /// assert_eq!(vec_().into_(Vec::<usize>::T)  ,vec_());
+    /// assert_eq!(vec_().into_::<Cow<'_, _>>() , vec_());
+    /// assert_eq!(vec_().into_::<Cow<'_, _>>() , vec_());
+    /// assert_eq!(vec_().into_::<Vec<_>>()     , vec_());
+    /// assert_eq!(vec_().into_::<Vec<_>>()     , vec_());
     ///
     /// ```
     #[inline(always)]
-    fn into_<T>(self, _: VariantPhantom<T>) -> T
+    fn into_<T>(self) -> T
     where
         Self: Into<T>,
     {
@@ -310,7 +222,9 @@ pub trait SelfOps {
     /// # Example
     /// ```
     /// use core_extensions::SelfOps;
+    ///
     /// let s="the path";
+    ///
     /// assert_eq!( s,s.as_ref_::<str>());
     /// ```
     #[inline(always)]
@@ -326,8 +240,10 @@ pub trait SelfOps {
     /// # Example
     /// ```
     /// use core_extensions::SelfOps;
+    ///
     /// let mut s_0=vec![1,2,3,4];
     /// let mut s_1=s_0.clone();
+    ///
     /// assert_eq!(s_1,s_0.as_mut_::<[_]>());
     /// ```
     #[inline(always)]
@@ -350,6 +266,7 @@ pub trait SelfOps {
     ///
     /// buff.write_str("hello_").drop_();
     /// buff.write_str("world").drop_();
+    ///
     /// assert_eq!(buff,"hello_world");
     ///
     /// ```
@@ -363,11 +280,6 @@ pub trait SelfOps {
     #[doc(hidden)]
     #[allow(dead_code)]
     /// Prevents creating a trait object of this trait
-    fn _dummy_generic_method_preventing_trait_object<F>(self: &Self)
-    where
-        F: TypeIdentity<Type = Self>,
-    {
-
-    }
+    fn _dummy_generic_method_preventing_trait_object<F>(self: &Self) {}
 }
 impl<T: ?Sized> SelfOps for T {}

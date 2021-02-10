@@ -204,13 +204,12 @@ pub mod macros;
 pub mod marker_traits;
 pub mod measure_time;
 pub mod option_result_ext;
-pub mod phantom_variances;
+pub mod phantom;
 mod self_ops;
 pub mod slices;
 pub mod strings;
 pub mod transparent_newtype;
 pub mod try_from;
-mod type_panic;
 mod type_identity;
 pub mod type_asserts;
 pub mod type_level_bool;
@@ -234,10 +233,7 @@ pub mod prelude {
     pub use type_identity::{TIdentity, TypeIdentity};
 
     #[doc(inline)]
-    pub use phantom_variances::VariantPhantom;
-
-    #[doc(inline)]
-    pub use type_panic::TypePanic;
+    pub use phantom::CovariantPhantom;
 }
 
 pub use self::const_default_trait::ConstDefault;
@@ -245,9 +241,6 @@ pub use self::callable::{CallInto, CallMut, CallRef};
 #[doc(inline)]
 pub use self::self_ops::SelfOps;
 pub use self::strings::StringExt;
-
-#[doc(inline)]
-pub use type_panic::TypePanic;
 
 pub use self::bool_extensions::BoolExt;
 pub use self::integer_extensions::IntegerExt;
@@ -257,8 +250,10 @@ pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
 #[doc(inline)]
 pub use self::marker_traits::MarkerType;
 pub use self::option_result_ext::{OptionExt, ResultExt, ResultLike};
-pub use self::phantom_variances::{
-    InvariantPhantom, InvariantRefPhantom, VariantDropPhantom, VariantPhantom,
+pub use self::phantom::{
+    MakePhantomFn, AsPhantomData,
+    ContraVariantPhantom,
+    InvariantPhantom, InvariantRefPhantom, VariantDropPhantom, CovariantPhantom,
 };
 pub use self::slices::{ValSliceExt,SliceExt};
 pub use self::transparent_newtype::{TransparentNewtype, TransparentNewtypeExt};

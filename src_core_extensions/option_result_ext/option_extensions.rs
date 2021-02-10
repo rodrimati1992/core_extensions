@@ -33,7 +33,7 @@ pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
         T: 'a,
         F: FnOnce(&'a T) -> U,
     {
-        self.into_type_ref().as_ref().map(f)
+        self.as_type().as_ref().map(f)
     }
     /// Maps as mutable reference to the contents.
     ///
@@ -65,7 +65,7 @@ pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
         T: 'a,
         F: FnOnce(&'a mut T) -> U,
     {
-        self.into_type_mut().as_mut().map(f)
+        self.as_type_mut().as_mut().map(f)
     }
 }
 

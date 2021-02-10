@@ -140,15 +140,17 @@ not possible in Rust closures until it gets higher ranked closures.
 
 # #[macro_use]
 # extern crate core_extensions;
-# use core_extensions::*;
-# use std::marker::PhantomData;
+#
+use core_extensions::{AsPhantomData, CallMut, callable_impl};
+
+use std::marker::PhantomData;
 
 struct Environment{
     i:u16,
 }
 
 callable_impl!{
-    fn call_mut[T](this:Environment => _a:VariantPhantom<T>)->T
+    fn call_mut[T](this:Environment => _a: PhantomData<T>)->T
     where [ u16:Into<T>, ]
     {
         this.i+=1;
@@ -159,8 +161,8 @@ callable_impl!{
 
 # fn main(){
     let mut env=Environment{i:0};
-    assert_eq!(env.call_mut(u16::T),1);
-    assert_eq!(env.call_mut(u32::T),2);
+    assert_eq!(env.call_mut(u16::PHANTOM),1);
+    assert_eq!(env.call_mut(u32::PHANTOM),2);
 # }
 ```
 
@@ -438,9 +440,14 @@ macro_rules! callable_impl{
 mod tests {
     use super::*;
 
+    use crate::AsPhantomData;
+
     use prelude::*;
 
-    use std_::cmp::PartialEq;
+    use std_::{
+        cmp::PartialEq,
+        marker::PhantomData,
+    };
 
     use alloc_::string::{String,ToString};
 
@@ -486,15 +493,15 @@ mod tests {
         struct WhatInto<T>(T);
 
         callable_impl! {
-            fn call_into[T,U](this:WhatInto<T> => _a:VariantPhantom<U>)->U
+            fn call_into[T,U](this:WhatInto<T> => _a: PhantomData<U>)->U
             where [ T:Into<U> ]
             {
                 this.0.into()
             }
         }
 
-        assert_eq!(WhatInto("what").call_into(String::T), "what");
-        assert_eq!(WhatInto(1u8).call_into(u16::T), 1);
+        assert_eq!(WhatInto("what").call_into(String::PHANTOM), "what");
+        assert_eq!(WhatInto(1u8).call_into(u16::PHANTOM), 1);
     }
 
 }

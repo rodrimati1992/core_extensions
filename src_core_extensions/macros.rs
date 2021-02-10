@@ -112,5 +112,3 @@ macro_rules! impl_transparent_newtype {
     )
 }
 
-
-

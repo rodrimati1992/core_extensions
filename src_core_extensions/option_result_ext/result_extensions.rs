@@ -31,7 +31,7 @@ pub trait ResultExt<T, E>: Sized + ResultLike + TypeIdentity<Type = Result<T, E>
     where
         E: fmt::Debug,
     {
-        self.into_type_val().map_err(|e| format!("{:?}", e))
+        self.into_type().map_err(|e| format!("{:?}", e))
     }
     #[cfg(any(feature = "alloc", test))]
     /// Maps Err(e) to an alternate Debug `{:#?}` formated String.
@@ -52,7 +52,7 @@ pub trait ResultExt<T, E>: Sized + ResultLike + TypeIdentity<Type = Result<T, E>
     where
         E: fmt::Debug,
     {
-        self.into_type_val().map_err(|e| format!("{:#?}", e))
+        self.into_type().map_err(|e| format!("{:#?}", e))
     }
 }
 

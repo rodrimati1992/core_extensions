@@ -21,7 +21,7 @@ pub trait BoolExt: TypeIdentity<Type = bool> + Sized {
     where
         F: FnOnce() -> T,
     {
-        if self.into_type_val() {
+        if self.into_type() {
             Some(some())
         } else {
             None
@@ -44,7 +44,7 @@ pub trait BoolExt: TypeIdentity<Type = bool> + Sized {
     where
         F: FnOnce() -> T,
     {
-        if self.into_type_val() {
+        if self.into_type() {
             None
         } else {
             Some(some())

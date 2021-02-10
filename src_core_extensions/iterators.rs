@@ -1,13 +1,11 @@
 //! Iterator adaptors and constructors.
 
-// use bool_extensions::BoolExt;
-use prelude::*;
-use VariantPhantom;
+use std_::{
+    cmp::Ordering,
+    mem,
+};
 
-use std_::cmp::Ordering;
-use std_::iter::FromIterator;
-use std_::mem;
-
+use crate::prelude::*;
 
 /// Iterator,lazy version of [::std::iter::Once],only evaluating the item when
 /// [Iterator::next] is called.
@@ -200,64 +198,6 @@ mod test_replace_nth {
 
 /// Extension trait for [Iterator] implementors.
 pub trait IteratorExt: Iterator {
-    /// Alternative to Iterator::collect .
-    ///
-    /// This method is defined to allow using the `.collect_(type::T)` syntax.
-    ///
-    /// type::T is an associated constant defined for every type
-    /// [here](../trait.SelfOps.html#associatedconstant.T).
-    /// # Example ,collecting into a Vec
-    ///
-    /// ```
-    /// use core_extensions::iterators::IteratorExt;
-    /// use core_extensions::SelfOps;
-    ///
-    /// assert_eq!(
-    ///     (0..100).collect_(Vec::T),
-    ///     (0..100).collect::<Vec<_>>()
-    /// );
-    /// ```
-    ///
-    /// # Example,collecting into a Vec specifying the type parameter.
-    /// ```
-    /// use core_extensions::iterators::IteratorExt;
-    /// use core_extensions::SelfOps;
-    ///
-    /// assert_eq!(
-    ///     (0..100).collect_(Vec::<usize>::T),
-    ///     (0..100).collect::<Vec<usize>>()
-    /// );
-    ///
-    /// ```
-    ///
-    /// # Example of a limitation of `collect_`
-    ///
-    /// Because of type parameter defaults,it's necessary to create a type alias to
-    /// convince Rust to instantiate HashMap<K,V,S> with the default type for S.
-    ///
-    /// ```
-    /// use core_extensions::iterators::IteratorExt;
-    /// use core_extensions::SelfOps;
-    /// use std::collections::HashMap;
-    ///
-    /// type Map<K,V>=HashMap<K,V>;
-    ///
-    /// let list=vec![("hello",10),("world",20)];
-    ///
-    /// let map=list.iter().cloned().collect_(Map::T);
-    ///
-    /// assert_eq!(map["hello"],10);
-    /// assert_eq!(map["world"],20);
-    ///
-    /// ```
-    #[inline(always)]
-    fn collect_<T>(self, _: VariantPhantom<T>) -> T
-    where
-        Self: Sized,
-        T: FromIterator<Self::Item>,
-    {
-        self.collect()
-    }
     /// Collects into an existing collection by extending it.
     ///
     /// # Example

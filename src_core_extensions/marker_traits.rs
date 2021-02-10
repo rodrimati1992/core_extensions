@@ -30,7 +30,7 @@ Implementors of this trait must ensure:
 -that the type is trivially constructible,eg:by implementing ::std::default::Default.
 
 The easiest way to enforce the requirements of being zero-sized and
-having an alignment of 1 is to have structs composed entirely of MarkerType fields (ie:VariantPhantom , PhantomData , ()  ).
+having an alignment of 1 is to have structs composed entirely of MarkerType fields (ie:CovariantPhantom , PhantomData , ()  ).
 
 */
 pub unsafe trait MarkerType: Copy + Sized {
