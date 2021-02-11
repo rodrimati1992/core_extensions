@@ -200,7 +200,10 @@ pub mod collection_traits;
 mod const_default_trait;
 pub mod integer_extensions;
 pub mod iterators;
+
+#[doc(hidden)]
 pub mod macros;
+
 pub mod marker_traits;
 pub mod measure_time;
 pub mod option_result_ext;
@@ -251,7 +254,8 @@ pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
 pub use self::marker_traits::MarkerType;
 pub use self::option_result_ext::{OptionExt, ResultExt, ResultLike};
 pub use self::phantom::{
-    MakePhantomFn, AsPhantomData,
+    AsPhantomData,
+    as_phantom, as_covariant_phantom,
     ContraVariantPhantom,
     InvariantPhantom, InvariantRefPhantom, VariantDropPhantom, CovariantPhantom,
 };
