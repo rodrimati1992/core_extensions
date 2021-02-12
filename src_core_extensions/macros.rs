@@ -1,5 +1,12 @@
 //! A variety of macros.
 
+
+#[macro_use]
+pub mod phantomdata;
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+
 /// Macro that evaluates to true if the expression matches any of the patterns
 /// (this macro can have multiple patterns).
 ///
@@ -111,4 +118,8 @@ macro_rules! impl_transparent_newtype {
         }
     )
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 
