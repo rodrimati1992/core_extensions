@@ -1,6 +1,5 @@
 //! Universal extension trait.Implemented for every type.
 
-use std_::marker::PhantomData;
 
 /// Extension trait for every type.
 ///

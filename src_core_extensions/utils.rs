@@ -31,17 +31,7 @@ pub unsafe fn transmute_vec<T, U>(vector: Vec<T>) -> Vec<U> {
     Vec::from_raw_parts(vector.as_mut_ptr() as *mut U, len, capacity)
 }
 
-#[inline(always)]
-/// Converts a reference to T to a slice of 1 T.
-pub fn as_slice<T>(v: &T) -> &[T] {
-    unsafe { ::std_::slice::from_raw_parts(v, 1) }
-}
 
-#[inline(always)]
-/// Converts a mutable reference to T to a mutable slice of 1 T.
-pub fn as_slice_mut<T>(v: &mut T) -> &mut [T] {
-    unsafe { ::std_::slice::from_raw_parts_mut(v, 1) }
-}
 
 /// Use this function to mark to the compiler that this branch is impossible.
 ///

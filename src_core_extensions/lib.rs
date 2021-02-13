@@ -255,6 +255,7 @@ pub use self::marker_traits::MarkerType;
 pub use self::option_result_ext::{OptionExt, ResultExt, ResultLike};
 pub use self::phantom::{
     AsPhantomData,
+    AndPhantom, AndPhantomCov,
     as_phantom, as_covariant_phantom,
     ContraVariantPhantom,
     InvariantPhantom, InvariantRefPhantom, VariantDropPhantom, CovariantPhantom,

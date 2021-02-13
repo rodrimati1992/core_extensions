@@ -240,7 +240,7 @@ impl<T: ?Sized> AsPhantomData for T {}
 /// let string = String::new();
 /// let vector = vec![0u8];
 /// 
-/// assert_eq!(get_default(as_phantom(&string)), "");
+/// assert_eq!(get_default(as_phantom(&string)), "".to_string());
 /// assert_eq!(get_default(as_phantom(&vector)), vec![]);
 /// 
 /// ```
@@ -253,7 +253,10 @@ pub const fn as_phantom<T: ?Sized>(_: &T) -> PhantomData<T> {
 ///////////////////////////////////////////////////////////////////////////
 
 /// Contains `PhantomData<fn() -> T>`,
-/// required to return a `PhantomData<fn() -> T>` from a const function.
+/// required to return a `PhantomData<fn() -> T>` from the 
+/// [`as_covariant_phantom`] const function.
+/// 
+/// [`as_covariant_phantom`]: ./fn.as_covariant_phantom.html
 /// 
 #[must_use = "unwrap this into a PhantomData with .0"]
 pub struct CovariantPhantomData<T: ?Sized>(pub PhantomData<fn() -> T>);
@@ -264,22 +267,42 @@ impl<T: ?Sized> CovariantPhantomData<T> {
 }
 
 
-/// Gets the `PhantomData<fn() -> T>` of the passed in type.
+/// Gets the `PhantomData<fn() -> T>` of the passed in `T`.
 ///
 /// # Example
 /// 
 /// ```rust
-/// use core_extensions::as_covariant_phantom;
+/// use core_extensions::{AndPhantomCov, ConstDefault, as_covariant_phantom};
 /// 
-/// const _: () = {
+/// const SLICE: &[u8] = {
 ///     let array = [0, 1, 2];
-/// 
-///     // cov is a PhantomData<fn() -> Vec<i32>>;
-///     let cov = as_covariant_phantom(&array).0;
+///     
+///     // phantom is a PhantomData<fn() -> [i32; 3]>;
+///     let phantom = as_covariant_phantom(&array).0;
+///     
+///     &AndPhantomCov(phantom, ConstDefault::DEFAULT).1
 /// };
+/// 
+/// 
+/// assert_eq!(SLICE, [0, 0, 0]);
 /// 
 /// ```
 /// 
 pub const fn as_covariant_phantom<T: ?Sized>(_: &T) -> CovariantPhantomData<T> {
     CovariantPhantomData::NEW
 }
+
+
+///////////////////////////////////////////////////////////////////////////
+
+
+/// A pair of `PhantomData<T>` and `T`.
+/// useful for infering the type of the value from a `PhantomData`.
+#[repr(transparent)]
+pub struct AndPhantom<T>(pub PhantomData<T>, pub T);
+
+/// A pair of `PhantomData<fn() -> T>` and `T`.
+/// useful for infering the type of the value from a `PhantomData`.
+#[repr(transparent)]
+pub struct AndPhantomCov<T>(pub PhantomData<fn() -> T>, pub T);
+

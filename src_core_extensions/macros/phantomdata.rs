@@ -96,7 +96,7 @@ macro_rules! expr_as_phantom {
 /// # Example
 ///
 /// ```rust
-/// use core_extensions::return_type_phantom;
+/// use core_extensions::{IteratorExt, return_type_phantom};
 ///
 /// use std::{
 ///     collections::HashSet,
@@ -121,7 +121,7 @@ macro_rules! expr_as_phantom {
 /// // `set` is a `HashSet<i32>`
 /// let set = collect(ty, 1..=10);
 /// 
-/// assert_eq!(set.into_iter().fold(0, |l, r| l + r), 55);
+/// assert_eq!(set.into_iter().sum_same(), 55);
 ///
 /// ```
 #[macro_export]
