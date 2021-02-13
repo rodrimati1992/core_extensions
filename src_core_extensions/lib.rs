@@ -212,7 +212,6 @@ mod self_ops;
 pub mod slices;
 pub mod strings;
 pub mod transparent_newtype;
-pub mod try_from;
 mod type_identity;
 pub mod type_asserts;
 pub mod type_level_bool;
@@ -246,9 +245,7 @@ pub use self::self_ops::SelfOps;
 pub use self::strings::StringExt;
 
 pub use self::bool_extensions::BoolExt;
-pub use self::integer_extensions::IntegerExt;
-#[cfg(any(enable_duration, feature = "std"))]
-pub use self::integer_extensions::ToTime;
+pub use self::integer_extensions::{IntegerExt, ToTime};
 pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
 #[doc(inline)]
 pub use self::marker_traits::MarkerType;
@@ -262,7 +259,8 @@ pub use self::phantom::{
 };
 pub use self::slices::{ValSliceExt,SliceExt};
 pub use self::transparent_newtype::{TransparentNewtype, TransparentNewtypeExt};
-pub use self::try_from::{TryFrom, TryInto};
+
 #[doc(inline)]
 pub use self::type_identity::{TIdentity, TypeIdentity};
+
 pub use self::void::Void;

@@ -107,19 +107,19 @@ pub trait AsPhantomData {
         PhantomData
     }
 
-    /// Gets a `PhantomData<fn() -> Self>`.
+    /// Gets a `PhantomData<fn() -> Self>`, a covariant `PhantomData`.
     #[inline(always)]
     fn as_phantom_covariant(&self) -> PhantomData<fn() -> Self> {
         PhantomData
     }
 
-    /// Gets a `PhantomData<fn(Self)>`.
+    /// Gets a `PhantomData<fn(Self)>`, a contravariant `PhantomData`.
     #[inline(always)]
     fn as_phantom_contra(&self) -> PhantomData<fn(Self)> {
         PhantomData
     }
 
-    /// Gets a `PhantomData<fn(Self) -> Self>`.
+    /// Gets a `PhantomData<fn(Self) -> Self>`, an invariant `PhantomData`.
     #[inline(always)]
     fn as_phantom_invariant(&self) -> PhantomData<fn(Self) -> Self> {
         PhantomData
@@ -144,8 +144,7 @@ pub trait AsPhantomData {
     /// ```
     const PHANTOM: PhantomData<Self> = PhantomData;
 
-    /// Constructs a `PhantomData<fn() -> T>`
-    /// a covariant `PhantomData`, without drop check.
+    /// Constructs a `PhantomData<fn() -> T>`, a covariant `PhantomData`.
     /// 
     /// # Example
     /// 
@@ -169,7 +168,7 @@ pub trait AsPhantomData {
     /// 
     const PHANTOM_COVARIANT: PhantomData<fn() -> Self> = PhantomData;
     
-    /// Gets a `PhantomData<fn(Self)>`.
+    /// Gets a `PhantomData<fn(Self)>`, a contravariant `PhantomData`.
     ///
     /// # Example
     /// 
@@ -193,7 +192,7 @@ pub trait AsPhantomData {
     /// 
     const PHANTOM_CONTRA: PhantomData<fn(Self)> = PhantomData;
 
-    /// Gets a `PhantomData<fn(Self) -> Self>`.
+    /// Gets a `PhantomData<fn(Self) -> Self>`, an invariant `PhantomData`.
     /// 
     /// # Example
     /// 
@@ -298,11 +297,51 @@ pub const fn as_covariant_phantom<T: ?Sized>(_: &T) -> CovariantPhantomData<T> {
 
 /// A pair of `PhantomData<T>` and `T`.
 /// useful for infering the type of the value from a `PhantomData`.
+///
+/// # Example
+///
+/// ```rust
+/// use core_extensions::{AndPhantom, AsPhantomData};
+/// 
+/// use std::marker::PhantomData;
+/// 
+/// let foo = vec![0, 1, 2];
+/// 
+/// let mut bar = AndPhantom(foo.as_phantom(), Default::default()).1;
+/// 
+/// bar.push(3);
+/// bar.push(4);
+/// 
+/// assert_eq!(bar[..], [3, 4]);
+///
+/// ```
 #[repr(transparent)]
 pub struct AndPhantom<T>(pub PhantomData<T>, pub T);
 
+
+
+
 /// A pair of `PhantomData<fn() -> T>` and `T`.
 /// useful for infering the type of the value from a `PhantomData`.
+///
+/// # Example
+///
+/// ```rust
+/// use core_extensions::{AndPhantomCov, AsPhantomData};
+/// 
+/// use std::marker::PhantomData;
+/// 
+/// let foo = [0, 1, 2];
+/// 
+/// let mut bar = AndPhantomCov(foo.as_phantom_covariant(), Default::default()).1;
+/// 
+/// bar[0] = 3;
+/// bar[1] = 5;
+/// bar[2] = 8;
+/// 
+/// assert_eq!(bar[..], [3, 5, 8]);
+///
+/// ```
 #[repr(transparent)]
 pub struct AndPhantomCov<T>(pub PhantomData<fn() -> T>, pub T);
 

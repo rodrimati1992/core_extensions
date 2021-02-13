@@ -2,30 +2,38 @@
 
 use std_::{
     cmp::Ordering,
+    iter::{Product, Sum},
     mem,
 };
 
 use crate::prelude::*;
 
-/// Iterator,lazy version of [::std::iter::Once],only evaluating the item when
-/// [Iterator::next] is called.
+/// A version of [`std::iter::OnceWith`] usable in Rust 1.41.0.
 ///
 /// # Example
 ///
 /// ```
 /// use core_extensions::iterators::LazyOnce;
 ///
-/// let mut number=0;
-/// assert_eq!(number,0);
+/// let mut number = 0;
+///
+/// // The closure here is never ran.
 /// LazyOnce::new(||{ number+=10; number });
-/// assert_eq!(number,0);
+///
+/// assert_eq!(number, 0);
+///
 /// for i in LazyOnce::new(||{ number+=10; number }) {
-///     assert_eq!(i,10);
+///     assert_eq!(i, 10);
 /// }
-/// assert_eq!(number,10);
+///
+/// assert_eq!(number, 10);
 ///
 /// ```
-#[derive(Copy, Clone)]
+///
+/// [`std::iter::OnceWith`]: https://doc.rust-lang.org/std/iter/struct.OnceWith.html
+/// [`Iterator::next`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html#tymethod.next
+///
+#[derive(Debug, Copy, Clone)]
 pub struct LazyOnce<F> {
     func: Option<F>,
 }
@@ -42,9 +50,11 @@ where
     F: FnOnce() -> T,
 {
     type Item = T;
+
     fn next(&mut self) -> Option<T> {
         self.func.take().map(|f| f())
     }
+
     fn size_hint(&self) -> (usize, Option<usize>) {
         (1, Some(1))
     }
@@ -77,6 +87,18 @@ enum ReplaceNthState<T> {
 }
 
 /// An Iterator that replaces the nth element with another value.
+///
+/// # Example
+///
+/// ```rust
+/// use core_extensions::iterators::ReplaceNth;
+///
+/// let list = ReplaceNth::new(0..=6, 4, 100).collect::<Vec<_>>();
+///
+/// assert_eq!(list, vec![0, 1, 2, 3, 100, 5, 6]);
+///
+/// ```
+///
 #[derive(Debug, Clone)]
 pub struct ReplaceNth<I>
 where
@@ -90,7 +112,7 @@ impl<I> ReplaceNth<I>
 where
     I: Iterator,
 {
-    /// Constructs a ReplaceNth
+    /// Constructs a `ReplaceNth`.
     pub fn new(iter: I, nth: usize, with: I::Item) -> Self {
         Self {
             iter,
@@ -196,20 +218,25 @@ mod test_replace_nth {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Extension trait for [Iterator] implementors.
+/// Extension trait for [`std::iter::Iterator`] implementors.
+///
+/// [`std::iter::Iterator`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html
 pub trait IteratorExt: Iterator {
     /// Collects into an existing collection by extending it.
     ///
     /// # Example
+    ///
     /// ```
     /// use core_extensions::iterators::IteratorExt;
     ///
-    /// let mut list=vec![101,102];
+    /// let mut list = vec![101, 102];
+    ///
     /// (0..10)
     ///     .filter(|&v| v<5 )
     ///     .map(|v| v*2 )
     ///     .extending(&mut list);
-    /// assert_eq!(list,vec![101,102,0,2,4,6,8]);
+    ///
+    /// assert_eq!(list, vec![101, 102, 0, 2, 4, 6, 8]);
     ///
     /// ```
     #[inline(always)]
@@ -224,16 +251,17 @@ pub trait IteratorExt: Iterator {
     /// Collects into a pre-allocated collection,returning it by value.
     ///
     /// # Example
+    ///
     /// ```
     /// use core_extensions::iterators::IteratorExt;
     ///
-    /// let list=(0..10)
+    /// let list = (0..10)
     ///     .filter(|&v| v<5 )
     ///     .map(|v| v*2 )
     ///     .collect_into(Vec::with_capacity(5));
     ///
-    /// assert_eq!(list.capacity(),5);
-    /// assert_eq!(list,vec![0,2,4,6,8]);
+    /// assert_eq!(list.capacity(), 5);
+    /// assert_eq!(list, vec![0, 2, 4, 6, 8]);
     ///
     /// ```
     /// # Example
@@ -243,17 +271,17 @@ pub trait IteratorExt: Iterator {
     /// ```
     /// use core_extensions::iterators::IteratorExt;
     ///
-    /// let mut list=Vec::with_capacity(7);
+    /// let mut list = Vec::with_capacity(7);
     /// list.push(100);
     /// list.push(101);
     ///
-    /// let list=(0..10)
+    /// let list = (0..10)
     ///     .filter(|&v| v<5 )
     ///     .map(|v| v*2 )
     ///     .collect_into(list);
     ///
     /// assert_eq!(list.capacity(),7);
-    /// assert_eq!(list,vec![100,101,0,2,4,6,8]);
+    /// assert_eq!(list, vec![100, 101, 0, 2, 4, 6, 8]);
     ///
     /// ```
     #[inline(always)]
@@ -270,17 +298,18 @@ pub trait IteratorExt: Iterator {
     ///
     /// # Example
     /// ```
-    /// use core_extensions::iterators::ReplaceNth;
+    /// use core_extensions::iterators::IteratorExtx;
     ///
     /// assert_eq!(
-    ///     ReplaceNth::new( 0..10,5,1337 ).collect::<Vec<_>>(),
-    ///     vec![0,1,2,3,4,1337,6,7,8,9]
+    ///     (0..=9).replace_nth(5, 1337).collect::<Vec<_>>(),
+    ///     vec![0, 1, 2, 3, 4, 1337, 6, 7, 8, 9]
     /// );
     ///
-    /// let list=vec!["hello","dear","world"];
+    /// let list = vec!["hello", "dear", "world"];
+    ///
     /// assert_eq!(
-    ///     ReplaceNth::new( list.into_iter(),1,"my" ).collect::<Vec<_>>(),
-    ///     vec!["hello","my","world"]
+    ///     list.into_iter().replace_nth(1, "my").collect::<Vec<_>>(),
+    ///     vec!["hello", "my", "world"]
     /// );
     ///
     ///
@@ -292,152 +321,173 @@ pub trait IteratorExt: Iterator {
     {
         ReplaceNth::new(self, nth, with)
     }
+
+    /// Sums the items of the iterator, into the item's type.
+    ///
+    /// This like the [`Iterator::sum`] method, with better type inference,
+    /// since with the [`Iterator::sum`] method you must specify its return type.
+    ///
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::iterators::IteratorExt;
+    ///
+    /// assert_eq!((1..=4).sum_same(), 10);
+    /// 
+    /// let arr = [3, 7, 11, 29];
+    /// assert_eq!(arr.iter().copied().sum_same(), 50);
+    /// 
+    /// ```
+    ///  
+    /// [`Iterator::sum`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.sum 
+    #[inline]
+    fn sum_same(self) -> Self::Item
+    where
+        Self: Sized,
+        Self::Item: Sum,
+    {
+        <Self::Item as Sum<Self::Item>>::sum(self)
+    }
+
+    /// Multiplies the items of the iterator, into the item's type.
+    ///
+    /// This like the [`Iterator::product`] method, with better type inference,
+    /// since with the [`Iterator::product`] method you must specify its return type.
+    ///
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::iterators::IteratorExt;
+    ///
+    /// assert_eq!((1..=4).product_same(), 24);
+    /// 
+    /// let arr = [3, 4, 6];
+    /// assert_eq!(arr.iter().copied().product_same(), 72);
+    /// 
+    /// ```
+    ///  
+    /// [`Iterator::product`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.product
+    #[inline]
+    fn product_same(self) -> Self::Item
+    where
+        Self: Sized,
+        Self::Item: Product,
+    {
+        <Self::Item as Product<Self::Item>>::product(self)
+    }
 }
 
-impl<I> IteratorExt for I where I: Iterator {}
+impl<I> IteratorExt for I where I: ?Sized + Iterator {}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Constructs [Iterator]s using a closure.
+/// Constructs `Iterator`s using a closure.
 ///
-/// This can construct an Iterator (with IntoIterator::into_iter)
-/// multiple times if the closure is Copy.
+/// This can construct an `Iterator` (with `IntoIterator::into_iter`)
+/// multiple times if the closure is `Copy`.
 ///
 /// # Example
 ///
 /// ```rust
 /// use core_extensions::iterators::IterConstructor;
 ///
-/// let list=vec!["hello","world"];
+/// let list = vec!["hello", "world"];
 ///
-/// let constructor=IterConstructor::new(||{
+/// let constructor = IterConstructor(||{
 ///     list.iter().enumerate().map(|(i,v)| v.repeat(i) )
 /// });
 ///
-/// let list_2=vec!["".to_string(),"world".into()];
-///
-/// assert_eq!(constructor.into_iter().collect::<Vec<_>>() , list_2);
-///
-/// assert_eq!(constructor.into_iter().collect::<Vec<_>>() , list_2);
+/// for _ in 0..2 {
+///     assert_eq!(
+///         constructor.into_iter().collect::<Vec<_>>(),
+///         ["".to_string(), "world".to_string()],
+///     );
+/// }
 ///
 /// ```
-#[derive(Copy, Clone)]
-pub struct IterConstructor<F> {
-    /// The closure.
-    pub f: F,
-}
-
-impl<F> IterConstructor<F> {
-    /// Constructs an IterConstructor.
-    pub fn new(f: F) -> Self {
-        Self { f }
-    }
-}
+#[derive(Debug, Copy, Clone)]
+pub struct IterConstructor<F> (pub F);
 
 impl<F, I> IntoIterator for IterConstructor<F>
 where
     F: FnOnce() -> I,
-    I: Iterator,
+    I: IntoIterator,
 {
     type Item = I::Item;
-    type IntoIter = I;
+    type IntoIter = I::IntoIter;
 
+    #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        (self.f)()
+        (self.0)().into_iter()
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Use this macro to create an
-/// [IterCloner](iterators/struct.IterCloner.html)
-/// from an Iterator value.
+/// [`IterCloner`](./iterators/struct.IterCloner.html)
+/// from an Iterator.
 ///
-/// This macro takes an iterator by value,and then allows iterating multiple times with
-/// the same iterator,so long as it is Clone.
-///
-/// Closures can be Copy and/or Clone since Rust 1.26
-/// ,this affects iterators since most iterator methods take closures.
+/// This macro takes an iterator by value, and then allows iterating multiple times with
+/// the same iterator, so long as it implements `Clone`.
 ///
 /// # Example
 ///
-/// This example only runs from Rust 1.26 onwards,
+/// ```rust
+/// use core_extensions::iter_cloner;
+/// 
+/// let list = vec!["this", "is", "not", "really", "great"];
 ///
-#[cfg_attr(not(enable_copy_closures), doc = r#" ```ignore"#)]
-#[cfg_attr(enable_copy_closures, doc = " ```")]
+/// let lengths = vec![4, 2, 3, 6, 5];
 ///
-/// #[macro_use]
-/// extern crate core_extensions;
+/// iter_cloner!(let iter = list.iter().map(|v|v.len()));
 ///
-/// # fn main(){
-///
-/// let list=vec!["this","is","not","really","great"];
-/// let lengths=vec![4,2,3,6,5];
-/// iter_cloner!(let iter=list.iter().map(|v|v.len()));
 /// for _ in 0..2{
-///     assert_eq!(iter.into_iter().collect::<Vec<_>>(),lengths);
+///     assert_eq!(iter.into_iter().collect::<Vec<_>>(), lengths);
 /// }
-/// # }
 ///
 /// ```
 #[macro_export]
 macro_rules! iter_cloner {
     (let $ident:ident = $expr:expr) => {
-        let $ident = $expr;
-        let $ident = $crate::iterators::IterCloner::new(&$ident);
+        let $ident = $crate::std_::iter::IntoIterator::into_iter($expr);
+        let $ident = $crate::iterators::IterCloner(&$ident);
     };
 }
 
-/// Constructs an [Iterator] by cloning the one it references,if the Iterator is Clone.
+/// Implements [`IntoIterator::into_iter`] by cloning the one it references.
 ///
-/// Constructs an Iterator inside [IntoIterator::into_iter]
-/// by cloning the one it references.
-///
-/// To construct this from an iterator value use [this macro](../macro.iter_cloner.html) ,
-///
-/// Closures can be Copy and/or Clone since Rust 1.26
-/// ,this affects iterators since most iterator methods take closures.
+/// You can also use the [`iter_cloner`](../macro.iter_cloner.html) macro to
+/// construct this,
 ///
 /// # Example
 ///
-/// This example only runs from Rust 1.26 onwards,
-///
-#[cfg_attr(not(enable_copy_closures), doc = r#" ```ignore"#)]
-#[cfg_attr(enable_copy_closures, doc = " ```")]
+/// ```
 ///
 /// use core_extensions::iterators::IterCloner;
 ///
-/// let list=vec!["hello","awesome","world"];
-/// let iter=list.iter().map(|v|v.len()).filter(|&v| v<6 );
-/// {
-///     let iter_clone=IterCloner::new(&iter);
+/// let list = vec!["hello", "awesome", "world"];
+///
+/// let iter = list.iter().map(|v|v.len()).filter(|&v| v<6 );
+///
+/// let iter_clone = IterCloner(&iter);
 ///    
-///     for _ in 0..2{
-///         assert_eq!(iter_clone.into_iter().collect::<Vec<_>>(),vec![5,5]);
-///     }
+/// for _ in 0..2{
+///     assert_eq!(iter_clone.into_iter().collect::<Vec<_>>(), vec![5, 5]);
 /// }
-/// assert_eq!(iter.into_iter().collect::<Vec<_>>(),vec![5,5]);
 ///
 /// ```
-pub struct IterCloner<'a, I: 'a> {
-    /// The iterator being cloned.
-    pub iter: &'a I,
-}
+///
+/// [`IntoIterator::into_iter`]: 
+/// https://doc.rust-lang.org/std/iter/trait.IntoIterator.html#tymethod.into_iter
+///
+#[derive(Debug)]
+pub struct IterCloner<'a, I: 'a> (pub &'a I);
 
 impl<'a, I> Copy for IterCloner<'a, I> {}
 impl<'a, I> Clone for IterCloner<'a, I> {
     fn clone(&self) -> Self {
         *self
-    }
-}
-
-impl<'a, I: 'a> IterCloner<'a, I>
-where
-    I: Iterator + Clone,
-{
-    /// Constructs an IterCloner.
-    pub fn new(iter: &'a I) -> Self {
-        Self { iter }
     }
 }
 
@@ -449,6 +499,6 @@ where
     type IntoIter = I;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.iter.clone()
+        self.0.clone()
     }
 }
