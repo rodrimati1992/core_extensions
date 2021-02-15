@@ -239,7 +239,7 @@ pub mod prelude {
 }
 
 pub use self::const_default_trait::ConstDefault;
-pub use self::callable::{CallInto, CallMut, CallRef};
+pub use self::callable::{CallExt, CallInto, CallMut, CallRef};
 #[doc(inline)]
 pub use self::self_ops::SelfOps;
 pub use self::strings::StringExt;
