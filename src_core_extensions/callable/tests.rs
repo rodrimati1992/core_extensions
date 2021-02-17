@@ -12,11 +12,11 @@ use std_::{
 use alloc_::string::{String,ToString};
 
 #[test]
-fn test_call_ref() {
+fn test_ref_call() {
     struct WhatRef<T>(T);
 
     impl_call! {
-        fn call_ref['a,T,U](self:WhatRef<T>, what:U )->bool
+        fn ref_call['a,T,U](self:WhatRef<T>, what:U )->bool
         where [ T:PartialEq<U>, ]
         {
             self.0==what
@@ -24,44 +24,44 @@ fn test_call_ref() {
     }
 
     let env = WhatRef("hello".to_string());
-    assert_eq!(env.call_ref("hello"), true);
-    assert_eq!(env.call_ref("hello".to_string()), true);
-    assert_eq!(env.call_ref("lo"), false);
+    assert_eq!(env.ref_call("hello"), true);
+    assert_eq!(env.ref_call("hello".to_string()), true);
+    assert_eq!(env.ref_call("lo"), false);
 }
 
 #[test]
-fn test_call_mut() {
+fn test_mut_call() {
     struct WhatMut {
         state: usize,
     }
 
     impl_call! {
-        fn call_mut(self:WhatMut)->usize{
+        fn mut_call(self:WhatMut)->usize{
             self.state+=1;
             self.state
         }
     }
 
     let mut env = WhatMut { state: 0 };
-    assert_eq!(env.call_mut(()), 1);
-    assert_eq!(env.call_mut(()), 2);
-    assert_eq!(env.call_mut(()), 3);
+    assert_eq!(env.mut_call(()), 1);
+    assert_eq!(env.mut_call(()), 2);
+    assert_eq!(env.mut_call(()), 3);
 }
 
 #[test]
-fn test_call_into() {
+fn test_into_call() {
     struct WhatInto<T>(T);
 
     impl_call! {
-        fn call_into[T,U](self: WhatInto<T>, _a: PhantomData<U>)->U
+        fn into_call[T,U](self: WhatInto<T>, _a: PhantomData<U>)->U
         where [ T:Into<U> ]
         {
             self.0.into()
         }
     }
 
-    assert_eq!(WhatInto("what").call_into(String::PHANTOM), "what");
-    assert_eq!(WhatInto(1u8).call_into(u16::PHANTOM), 1);
+    assert_eq!(WhatInto("what").into_call(String::PHANTOM), "what");
+    assert_eq!(WhatInto(1u8).into_call(u16::PHANTOM), 1);
 }
 
 #[test]
@@ -69,7 +69,7 @@ fn parameter_counts() {
     struct ZeroParam;
 
     impl_call! {
-        fn call_ref(self: ZeroParam) -> u64 {
+        fn ref_call(self: ZeroParam) -> u64 {
             3
         }
     }
@@ -77,7 +77,7 @@ fn parameter_counts() {
     struct SingleParam;
 
     impl_call! {
-        fn call_ref[T](self: SingleParam, single: T) -> u64
+        fn ref_call[T](self: SingleParam, single: T) -> u64
         where [ T:Into<u64> ]
         {
             single.into()
@@ -87,7 +87,7 @@ fn parameter_counts() {
     struct AddTwo;
 
     impl_call! {
-        fn call_ref[T](self: AddTwo, l: T, r: T) -> T
+        fn ref_call[T](self: AddTwo, l: T, r: T) -> T
         where [ T: std_::ops::Add<Output = T> ]
         {
             l + r
@@ -97,20 +97,20 @@ fn parameter_counts() {
     struct AddThree;
 
     impl_call! {
-        fn call_ref[T](self: AddThree, f0: T, f1: T, f2: T) -> T
+        fn ref_call[T](self: AddThree, f0: T, f1: T, f2: T) -> T
         where [ T: std_::ops::Add<Output = T> ]
         {
             f0 + f1 + f2
         }
     }
 
-    assert_eq!(ZeroParam.call_ref(()), 3);
+    assert_eq!(ZeroParam.ref_call(()), 3);
 
-    assert_eq!(SingleParam.call_ref(5u8), 5);
+    assert_eq!(SingleParam.ref_call(5u8), 5);
     
-    assert_eq!(AddTwo.call_ref((5, 3)), 8);
+    assert_eq!(AddTwo.ref_call((5, 3)), 8);
     
-    assert_eq!(AddThree.call_ref((5, 8, 21)), 34);
+    assert_eq!(AddThree.ref_call((5, 8, 21)), 34);
 }
 
 #[test]
@@ -118,7 +118,7 @@ fn return_optionality() {
     struct ImplicitReturn;
 
     impl_call! {
-        fn call_ref(self: ImplicitReturn, input: &mut u32) {
+        fn ref_call(self: ImplicitReturn, input: &mut u32) {
             *input = 27;
         }
     }
@@ -126,16 +126,16 @@ fn return_optionality() {
     struct ExplicitReturn;
 
     impl_call! {
-        fn call_ref(self: ExplicitReturn) -> u32 {
+        fn ref_call(self: ExplicitReturn) -> u32 {
             27
         }
     }
 
     let mut num = 0;
-    let _: () = ImplicitReturn.call_ref(&mut num);
+    let _: () = ImplicitReturn.ref_call(&mut num);
     assert_eq!(num, 27);
 
-    assert_eq!(ExplicitReturn.call_ref(()), 27);
+    assert_eq!(ExplicitReturn.ref_call(()), 27);
 }
 
 
@@ -144,7 +144,7 @@ fn which_impls() {
     struct DerivesCallRef;
 
     impl_call! {
-        fn call_ref(self: DerivesCallRef) -> u32 {
+        fn ref_call(self: DerivesCallRef) -> u32 {
             27
         }
     }
@@ -152,12 +152,12 @@ fn which_impls() {
     struct DerivesCallMut;
 
     impl_call! {
-        fn call_mut(self: DerivesCallMut) -> u32 {
-            self.call_ref_(())
+        fn mut_call(self: DerivesCallMut) -> u32 {
+            self.ref_call_(())
         }
     }
     impl CallRef<()> for DerivesCallMut {
-        fn call_ref_(&self, _: ()) -> u32 {
+        fn ref_call_(&self, _: ()) -> u32 {
             81
         }
     }
@@ -166,34 +166,56 @@ fn which_impls() {
     struct DerivesCallInto;
 
     impl_call! {
-        fn call_into(self: DerivesCallInto) -> u32 {
-            self.call_ref_(())
+        fn into_call(self: DerivesCallInto) -> u32 {
+            self.ref_call_(())
         }
     }
     impl CallMut<()> for DerivesCallInto {
-        fn call_mut_(&mut self, _: ()) -> u32 {
-            self.call_ref_(())
+        fn mut_call_(&mut self, _: ()) -> u32 {
+            self.ref_call_(())
         }
     }
     impl CallRef<()> for DerivesCallInto {
-        fn call_ref_(&self, _: ()) -> u32 {
+        fn ref_call_(&self, _: ()) -> u32 {
             243
         }
     }
 
-    assert_eq!(DerivesCallRef.call_ref_(()), 27);
-    assert_eq!(DerivesCallRef.call_mut_(()), 27);
-    assert_eq!(DerivesCallRef.call_into_(()), 27);
+    assert_eq!(DerivesCallRef.ref_call_(()), 27);
+    assert_eq!(DerivesCallRef.mut_call_(()), 27);
+    assert_eq!(DerivesCallRef.into_call_(()), 27);
 
-    assert_eq!(DerivesCallMut.call_ref_(()), 81);
-    assert_eq!(DerivesCallMut.call_mut_(()), 81);
-    assert_eq!(DerivesCallMut.call_into_(()), 81);
+    assert_eq!(DerivesCallMut.ref_call_(()), 81);
+    assert_eq!(DerivesCallMut.mut_call_(()), 81);
+    assert_eq!(DerivesCallMut.into_call_(()), 81);
 
-    assert_eq!(DerivesCallInto.call_ref_(()), 243);
-    assert_eq!(DerivesCallInto.call_mut_(()), 243);
-    assert_eq!(DerivesCallInto.call_into_(()), 243);
+    assert_eq!(DerivesCallInto.ref_call_(()), 243);
+    assert_eq!(DerivesCallInto.mut_call_(()), 243);
+    assert_eq!(DerivesCallInto.into_call_(()), 243);
 }
 
 
+#[test]
+fn test_closures() {
+    let mut ref_fn = || 10;
+    
+    let mut n = 0;
+    let mut mut_fn = || {
+        n += 1;
+        n
+    };
+    
+    let list = vec![0, 1, 2];
+    let into_fn = || list;
 
+    assert_eq!(ref_fn.ref_call(()), 10);
+    assert_eq!(ref_fn.mut_call(()), 10);
+    assert_eq!(ref_fn.into_call(()), 10);
+    
+    assert_eq!(mut_fn.mut_call(()), 1);
+    assert_eq!(mut_fn.mut_call(()), 2);
+    assert_eq!(mut_fn.mut_call(()), 3);
+    assert_eq!(mut_fn.into_call(()), 4);
 
+    assert_eq!(into_fn.into_call(()), [0, 1, 2]);
+}
