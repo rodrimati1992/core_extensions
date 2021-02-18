@@ -1,4 +1,11 @@
-//! Contains implementable alternatives of the standard Fn/FnMut/FnOnce traits.
+//! Alternatives of the standard [`Fn`]/[`FnMut`]/[`FnOnce`] traits,
+//! implementable in stable Rust.
+//!
+//! [`Fn`]: https://doc.rust-lang.org/std/ops/trait.Fn.html
+//!
+//! [`FnMut`]: https://doc.rust-lang.org/std/ops/trait.FnMut.html
+//!
+//! [`FnOnce`]: https://doc.rust-lang.org/std/ops/trait.FnOnce.html
 
 
 
@@ -9,7 +16,8 @@ mod tests;
 
 /// Extension trait for calling `Call*` closures.
 pub trait CallExt {
-    /// For calling [`CallRef::ref_call_`] with optional explicit generic arguments.
+    /// For calling [`CallRef::ref_call_`],
+    /// with the ability to specify the types of the arguments..
     ///
     /// # Example
     ///
@@ -33,7 +41,8 @@ pub trait CallExt {
     /// PushTwice.ref_call((&mut vector, 3));
     /// assert_eq!(vector, [3, 3]);
     ///
-    /// PushTwice.ref_call((&mut vector, 5));
+    /// // The turbofish operator can be used to specify the types of the arguments.
+    /// PushTwice.ref_call::<(_, u128)>((&mut vector, 5));
     /// assert_eq!(vector, [3, 3, 5, 5]);
     ///
     /// PushTwice.ref_call((&mut vector, 8));
@@ -50,7 +59,8 @@ pub trait CallExt {
         self.ref_call_(params)
     }
 
-    /// For calling [`CallMut::mut_call_`] with optional explicit generic arguments.
+    /// For calling [`CallMut::mut_call_`],
+    /// with the ability to specify the types of the arguments..
     ///
     /// # Example
     /// 
@@ -74,7 +84,8 @@ pub trait CallExt {
     /// 
     /// let mut numbers = Vec::new();
     ///
-    /// fibs.mut_call(&mut numbers);
+    /// // The turbofish operator can be used to specify the types of the arguments.
+    /// fibs.mut_call::<&mut Vec<u128>>(&mut numbers);
     /// assert_eq!(numbers, [1]);
     ///
     /// fibs.mut_call(&mut numbers);
@@ -104,7 +115,8 @@ pub trait CallExt {
         self.mut_call_(params)
     }
 
-    /// For calling [`CallInto::into_call_`] with optional explicit generic arguments.
+    /// For calling [`CallInto::into_call_`],
+    /// with the ability to specify the types of the arguments..
     ///
     /// # Example
     ///
@@ -125,7 +137,8 @@ pub trait CallExt {
     /// 
     /// let list = vec![3, 5, 8, 13, 21, 34, 55, 89];
     /// 
-    /// assert_eq!(IntoElem(list.clone()).into_call(0), Some(3));
+    /// // The turbofish operator can be used to specify the types of the arguments.
+    /// assert_eq!(IntoElem(list.clone()).into_call::<usize>(0), Some(3));
     /// 
     /// assert_eq!(IntoElem(list.clone()).into_call(1), Some(5));
     /// 
