@@ -20,14 +20,14 @@ include = [
 travis-ci = { repository =  "rodrimati1992/core_extensions/" }
 
 [features]
-# TODO: comment all of this out
-default = ["std", "rust_1_44"]
+# TODO: comment this out
+default = ["std"]
 
 std=["alloc"]
 alloc=[]
 
 serde_=["serde"]
-colltraits=[]
+collections=[]
 
 rust_1_44 = []
 

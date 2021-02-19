@@ -28,7 +28,7 @@
 //!
 //! "typenum":Enables trait impls for typenum types.Disabled by default.
 //!
-//! "colltraits":Enables trait impls for the collection traits in the collection_traits module.
+//! "collections":Enables trait impls for the collection traits in the collections module.
 //!
 //!
 //!
@@ -194,9 +194,13 @@ extern crate rand;
 #[macro_use]
 extern crate rand_derive;
 
-pub mod bool_extensions;
+mod bool_extensions;
 pub mod callable;
-pub mod collection_traits;
+
+#[cfg(feature = "collections")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "collections")))]
+pub mod collections;
+
 mod const_default_trait;
 pub mod integer_extensions;
 pub mod iterators;
