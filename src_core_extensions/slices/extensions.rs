@@ -149,19 +149,20 @@ where
 
 /// Extension trait for `[T]` and `str`.
 pub trait SliceExt<T> {
-    ///Checks whether self fully contains another slice in memory.
+    /// Checks whether self fully contains another slice in memory.
+    ///
+    /// If `other` is a zero-sized slice it is not contained inside `self`.
     ///
     /// # Example
     ///
     /// ```
     /// use core_extensions::SliceExt;
     /// let list=vec![0,1,2,3,4,5];
-    /// let slice_0=&list[..0];
-    /// let slice_1=&list[3..];
-    ///
-    /// assert!( list.contains_slice(slice_0));
-    /// assert!( list.contains_slice(slice_1));
-    /// assert!(!list.contains_slice(&[]));
+    /// 
+    /// // Slices never contain empty slices
+    /// assert!(!list.contains_slice(&list[..0]));
+    /// assert!( list.contains_slice(&list[..1]));
+    /// assert!( list.contains_slice(&list[3..]));
     ///
     /// ```
     fn contains_slice(&self, other: &Self) -> bool;
@@ -171,7 +172,7 @@ pub trait SliceExt<T> {
     ///
     /// ```
     /// use core_extensions::SliceExt;
-    /// let list=vec![0,1,2,3,4,5];
+    /// let list = [0,1,2,3,4,5];
     /// let slice_0=&list[..0];
     /// let slice_1=&list[..];
     ///
@@ -202,17 +203,17 @@ pub trait SliceExt<T> {
     fn offset_of_slice(&self, other: &Self) -> usize;
     /// Returns the index at which `other` starts.
     ///
+    /// If `other` is a zero-sized slice, this returns `None`.
+    ///
     /// # Example
     ///
     /// ```
     /// use core_extensions::SliceExt;
-    /// let list=vec![0,1,2,3,4,5];
-    /// let slice_0=&list[..0];
-    /// let slice_1=&list[3..];
+    /// let list = [0,1,2,3,4,5];
     ///
-    /// assert_eq!(list.get_offset_of_slice(slice_0),Some(0));
-    /// assert_eq!(list.get_offset_of_slice(slice_1),Some(3));
-    /// assert_eq!(list.get_offset_of_slice(&[])    ,None);
+    /// assert_eq!(list.get_offset_of_slice(&list[..0]), None);
+    /// assert_eq!(list.get_offset_of_slice(&list[1..]), Some(1));
+    /// assert_eq!(list.get_offset_of_slice(&list[3..]), Some(3));
     ///
     /// ```
     fn get_offset_of_slice(&self, other: &Self) -> Option<usize>;
@@ -303,6 +304,10 @@ pub trait SliceExt<T> {
 
 macro_rules! impl_common_slice_extensions {($T:ident) => {
     fn contains_slice(&self,other:&Self)->bool{
+        if mem::size_of::<$T>() == 0 || other.is_empty() {
+            return false;
+        }
+
         let start_self  =self.as_ptr() as usize;
         let end_self    =start_self+self.len()*mem::size_of::<$T>();
         let start_other =other.as_ptr() as usize;
@@ -321,9 +326,10 @@ macro_rules! impl_common_slice_extensions {($T:ident) => {
         cmp::min(self.len(),offset/size_of)
     }
     fn get_offset_of_slice(&self,other:&Self)->Option<usize>{
-        let size_of:usize=mem::size_of::<$T>();
-        if self.contains_slice(other) {
-            if size_of==0 { return Some(0); }
+        let size_of:usize = mem::size_of::<$T>();
+        if size_of==0 {
+            Some(0)
+        } else if self.contains_slice(other) {
             Some((other.as_ptr() as usize - self.as_ptr() as usize)/size_of)
         }else{
             None
@@ -337,10 +343,15 @@ macro_rules! impl_common_slice_extensions {($T:ident) => {
     }
     fn get_index_of(&self,other:*const $T)->Option<usize>{
         let size_of:usize=mem::size_of::<$T>();
-        if size_of==0 { return Some(0); }
-        (other as *const $T as usize)
-            .checked_sub(self.as_ptr() as usize)
-            .map(|v| v/size_of )
+        if size_of == 0 { return Some(0); }
+        let sub = (other as *const $T as usize)
+            .wrapping_sub(self.as_ptr() as usize)
+            /size_of;
+        if sub >= self.len() {
+            None
+        } else {
+            Some(sub)
+        }
     }
 
 }}
@@ -415,54 +426,202 @@ mod tests {
 
     #[test]
     fn contains_slice() {
-        let list = vec![0, 1, 2, 3, 4, 5];
-        let slice_0 = &list[..0];
-        let slice_1 = &list[3..];
-        assert!(list.contains_slice(slice_0));
-        assert!(list.contains_slice(slice_1));
-        assert!(!list.contains_slice(&[]));
+        fn inner<T>(list: &[T; 12]){
+            let slice_a = &list[0..4];
+            let slice_b = &list[4..8];
+            let slice_c = &list[8..12];
+
+            assert_eq!(slice_b.contains_slice(&slice_a[3..]), false);
+            assert_eq!(slice_b.contains_slice(&slice_a[4..]), false);
+
+            assert_eq!(slice_b.contains_slice(&slice_b[0..]), true);
+            assert_eq!(slice_b.contains_slice(&slice_b[1..]), true);
+            assert_eq!(slice_b.contains_slice(&slice_b[2..]), true);
+            assert_eq!(slice_b.contains_slice(&slice_b[3..]), true);
+            
+            assert_eq!(slice_b.contains_slice(&slice_c[0..0]), false);
+            assert_eq!(slice_b.contains_slice(&slice_c[0..]), false);
+            assert_eq!(slice_b.contains_slice(&slice_c[1..]), false);
+        }
+
+        inner(&[0u8, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        inner(&[0u32, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        inner(&[""; 12]);
+
+        {
+            let list = [(); 12];
+            let slice_a = &list[0..4];
+            let slice_b = &list[4..8];
+            let slice_c = &list[8..12];
+
+            assert_eq!(slice_b.contains_slice(&slice_a[3..]), false);
+            assert_eq!(slice_b.contains_slice(&slice_a[4..]), false);
+
+            assert_eq!(slice_b.contains_slice(&slice_b[0..]), false);
+            assert_eq!(slice_b.contains_slice(&slice_b[1..]), false);
+            assert_eq!(slice_b.contains_slice(&slice_b[2..]), false);
+            assert_eq!(slice_b.contains_slice(&slice_b[3..]), false);
+            
+            assert_eq!(slice_b.contains_slice(&slice_c[0..]), false);
+            assert_eq!(slice_b.contains_slice(&slice_c[1..]), false);
+        }
     }
     #[test]
     fn offset_of_slice() {
-        let list = vec![0, 1, 2, 3, 4, 5];
-        let slice_0 = &list[..0];
-        let slice_1 = &list[3..];
-        let outside = &[];
+        fn inner<T>(list: &[T; 12]){
+            let slice_a = &list[0..4];
+            let slice_b = &list[4..8];
+            let slice_c = &list[8..12];
 
-        assert_eq!(list.offset_of_slice(slice_0), 0);
-        assert_eq!(list.offset_of_slice(slice_1), 3);
-        assert_eq!(list.offset_of_slice(outside), list.len());
+            assert_eq!(slice_b.offset_of_slice(&slice_a[3..]), slice_b.len());
+
+            assert_eq!(slice_b.offset_of_slice(&slice_b[0..]), 0);
+            assert_eq!(slice_b.offset_of_slice(&slice_b[1..]), 1);
+            assert_eq!(slice_b.offset_of_slice(&slice_b[2..]), 2);
+            assert_eq!(slice_b.offset_of_slice(&slice_b[3..]), 3);
+            
+            assert_eq!(slice_b.offset_of_slice(&slice_c[0..]), slice_b.len());
+            assert_eq!(slice_b.offset_of_slice(&slice_c[1..]), slice_b.len());
+        }
+
+        inner(&[0u8, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        inner(&[0u32, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        inner(&[""; 12]);
+
+        {
+            let list = [(); 12];
+            let slice_a = &list[0..4];
+            let slice_b = &list[4..8];
+            let slice_c = &list[8..12];
+
+            assert_eq!(slice_b.offset_of_slice(&slice_a[3..]), 0);
+
+            assert_eq!(slice_b.offset_of_slice(&slice_b[0..]), 0);
+            assert_eq!(slice_b.offset_of_slice(&slice_b[1..]), 0);
+            assert_eq!(slice_b.offset_of_slice(&slice_b[2..]), 0);
+            assert_eq!(slice_b.offset_of_slice(&slice_b[3..]), 0);
+            
+            assert_eq!(slice_b.offset_of_slice(&slice_c[0..]), 0);
+            assert_eq!(slice_b.offset_of_slice(&slice_c[1..]), 0);
+        }
     }
     #[test]
     fn get_offset_of_slice() {
-        let list = vec![0, 1, 2, 3, 4, 5];
-        let slice_0 = &list[..0];
-        let slice_1 = &list[3..];
-        let outside = &[];
+        fn inner<T>(list: &[T; 12]){
+            let slice_a = &list[0..4];
+            let slice_b = &list[4..8];
+            let slice_c = &list[8..12];
 
-        assert_eq!(list.get_offset_of_slice(slice_0), Some(0));
-        assert_eq!(list.get_offset_of_slice(slice_1), Some(3));
-        assert_eq!(list.get_offset_of_slice(outside), None);
+            assert_eq!(slice_b.get_offset_of_slice(&slice_a[3..]), None);
+
+            assert_eq!(slice_b.get_offset_of_slice(&slice_b[1..1]), None);
+            assert_eq!(slice_b.get_offset_of_slice(&slice_b[0..]), Some(0));
+            assert_eq!(slice_b.get_offset_of_slice(&slice_b[1..]), Some(1));
+            assert_eq!(slice_b.get_offset_of_slice(&slice_b[2..]), Some(2));
+            assert_eq!(slice_b.get_offset_of_slice(&slice_b[3..]), Some(3));
+            
+            assert_eq!(slice_b.get_offset_of_slice(&slice_c[0..]), None);
+            assert_eq!(slice_b.get_offset_of_slice(&slice_c[1..]), None);
+        }
+
+        inner(&[0u8, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        inner(&[0u32, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        inner(&[""; 12]);
+
+        {
+            let list = [(); 12];
+            let slice_a = &list[0..4];
+            let slice_b = &list[4..8];
+            let slice_c = &list[8..12];
+
+            assert_eq!(slice_b.get_offset_of_slice(&slice_a[3..]), Some(0));
+
+            assert_eq!(slice_b.get_offset_of_slice(&slice_b[0..]), Some(0));
+            assert_eq!(slice_b.get_offset_of_slice(&slice_b[1..]), Some(0));
+            assert_eq!(slice_b.get_offset_of_slice(&slice_b[2..]), Some(0));
+            assert_eq!(slice_b.get_offset_of_slice(&slice_b[3..]), Some(0));
+            
+            assert_eq!(slice_b.get_offset_of_slice(&slice_c[0..]), Some(0));
+            assert_eq!(slice_b.get_offset_of_slice(&slice_c[1..]), Some(0));
+        }
     }
     #[test]
     fn index_of() {
-        let list = vec![0, 1, 2, 3, 4, 5];
-        let elem_0 = &list[0];
-        let elem_3 = &list[3];
-        let outside = &0;
-        assert_eq!(list.index_of(elem_0), 0);
-        assert_eq!(list.index_of(elem_3), 3);
-        assert_eq!(list.index_of(outside), list.len());
+        fn inner<T>(list: &[T; 12]){
+            let slice_a = &list[0..4];
+            let slice_b = &list[4..8];
+            let slice_c = &list[8..12];
+
+            assert_eq!(slice_b.index_of(&slice_a[3]), slice_b.len());
+
+            assert_eq!(slice_b.index_of(&slice_b[0]), 0);
+            assert_eq!(slice_b.index_of(&slice_b[1]), 1);
+            assert_eq!(slice_b.index_of(&slice_b[2]), 2);
+            assert_eq!(slice_b.index_of(&slice_b[3]), 3);
+            
+            assert_eq!(slice_b.index_of(&slice_c[0]), slice_b.len());
+            assert_eq!(slice_b.index_of(&slice_c[1]), slice_b.len());
+        }
+
+        inner(&[0u8, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        inner(&[0u32, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        inner(&[""; 12]);
+
+        {
+            let list = [(); 12];
+            let slice_a = &list[0..4];
+            let slice_b = &list[4..8];
+            let slice_c = &list[8..12];
+
+            assert_eq!(slice_b.index_of(&slice_a[3]), 0);
+
+            assert_eq!(slice_b.index_of(&slice_b[0]), 0);
+            assert_eq!(slice_b.index_of(&slice_b[1]), 0);
+            assert_eq!(slice_b.index_of(&slice_b[2]), 0);
+            assert_eq!(slice_b.index_of(&slice_b[3]), 0);
+            
+            assert_eq!(slice_b.index_of(&slice_c[0]), 0);
+            assert_eq!(slice_b.index_of(&slice_c[1]), 0);
+        }
     }
     #[test]
     fn get_index_of() {
-        let list = vec![0, 1, 2, 3, 4, 5];
-        let elem_0 = &list[0];
-        let elem_3 = &list[3];
-        let outside = &0;
-        assert_eq!(list.get_index_of(elem_0), Some(0));
-        assert_eq!(list.get_index_of(elem_3), Some(3));
-        assert_eq!(list.get_index_of(outside), None);
+        fn inner<T>(list: &[T; 12]){
+            let slice_a = &list[0..4];
+            let slice_b = &list[4..8];
+            let slice_c = &list[8..12];
+
+            assert_eq!(slice_b.get_index_of(&slice_a[3]), None);
+
+            assert_eq!(slice_b.get_index_of(&slice_b[0]), Some(0));
+            assert_eq!(slice_b.get_index_of(&slice_b[1]), Some(1));
+            assert_eq!(slice_b.get_index_of(&slice_b[2]), Some(2));
+            assert_eq!(slice_b.get_index_of(&slice_b[3]), Some(3));
+            
+            assert_eq!(slice_b.get_index_of(&slice_c[0]), None);
+            assert_eq!(slice_b.get_index_of(&slice_c[1]), None);
+        }
+
+        inner(&[0u8, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        inner(&[0u32, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        inner(&[""; 12]);
+
+        {
+            let list = [(); 12];
+            let slice_a = &list[0..4];
+            let slice_b = &list[4..8];
+            let slice_c = &list[8..12];
+
+            assert_eq!(slice_b.get_index_of(&slice_a[3]), Some(0));
+
+            assert_eq!(slice_b.get_index_of(&slice_b[0]), Some(0));
+            assert_eq!(slice_b.get_index_of(&slice_b[1]), Some(0));
+            assert_eq!(slice_b.get_index_of(&slice_b[2]), Some(0));
+            assert_eq!(slice_b.get_index_of(&slice_b[3]), Some(0));
+            
+            assert_eq!(slice_b.get_index_of(&slice_c[0]), Some(0));
+            assert_eq!(slice_b.get_index_of(&slice_c[1]), Some(0));
+        }
     }
     #[test]
     fn slice_lossy_slice_examples() {
@@ -558,6 +717,8 @@ mod tests {
     }
 
     #[test]
+    // Too slow to run in miri, and there's no unsafe code here.
+    #[cfg(not(miri))]
     fn slice_lossy_slice_no_panic() {
         use rand::Rng;
 
@@ -582,6 +743,8 @@ mod tests {
     }
 
     #[test]
+    // Too slow to run in miri, and there's no unsafe code here.
+    #[cfg(not(miri))]
     fn slice_lossy_str_no_panic() {
         use rand::Rng;
 

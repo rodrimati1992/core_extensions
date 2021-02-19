@@ -20,6 +20,11 @@ use std_::sync::atomic;
 
 /// A const equivalent of the `Default` trait.
 ///
+/// # Features
+///
+/// Enabling the "const_generics" feature allows arrays of all lengths to implement this trait,
+/// otherwise it's only implemented for arrays up to 32 elements long.
+///
 /// # Example
 ///
 /// Implementing `ConstDefault` for a struct
@@ -69,6 +74,27 @@ macro_rules! const_default {
     };
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(feature = "const_generics")]
+macro_rules! impl_array_const_default {
+    ()=>{
+        /// When the "const_params" feature is disabled,
+        /// the ConstDefault trait is implemented for arrays up to 32 elements long.
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_params")))]
+        impl<T: ConstDefault, const N: usize> ConstDefault for [T; N] {
+            const DEFAULT: Self = [T::DEFAULT; N];
+        }
+    }
+}
+
+#[cfg(feature = "const_generics")]
+impl_array_const_default!{}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(not(feature = "const_generics"))]
 macro_rules! impl_array_const_default_inner {
     ([ $extra_bounds:ident ] 
         $(($size:expr)=[ $($t:ident,)* ]),*
@@ -84,6 +110,7 @@ macro_rules! impl_array_const_default_inner {
     };
 }
 
+#[cfg(not(feature = "const_generics"))]
 macro_rules! impl_array_const_default {
     (@inner [ $extra_bounds:ident ] 
         $(($size:expr)=[ $($t:ident,)* ]),*
@@ -114,11 +141,12 @@ fn main(){
 }
 */
 
-
+#[cfg(not(feature = "const_generics"))]
 impl<T> ConstDefault for [T;0]{
     const DEFAULT: Self=[];
 }
 
+#[cfg(not(feature = "const_generics"))]
 impl_array_const_default! {
     (1)=[T,],
     (2)=[T,T,],
@@ -153,6 +181,8 @@ impl_array_const_default! {
     (31)=[T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,],
     (32)=[T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,T,],
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 macro_rules! impl_tuple_const_default {
     ($($ty:ident),*) => (
@@ -296,7 +326,6 @@ mod tests{
 
     #[test]
     fn always_available(){
-        assert_eq!(const_def_assert!([NoDefault;0]), []);
         assert_eq!(const_def_assert!([u8;6]), [0;6]);
         assert_eq!(const_def_assert!([u8;16]), [0;16]);
         assert_eq!(const_def_assert!([u8;32]), [0;32]);
@@ -379,6 +408,43 @@ mod tests{
         assert_eq!(const_def_assert!(Vec<u8>), Vec::new());
         assert_eq!(const_def_assert!(Vec<NoDefault>), Vec::new());
         assert_eq!(const_def_assert!(String), String::new());
+    }
+
+    #[test]
+    #[cfg(feature = "const_generics")]
+    fn for_const_generics(){
+        // This type must not implement Copy
+        #[derive(Debug, PartialEq, Eq)]
+        struct F(u32);
+
+        impl ConstDefault for F {
+            const DEFAULT: F = F(34);
+        }
+
+        let mf = ||F(34);
+        let arr33 = [
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(), 
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(),
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(),
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(),
+            mf(),
+        ];
+        let arr65 = [
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(), 
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(),
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(),
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(),
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(), 
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(),
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(),
+            mf(), mf(), mf(), mf(), mf(), mf(), mf(), mf(),
+            mf(),
+        ];
+
+        assert_eq!(const_def_assert!([F; 33]), arr33);
+        assert_eq!(const_def_assert!([F; 65]), arr65);
+        assert_eq!(const_def_assert!([u32; 33]), [0; 33]);
+        assert_eq!(const_def_assert!([u32; 63]), [0; 63]);
     }
 
 }

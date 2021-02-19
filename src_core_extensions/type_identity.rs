@@ -128,18 +128,21 @@ pub trait TypeIdentity {
     }
     /// Converts a box back to the original type.
     #[cfg(feature = "alloc")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
     fn into_type_box(self: Box<Self>) -> Box<Self::Type> {
         unsafe { utils::transmute_ignore_size(self) }
     }
     /// Converts an Arc back to the original type.
     #[cfg(feature = "alloc")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
     fn into_type_arc(self: Arc<Self>) -> Arc<Self::Type> {
         unsafe { utils::transmute_ignore_size(self) }
     }
     /// Converts an Rc back to the original type.
     #[cfg(feature = "alloc")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
     fn into_type_rc(self: Rc<Self>) -> Rc<Self::Type> {
         unsafe { utils::transmute_ignore_size(self) }
@@ -167,18 +170,21 @@ pub trait TypeIdentity {
     }
     /// Converts a box back to the original type.
     #[cfg(feature = "alloc")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
     fn from_type_box(this: Box<Self::Type>) -> Box<Self> {
         unsafe { utils::transmute_ignore_size(this) }
     }
     /// Converts an Arc back to the original type.
     #[cfg(feature = "alloc")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
     fn from_type_arc(this: Arc<Self::Type>) -> Arc<Self> {
         unsafe { utils::transmute_ignore_size(this) }
     }
     /// Converts an Rc back to the original type.
     #[cfg(feature = "alloc")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
     fn from_type_rc(this: Rc<Self::Type>) -> Rc<Self> {
         unsafe { utils::transmute_ignore_size(this) }

@@ -22,17 +22,21 @@
 //!
 //! # Cargo Features
 //!
-//! "std":Enables standard library support.Enabled by default.
+//! `"std"`: Enables standard library support.Enabled by default.
 //!
-//! "serde_":Enables serde support.Disabled by default.
+//! `"serde_"`: Enables serde support.Disabled by default.
 //!
-//! "typenum":Enables trait impls for typenum types.Disabled by default.
+//! `"typenum"`: Enables trait impls for typenum types.Disabled by default.
 //!
 //! "collections":Enables trait impls for the collection traits in the collections module.
 //!
+//! `"const_generics"`:
+//! Enables impls of traits for all array lengths, 
+//! requires versions of Rust where const generics are stable.
 //!
-//!
-//! <br></br>
+//! `"nightly_const_generics"`: 
+//! Enables impls of traits for all array lengths in Rust nightly versions prior to 
+//! the stabilization of const generics.
 //!
 //! # **Contents**
 //!
@@ -155,7 +159,9 @@
 
 #![deny(missing_docs)]
 #![deny(unused_must_use)]
-#![no_std]
+#![cfg_attr(not(miri), no_std)]
+#![cfg_attr(feature = "nightly_const_generics", feature(min_const_generics))]
+#![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 
 #[cfg(feature="std")]
 #[macro_use]
@@ -190,11 +196,10 @@ extern crate typenum;
 #[cfg(test)]
 extern crate rand;
 
-#[cfg(test)]
 #[macro_use]
-extern crate rand_derive;
+mod internal_macros;
 
-mod bool_extensions;
+pub mod bool_extensions;
 pub mod callable;
 
 #[cfg(feature = "collections")]
@@ -210,6 +215,7 @@ pub mod macros;
 
 pub mod marker_traits;
 pub mod measure_time;
+
 pub mod option_result_ext;
 pub mod phantom;
 mod self_ops;
@@ -217,6 +223,10 @@ pub mod slices;
 pub mod strings;
 pub mod transparent_newtype;
 mod type_identity;
+
+#[cfg(test)]
+mod test_utils;
+
 pub mod type_asserts;
 pub mod type_level_bool;
 pub mod utils;

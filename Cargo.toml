@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "0.1.17"
+version = "0.1.20"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="This crate provides many extensions to core/std library types."
 license="MIT/Apache-2.0"
@@ -34,9 +34,11 @@ rust_1_44 = []
 # Enables indicators in the docs for what features are required to enable items.
 docsrs = []
 
+const_generics = []
+nightly_const_generics = ["const_generics"]
+
 [dev-dependencies]
 rand = "0.4.6"
-rand_derive = "0.3.1"
 
 [dependencies.serde]
 version = "1.0"
@@ -54,7 +56,9 @@ optional=true
 name = "core_extensions"
 path = "src_core_extensions/lib.rs"
 
-[workspace]
+[package.metadata.docs.rs]
+features = ["serde", "colltraits", "const_generics", "docsrs"]
+
 
 
 # [[bin]]

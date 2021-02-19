@@ -19,6 +19,11 @@ Represents a zero-sized marker type .
 Types implementing this trait are zero-sized and can safely be stored in any
 `#[repr(C)]` type without changing their layout.
 
+# Features
+
+Enabling the "const_generics" feature allows arrays of all lengths to implement this trait,
+otherwise it's only implemented for arrays up to 32 elements long.
+
 # Safety
 
 Implementors of this trait must ensure:
@@ -69,11 +74,31 @@ unsafe impl<T: ?Sized> MarkerType for PhantomData<T> {}
 
 unsafe impl<T> MarkerType for ManuallyDrop<T> 
 where
-    T: ?Sized + MarkerType
+    T: MarkerType
 {}
 
 unsafe impl MarkerType for () {}
 
+////////////////////////////////
+
+#[cfg(feature = "const_generics")]
+macro_rules! impl_zero_sized_array {
+    ()=>{
+        /// When the "const_params" feature is disabled,
+        /// the MarkerType trait is implemented for arrays up to 32 elements long.
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_params")))]
+        unsafe impl<T, const N: usize> MarkerType for [T; N]
+        where T: MarkerType
+        {}
+    }
+}
+
+#[cfg(feature = "const_generics")]
+impl_zero_sized_array!{}
+
+///////////////////////////////////
+
+#[cfg(not(feature = "const_generics"))]
 macro_rules! impl_zero_sized_array {
     ($($size:expr),*)=>{
         $(
@@ -84,12 +109,15 @@ macro_rules! impl_zero_sized_array {
     }
 }
 
+#[cfg(not(feature = "const_generics"))]
 impl_zero_sized_array! {
     00,01,02,03,04,05,06,07,08,09,
     10,11,12,13,14,15,16,17,18,19,
     20,21,22,23,24,25,26,27,28,29,
     30,31,32
 }
+
+////////////////////////////////
 
 macro_rules! impl_zero_sized_tuple {
     ($($ty:ident),+) => (
@@ -232,6 +260,9 @@ mod tests {
         assert_size_align!([PD; 30]);
         assert_size_align!([PD; 31]);
         assert_size_align!([PD; 32]);
+
+        #[cfg(feature = "const_generics")]
+        assert_size_align!([PD; 63]);
     }
 }
 
