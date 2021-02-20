@@ -30,6 +30,7 @@ serde_=["serde"]
 collections=[]
 
 rust_1_44 = []
+rust_1_46 = ["rust_1_44"]
 
 # Enables indicators in the docs for what features are required to enable items.
 docsrs = []

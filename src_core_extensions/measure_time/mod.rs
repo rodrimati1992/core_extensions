@@ -7,7 +7,7 @@ use std_::ops::{Deref, DerefMut};
 #[cfg(any(enable_duration, feature = "std"))]
 use std_::time::Duration;
 
-use integer_extensions::ToTime;
+use integers::ToTime;
 #[allow(unused_imports)]
 use SelfOps;
 

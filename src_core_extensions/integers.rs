@@ -3,166 +3,194 @@
 //!
 //!
 
-use std_::{cmp, fmt, ops};
+use std_::{cmp, hash::Hash, fmt, ops};
 
 #[cfg(all(not(core_duration), feature = "std"))]
 use std_::time::Duration;
 #[cfg(core_duration)]
 use std_::time::Duration;
 
-/// Extension trait for integers.
+/// Extension trait for built-in integers.
 pub trait IntegerExt:
-    ops::Add<Self, Output = Self>
-    + ops::Sub<Self, Output = Self>
-    + ops::Div<Self, Output = Self>
-    + ops::Rem<Self, Output = Self>
-    + ops::Mul<Self, Output = Self>
-    + cmp::Ord
+    'static
     + cmp::Eq
-    + fmt::Display
-    + fmt::Debug
+    + cmp::Ord
     + Copy
+    + Default
+    + fmt::Binary
+    + fmt::Debug
+    + fmt::Display
+    + fmt::LowerHex
+    + fmt::Octal
+    + fmt::UpperHex
+    + Hash
+    + ops::Add<Self, Output = Self>
+    + ops::AddAssign<Self>
+    + ops::BitAnd<Self, Output = Self>
+    + ops::BitAndAssign<Self>
+    + ops::BitOr<Self, Output = Self>
+    + ops::BitOrAssign<Self>
+    + ops::BitXor<Self, Output = Self>
+    + ops::BitXorAssign<Self>
+    + ops::Div<Self, Output = Self>
+    + ops::DivAssign<Self>
+    + ops::Mul<Self, Output = Self>
+    + ops::MulAssign<Self>
+    + ops::Not<Output = Self>
+    + ops::Rem<Self, Output = Self>
+    + ops::RemAssign<Self>
+    + ops::Shl<Self, Output = Self>
+    + ops::ShlAssign<Self>
+    + ops::Shr<Self, Output = Self>
+    + ops::ShrAssign<Self>
+    + ops::Sub<Self, Output = Self>
+    + ops::SubAssign<Self>
+    + Send
+    + Sync
 {
     /// The unsigned version of this integer type.
     type Unsigned: IntegerExt;
 
-    /// Converts from a u8.
+    /// The minimum value of this integer type.
+    const MIN: Self;
+    
+    /// The maximum value of this integer type.
+    const MAX: Self;
+    
+    /// `0` of this integer type.
+    const ZERO: Self;
+    
+    /// `1` of this integer type.
+    const ONE: Self;
+
+    /// Converts from a `u8` to `Self`.
     ///
-    /// if Self==i8 it saturates at 0..=127 .
+    /// if `Self` is an `i8` this method returns `127` for `n > 127`.
     ///
     /// # Example
     ///
     /// ```
     /// use core_extensions::IntegerExt;
     ///
-    /// assert_eq!(u8::from_u8(0),0);
-    /// assert_eq!(u8::from_u8(255),255);
+    /// assert_eq!(u8::from_u8(0  ), 0);
+    /// assert_eq!(u8::from_u8(255), 255);
     ///
-    /// assert_eq!(i8::from_u8(0),0);
-    /// assert_eq!(i8::from_u8(255),127);
+    /// assert_eq!(i8::from_u8(0  ), 0);
+    /// assert_eq!(i8::from_u8(255), 127);
     ///
-    /// assert_eq!(u16::from_u8(0),0);
-    /// assert_eq!(u16::from_u8(255),255);
+    /// assert_eq!(u16::from_u8(0  ), 0);
+    /// assert_eq!(u16::from_u8(255), 255);
     ///
-    /// assert_eq!(i16::from_u8(0),0);
-    /// assert_eq!(i16::from_u8(255),255);
-    ///
-    /// assert_eq!(u32::from_u8(0),0);
-    /// assert_eq!(u32::from_u8(255),255);
-    ///
-    /// assert_eq!(i32::from_u8(0),0);
-    /// assert_eq!(i32::from_u8(255),255);
-    ///
+    /// assert_eq!(i16::from_u8(0  ), 0);
+    /// assert_eq!(i16::from_u8(255), 255);
     ///
     /// ```
     fn from_u8(n: u8) -> Self;
 
-    /// Converts from a i8.
+    /// Converts from an `i8` to `Self`.
     ///
-    /// if n < 0 and Self is Unsigned it returns 0.
+    /// if `Self` is an unsigned integer type,
+    /// this method returns `0` for `n < 0`.
     ///
     /// # Example
     ///
     /// ```
     /// use core_extensions::IntegerExt;
     ///
-    /// assert_eq!(u8::from_i8(-128),0);
-    /// assert_eq!(u8::from_i8(0   ),0);
-    /// assert_eq!(u8::from_i8(1   ),1);
-    /// assert_eq!(u8::from_i8(127 ),127);
+    /// assert_eq!(u8::from_i8(-128), 0);
+    /// assert_eq!(u8::from_i8(0   ), 0);
+    /// assert_eq!(u8::from_i8(1   ), 1);
+    /// assert_eq!(u8::from_i8(127 ), 127);
     ///
-    /// assert_eq!(i8::from_i8(-128),-128);
-    /// assert_eq!(i8::from_i8(0   ),0   );
-    /// assert_eq!(i8::from_i8(127 ),127 );
+    /// assert_eq!(i8::from_i8(-128), -128);
+    /// assert_eq!(i8::from_i8(0   ), 0   );
+    /// assert_eq!(i8::from_i8(127 ), 127 );
     ///
-    /// assert_eq!(u16::from_i8(-128),0);
-    /// assert_eq!(u16::from_i8(0   ),0);
-    /// assert_eq!(u16::from_i8(1   ),1);
-    /// assert_eq!(u16::from_i8(127 ),127);
+    /// assert_eq!(u16::from_i8(-128), 0);
+    /// assert_eq!(u16::from_i8(0   ), 0);
+    /// assert_eq!(u16::from_i8(1   ), 1);
+    /// assert_eq!(u16::from_i8(127 ), 127);
     ///
-    /// assert_eq!(i16::from_i8(-128),-128);
-    /// assert_eq!(i16::from_i8(0   ),0   );
-    /// assert_eq!(i16::from_i8(127 ),127 );
-    ///
-    /// assert_eq!(u32::from_i8(-128),0);
-    /// assert_eq!(u32::from_i8(0   ),0);
-    /// assert_eq!(u32::from_i8(1   ),1);
-    /// assert_eq!(u32::from_i8(127 ),127);
-    ///
-    /// assert_eq!(i32::from_i8(-128),-128);
-    /// assert_eq!(i32::from_i8(0   ),0   );
-    /// assert_eq!(i32::from_i8(127 ),127 );
+    /// assert_eq!(i16::from_i8(-128), -128);
+    /// assert_eq!(i16::from_i8(0   ), 0   );
+    /// assert_eq!(i16::from_i8(127 ), 127 );
     ///
     ///
     /// ```
     fn from_i8(n: i8) -> Self;
 
     /// Raises `self` to the `n`th power.
-    ///
-    /// # Panic
-    ///
-    /// This has the same panicking behavior as u32::pow().
+    /// 
+    /// This delegates to the inherent [`pow`] method.
+    /// 
+    /// [`pow`]: https://doc.rust-lang.org/std/primitive.u32.html#method.pow
     fn power(self, n: u32) -> Self;
 
-    /// Like the Self::abs function except that the return type is `Self::Unsigned`.
+    /// Returns the absolute value of this integer as the equivalent unsigned integer type.
+    ///
+    /// This method allows getting the absolute value for the minimum signed integer value.
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{IntegerExt,Sign};
+    /// use core_extensions::IntegerExt;
     ///
-    /// assert_eq!(0u8.abs_unsigned(),0);
-    /// assert_eq!(0i8.abs_unsigned(),0);
-    /// assert_eq!(127i8.abs_unsigned(),127);
-    /// assert_eq!((-1i8).abs_unsigned(),1);
-    /// assert_eq!((-16i8).abs_unsigned(),16);
-    /// assert_eq!((-128i8).abs_unsigned(),128);
+    /// assert_eq!(0u8.abs_unsigned(), 0u8);
+    /// assert_eq!(0i8.abs_unsigned(), 0u8);
+    /// assert_eq!(127i8.abs_unsigned(), 127u8);
+    /// assert_eq!((-1i8).abs_unsigned(), 1u8);
+    /// assert_eq!((-16i8).abs_unsigned(), 16u8);
+    /// assert_eq!((-128i8).abs_unsigned(), 128u8);
     ///
     /// ```
     ///
     fn abs_unsigned(self) -> Self::Unsigned;
-    /// Gets the sign of `self` which is either `Positive` or `Negative`.
+
+    /// Gets the sign of this integer.
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{IntegerExt,Sign};
+    /// use core_extensions::integers::{IntegerExt, Sign};
     ///
-    /// assert_eq!(0u8.get_sign(),Sign::Positive);
-    /// assert_eq!(0i8.get_sign(),Sign::Positive);
-    /// assert_eq!(127i8.get_sign(),Sign::Positive);
-    /// assert_eq!((-1i8).get_sign(),Sign::Negative);
-    /// assert_eq!((-128i8).get_sign(),Sign::Negative);
+    /// assert_eq!(0u8.get_sign(), Sign::Positive);
+    /// assert_eq!(0i8.get_sign(), Sign::Positive);
+    /// assert_eq!(127i8.get_sign(), Sign::Positive);
+    /// assert_eq!((-1i8).get_sign(), Sign::Negative);
+    /// assert_eq!((-128i8).get_sign(), Sign::Negative);
     ///
     ///
     /// ```
     ///
     #[inline]
     fn get_sign(self) -> Sign {
-        if self < Self::from_u8(0) {
+        if self < Self::ZERO {
             Sign::Negative
         } else {
             Sign::Positive
         }
     }
-    /// Non-panicking division which returns self if other==0.
+
+    /// Non-panicking division which returns `self` when `other == 0`.
+    ///
+    /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{IntegerExt,Sign};
+    /// use core_extensions::IntegerExt;
     ///
-    /// assert_eq!(60.div_safe(12),5);
-    /// assert_eq!(60.div_safe(30),2);
-    /// assert_eq!(60.div_safe(31),1);
+    /// assert_eq!(60.safe_div(12), 5);
+    /// assert_eq!(60.safe_div(30), 2);
+    /// assert_eq!(60.safe_div(31), 1);
     ///
-    /// assert_eq!(60.div_safe(0) ,60);
-    /// assert_eq!(13.div_safe(0) ,13);
+    /// assert_eq!(60.safe_div(0), 60);
+    /// assert_eq!(13.safe_div(0), 13);
     ///
     /// ```
     ///
     ///
     #[inline]
-    fn div_safe(self, other: Self) -> Self {
-        if other == Self::from_u8(0) {
+    fn safe_div(self, other: Self) -> Self {
+        if other == Self::ZERO {
             self
         } else {
             self / other
@@ -171,19 +199,19 @@ pub trait IntegerExt:
 
     /// Returns the number of decimal digits of `self`.
     ///
-    /// Negative numbers add 1 digit because of '-'.
+    /// This counts the `-` sign as a digit.
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{IntegerExt,Sign};
+    /// use core_extensions::IntegerExt;
     ///
-    /// assert_eq!(100.number_of_digits(),3);
-    /// assert_eq!(10.number_of_digits(),2);
-    /// assert_eq!(1.number_of_digits(),1);
-    /// assert_eq!(0.number_of_digits(),1);
-    /// assert_eq!((-1).number_of_digits(),2);
-    /// assert_eq!((-100).number_of_digits(),4);
+    /// assert_eq!(100.number_of_digits(), 3);
+    /// assert_eq!(10.number_of_digits(), 2);
+    /// assert_eq!(1.number_of_digits(), 1);
+    /// assert_eq!(0.number_of_digits(), 1);
+    /// assert_eq!((-1).number_of_digits(), 2);
+    /// assert_eq!((-100).number_of_digits(), 4);
     ///
     /// ```
     ///
@@ -194,78 +222,96 @@ pub trait IntegerExt:
 ///
 #[cfg(any(core_duration, feature = "std"))]
 pub trait ToTime {
-    /// Creates a [::std::time::Duration] of `self` hours.
+    /// Creates a [`Duration`] of `self` hours.
+    ///
+    /// [`Duration`]: https://doc.rust-lang.org/core/time/struct.Duration.html
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{ToTime};
+    /// use core_extensions::ToTime;
+    ///
     /// use std::time::Duration;
     ///
-    /// assert_eq!(1  .hours(),Duration::from_secs(1  *3600));
-    /// assert_eq!(10 .hours(),Duration::from_secs(10 *3600));
-    /// assert_eq!(101.hours(),Duration::from_secs(101*3600));
+    /// assert_eq!(1  .hours(), Duration::from_secs(1  *3600));
+    /// assert_eq!(10 .hours(), Duration::from_secs(10 *3600));
+    /// assert_eq!(101.hours(), Duration::from_secs(101*3600));
     /// ```
     fn hours(self) -> Duration;
-    /// Creates a [::std::time::Duration] of `self` minutes.
+    /// Creates a [`Duration`] of `self` minutes.
+    ///
+    /// [`Duration`]: https://doc.rust-lang.org/core/time/struct.Duration.html
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{ToTime};
+    /// use core_extensions::ToTime;
+    ///
     /// use std::time::Duration;
     ///
-    /// assert_eq!(1  .minutes(),Duration::from_secs(1  *60));
-    /// assert_eq!(10 .minutes(),Duration::from_secs(10 *60));
-    /// assert_eq!(101.minutes(),Duration::from_secs(101*60));
+    /// assert_eq!(1  .minutes(), Duration::from_secs(1  *60));
+    /// assert_eq!(10 .minutes(), Duration::from_secs(10 *60));
+    /// assert_eq!(101.minutes(), Duration::from_secs(101*60));
     /// ```
     fn minutes(self) -> Duration;
-    /// Creates a [::std::time::Duration] of `self` seconds
+    /// Creates a [`Duration`] of `self` seconds
+    ///
+    /// [`Duration`]: https://doc.rust-lang.org/core/time/struct.Duration.html
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{ToTime};
+    /// use core_extensions::ToTime;
+    ///
     /// use std::time::Duration;
     ///
-    /// assert_eq!(1.seconds(),Duration::from_secs(1));
-    /// assert_eq!(10.seconds(),Duration::from_secs(10));
-    /// assert_eq!(101.seconds(),Duration::from_secs(101));
+    /// assert_eq!(1.seconds(), Duration::from_secs(1));
+    /// assert_eq!(10.seconds(), Duration::from_secs(10));
+    /// assert_eq!(101.seconds(), Duration::from_secs(101));
     /// ```
     fn seconds(self) -> Duration;
-    /// Creates a [::std::time::Duration] of `self` miliseconds
+    /// Creates a [`Duration`] of `self` miliseconds
+    ///
+    /// [`Duration`]: https://doc.rust-lang.org/core/time/struct.Duration.html
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{ToTime};
+    /// use core_extensions::ToTime;
+    ///
     /// use std::time::Duration;
     ///
-    /// assert_eq!(0.miliseconds(),Duration::from_millis(0));
-    /// assert_eq!(1.miliseconds(),Duration::from_millis(1));
-    /// assert_eq!(10.miliseconds(),Duration::from_millis(10));
+    /// assert_eq!(0.miliseconds(), Duration::from_millis(0));
+    /// assert_eq!(1.miliseconds(), Duration::from_millis(1));
+    /// assert_eq!(10.miliseconds(), Duration::from_millis(10));
     ///
     /// ```
     fn miliseconds(self) -> Duration;
-    /// Creates a [::std::time::Duration] of `self` microseconds
+    /// Creates a [`Duration`] of `self` microseconds
+    ///
+    /// [`Duration`]: https://doc.rust-lang.org/core/time/struct.Duration.html
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{ToTime};
+    /// use core_extensions::ToTime;
+    ///
     /// use std::time::Duration;
     ///
-    /// assert_eq!(10.microseconds(),Duration::new(0,10_000));
-    /// assert_eq!(10_000_001.microseconds(),Duration::new(10,1_000));
+    /// assert_eq!(10.microseconds(), Duration::new(0,10_000));
+    /// assert_eq!(10_000_001.microseconds(), Duration::new(10,1_000));
     ///
     /// ```
     fn microseconds(self) -> Duration;
-    /// Creates a [::std::time::Duration] of `self` nanoseconds
+    /// Creates a [`Duration`] of `self` nanoseconds
+    ///
+    /// [`Duration`]: https://doc.rust-lang.org/core/time/struct.Duration.html
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{ToTime};
+    /// use core_extensions::ToTime;
+    ///
     /// use std::time::Duration;
     ///
-    /// assert_eq!(10.nanoseconds(),Duration::new(0,10));
-    /// assert_eq!(1_000_000.nanoseconds(),Duration::new(0,1_000_000));
-    /// assert_eq!(1_000_000_000.nanoseconds(),Duration::new(1,0));
-    /// assert_eq!(1_000_001_000.nanoseconds(),Duration::new(1,1_000));
+    /// assert_eq!(10.nanoseconds(), Duration::new(0,10));
+    /// assert_eq!(1_000_000.nanoseconds(), Duration::new(0,1_000_000));
+    /// assert_eq!(1_000_000_000.nanoseconds(), Duration::new(1,0));
+    /// assert_eq!(1_000_001_000.nanoseconds(), Duration::new(1,1_000));
     ///
     /// ```
     fn nanoseconds(self) -> Duration;
@@ -305,43 +351,49 @@ where
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Sign {
     /// Positive integer
-    Positive,
+    Positive = 0,
     /// Negative integer
-    Negative,
+    Negative = 1,
 }
 
 impl Sign {
-    /// How long the sign string is for a number
+    /// How long the string representation of this sign is.
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{Sign};
+    /// use core_extensions::integers::Sign;
     ///
-    /// assert_eq!(Sign::Positive.sign_len(),0);
-    /// assert_eq!(Sign::Negative.sign_len(),1);
+    /// assert_eq!(Sign::Positive.sign_len(), 0);
+    /// assert_eq!(Sign::Negative.sign_len(), 1);
     /// ```
     ///
     #[inline]
-    pub fn sign_len(self) -> usize {
-        self.sign_string().len()
+    pub const fn sign_len(self) -> usize {
+        self as _
     }
-    /// The sign string for the signedness.
+    /// The string representation of this sign.
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::integer_extensions::{Sign};
+    /// use core_extensions::integers::Sign;
     ///
-    /// assert_eq!(Sign::Positive.sign_string(),"");
-    /// assert_eq!(Sign::Negative.sign_string(),"-");
+    /// assert_eq!(Sign::Positive.sign_string(), "");
+    /// assert_eq!(Sign::Negative.sign_string(), "-");
     /// ```
     ///
     #[inline]
-    pub fn sign_string(self) -> &'static str {
-        match self {
-            Sign::Positive => "",
-            Sign::Negative => "-",
+    pub const fn sign_string(self) -> &'static str {
+        cfg_if!{
+            (feature = "rust_1_46") {
+                match self {
+                    Sign::Positive => "",
+                    Sign::Negative => "-",
+                }
+            } else {
+                ["", "-"][self as usize]
+            }
         }
     }
 }
@@ -439,6 +491,15 @@ macro_rules! impl_absolute_unsigned_numbers {
                 // panicking on self==Self::min_value()
                 (if self < 0 { self.wrapping_neg() }else{ self }) as Self::Unsigned
             }
+
+            const ZERO: Self = 0;
+
+            const ONE: Self = 1;
+
+            const MIN: Self = Self::min_value();
+
+            const MAX: Self = Self::max_value();
+
             impl_absolute_unsigned_numbers!{impl_either;
                 type=$tsig,
                 bits=$bits,
@@ -455,6 +516,15 @@ macro_rules! impl_absolute_unsigned_numbers {
             fn abs_unsigned(self) -> Self::Unsigned {
                 self
             }
+
+            const ZERO: Self = 0;
+
+            const ONE: Self = 1;
+
+            const MIN: Self = Self::min_value();
+
+            const MAX: Self = Self::max_value();
+
             impl_absolute_unsigned_numbers!{impl_either;
                 type=$tuns,
                 bits=$bits,
@@ -484,7 +554,7 @@ impl_absolute_unsigned_numbers!(
     [i16,u16,bits=16,]
     [i32,u32,bits=32,]
     [i64,u64,bits=64,]
-    [i128,u128,bits=128,#[cfg(enable_128)] ]
+    [i128,u128,bits=128,]
     [isize,usize,bits=delegate,cast=UWord,]
 );
 
@@ -496,15 +566,7 @@ mod tests {
 
     use alloc_::vec::Vec;
 
-    #[cfg(enable_128)]
-    type UMax = u128;
-    #[cfg(not(enable_128))]
-    type UMax = u64;
-
-    #[cfg(enable_128)]
     const MAX_POWER: u32 = 38;
-    #[cfg(not(enable_128))]
-    const MAX_POWER: u32 = 19;
 
     fn check_number_of_digits<I, N>(iter: I)
     where
@@ -517,9 +579,9 @@ mod tests {
         }
     }
 
-    fn generate_numbers() -> Vec<(UMax, u32)> {
-        let ten: UMax = 10;
-        let mut out: Vec<(UMax, u32)> = vec![(0, 1), (1, 1), (9, 1)];
+    fn generate_numbers() -> Vec<(u128, u32)> {
+        let ten: u128 = 10;
+        let mut out: Vec<(u128, u32)> = vec![(0, 1), (1, 1), (9, 1)];
 
         for power in 1..MAX_POWER {
             let digits = power + 1;
@@ -529,81 +591,45 @@ mod tests {
         }
         out.push((ten.pow(MAX_POWER), MAX_POWER + 1));
         out.push((ten.pow(MAX_POWER) + 1, MAX_POWER + 1));
-        out.push((UMax::max_value(), MAX_POWER + 1));
+        out.push((u128::max_value(), MAX_POWER + 1));
 
         out
     }
 
     macro_rules! check_number_of_digits_ {
-        ($ty:ty) => {
-            check_number_of_digits(
-                generate_numbers()
-                    .into_iter()
-                    .filter(|v| v.0 <= (<$ty>::max_value() as UMax))
-                    .map(|v| (v.0 as $ty, v.1)),
-            );
+        ($($ty:ty),*) => {
+            $(
+                check_number_of_digits(
+                    generate_numbers()
+                        .into_iter()
+                        .filter(|v| v.0 <= (<$ty>::max_value() as u128))
+                        .map(|v| (v.0 as $ty, v.1)),
+                );
+            )*
         };
     }
 
     #[test]
     fn number_of_digits_i8() {
-        check_number_of_digits_!(i8);
+        check_number_of_digits_!(i8, u8, i16, u16, i32, u32, u64, i64, usize, isize, u128, i128);
+    }
+
+    macro_rules! check_assoc_consts {
+        ($($ty:ty),*) => {
+            $({
+                assert_eq!(<$ty as IntegerExt>::MIN, <$ty>::min_value());
+
+                assert_eq!(<$ty as IntegerExt>::MAX, <$ty>::max_value());
+
+                assert_eq!(<$ty as IntegerExt>::ZERO, 0);
+
+                assert_eq!(<$ty as IntegerExt>::ONE, 1);
+            })*
+        };
     }
 
     #[test]
-    fn number_of_digits_u8() {
-        check_number_of_digits_!(u8);
-    }
-
-    #[test]
-    fn number_of_digits_i16() {
-        check_number_of_digits_!(i16);
-    }
-
-    #[test]
-    fn number_of_digits_u16() {
-        check_number_of_digits_!(u16);
-    }
-
-    #[test]
-    fn number_of_digits_i32() {
-        check_number_of_digits_!(i32);
-    }
-
-    #[test]
-    fn number_of_digits_u32() {
-        check_number_of_digits_!(u32);
-    }
-
-    #[test]
-    fn number_of_digits_u64() {
-        check_number_of_digits_!(u64);
-    }
-
-    #[test]
-    fn number_of_digits_i64() {
-        check_number_of_digits_!(i64);
-    }
-
-    #[test]
-    fn number_of_digits_usize() {
-        check_number_of_digits_!(usize);
-    }
-
-    #[test]
-    fn number_of_digits_isize() {
-        check_number_of_digits_!(isize);
-    }
-
-    #[cfg(enable_128)]
-    #[test]
-    fn number_of_digits_u128() {
-        check_number_of_digits_!(u128);
-    }
-
-    #[cfg(enable_128)]
-    #[test]
-    fn number_of_digits_i128() {
-        check_number_of_digits_!(i128);
+    fn associated_constants() {
+        check_assoc_consts!(i8, u8, i16, u16, i32, u32, u64, i64, usize, isize, u128, i128);
     }
 }

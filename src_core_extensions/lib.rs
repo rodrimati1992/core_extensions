@@ -71,9 +71,9 @@
 //!
 //! [BoolExt](./bool_extensions/trait.BoolExt.html):Extension trait for bool.
 //!
-//! [IntegerExt](./integer_extensions/trait.IntegerExt.html):Extension trait for integers.
+//! [IntegerExt](./integers/trait.IntegerExt.html):Extension trait for integers.
 //!
-//! [ToTime](./integer_extensions/trait.ToTime.html):Extension trait for integers, to create
+//! [ToTime](./integers/trait.ToTime.html):Extension trait for integers, to create
 //! [Duration](::std::time::Duration)s of a certain unit.
 //!
 //! [StringExt](./strings/trait.StringExt.html)Extension trait for `str`.
@@ -185,7 +185,9 @@ pub use alloc as alloc_;
 #[doc(hidden)]
 pub use std_ as alloc_;
 
-
+#[doc(hidden)]
+#[macro_use]
+pub mod macros;
 
 #[cfg(feature = "serde_")]
 extern crate serde;
@@ -196,10 +198,7 @@ extern crate typenum;
 #[cfg(test)]
 extern crate rand;
 
-#[macro_use]
-mod internal_macros;
-
-pub mod bool_extensions;
+mod bool_extensions;
 pub mod callable;
 
 #[cfg(feature = "collections")]
@@ -207,13 +206,10 @@ pub mod callable;
 pub mod collections;
 
 mod const_default_trait;
-pub mod integer_extensions;
+pub mod integers;
 pub mod iterators;
 
-#[doc(hidden)]
-pub mod macros;
-
-pub mod marker_traits;
+mod marker_traits;
 pub mod measure_time;
 
 pub mod option_result_ext;
@@ -259,7 +255,7 @@ pub use self::self_ops::SelfOps;
 pub use self::strings::StringExt;
 
 pub use self::bool_extensions::BoolExt;
-pub use self::integer_extensions::{IntegerExt, ToTime};
+pub use self::integers::{IntegerExt, ToTime};
 pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
 #[doc(inline)]
 pub use self::marker_traits::MarkerType;
