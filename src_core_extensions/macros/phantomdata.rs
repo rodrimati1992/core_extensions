@@ -65,7 +65,7 @@ pub struct ClosureTypes<P, C: FnOnce(P) -> R, R> {
 ///
 /// // This block passed to the `expr_as_phantom` macro doesn't run.
 /// let name = type_name(expr_as_phantom!({
-///     list.extend(2..u128::MAX);
+///     list.extend(2..1_000u16);
 ///     list
 /// }));
 /// 

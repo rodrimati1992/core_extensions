@@ -86,13 +86,14 @@ enum ReplaceNthState<T> {
     Replaced,
 }
 
-/// An Iterator that replaces the nth element with another value.
+/// An Iterator that replaces the `nth` element with another value.
 ///
 /// # Example
 ///
 /// ```rust
 /// use core_extensions::iterators::ReplaceNth;
 ///
+/// // This iterator replaces the 4th element with `100`
 /// let list = ReplaceNth::new(0..=6, 4, 100).collect::<Vec<_>>();
 ///
 /// assert_eq!(list, vec![0, 1, 2, 3, 100, 5, 6]);
@@ -298,7 +299,7 @@ pub trait IteratorExt: Iterator {
     ///
     /// # Example
     /// ```
-    /// use core_extensions::iterators::IteratorExtx;
+    /// use core_extensions::iterators::IteratorExt;
     ///
     /// assert_eq!(
     ///     (0..=9).replace_nth(5, 1337).collect::<Vec<_>>(),
@@ -383,7 +384,7 @@ impl<I> IteratorExt for I where I: ?Sized + Iterator {}
 
 /// Constructs `Iterator`s using a closure.
 ///
-/// This can construct an `Iterator` (with `IntoIterator::into_iter`)
+/// This can turn this into an `Iterator` (with `IntoIterator::into_iter`)
 /// multiple times if the closure is `Copy`.
 ///
 /// # Example
@@ -455,7 +456,7 @@ macro_rules! iter_cloner {
     };
 }
 
-/// Implements [`IntoIterator::into_iter`] by cloning the one it references.
+/// Implements [`IntoIterator::into_iter`] by cloning the iterator it references.
 ///
 /// You can also use the [`iter_cloner`](../macro.iter_cloner.html) macro to
 /// construct this,

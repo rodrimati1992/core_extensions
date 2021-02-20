@@ -210,6 +210,8 @@ pub mod integers;
 pub mod iterators;
 
 mod marker_traits;
+
+#[cfg(feature = "std")]
 pub mod measure_time;
 
 pub mod option_result_ext;
