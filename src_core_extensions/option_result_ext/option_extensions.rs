@@ -5,7 +5,10 @@ use std_::fmt;
 use super::ResultLike;
 use type_identity::TypeIdentity;
 
-/// Extension trait for [Option].
+/// Extension trait for [`Option`].
+/// 
+/// 
+/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
 pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
     /// Maps as reference to the contents.
     ///
@@ -15,16 +18,16 @@ pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
     /// use core_extensions::OptionExt;
     ///
     /// struct User{
-    ///     name:String,
-    ///     surname:String,
+    ///     name: String,
+    ///     surname: String,
     /// }
     ///
-    /// let user=Some(User{name:"Matt".into(),surname:"Parker".into()});
-    /// let name   =user.map_ref(|v| v.name.as_str() );
-    /// let surname=user.map_ref(|v| v.surname.as_str() );
+    /// let user = Some(User{name: "Bob".to_string(), surname: "Math".to_string()});
+    /// let name    = user.map_ref(|v| v.name.as_str() );
+    /// let surname = user.map_ref(|v| v.surname.as_str() );
     ///
-    /// assert_eq!(name,Some("Matt"));
-    /// assert_eq!(surname,Some("Parker"));
+    /// assert_eq!(name, Some("Bob"));
+    /// assert_eq!(surname, Some("Math"));
     ///
     /// ```
     #[inline]
@@ -33,7 +36,10 @@ pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
         T: 'a,
         F: FnOnce(&'a T) -> U,
     {
-        self.as_type().as_ref().map(f)
+        match self.as_type() {
+            Some(x) => Some(f(x)),
+            None => None,
+        }
     }
     /// Maps as mutable reference to the contents.
     ///
@@ -43,20 +49,20 @@ pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
     /// use core_extensions::OptionExt;
     ///
     /// struct User{
-    ///     name:String,
-    ///     surname:String,
+    ///     name: String,
+    ///     surname: String,
     /// }
     ///
-    /// let mut user=Some(User{name:"Matt".into(),surname:"Parker".into()});
+    /// let mut user = Some(User{name: "Matt".into(), surname: "Parker".into()});
     /// {
-    ///     let name   =user.map_mut(|v|{
-    ///         v.name.push_str("hew") ;
+    ///     let name = user.map_mut(|v|{
+    ///         v.name.push_str("hew");
     ///         v.name.as_str()
     ///     });
     ///     
-    ///     assert_eq!(name,Some("Matthew"));
+    ///     assert_eq!(name, Some("Matthew"));
     /// }
-    /// assert_eq!(user.unwrap().name,"Matthew");
+    /// assert_eq!(user.unwrap().name, "Matthew");
     ///
     /// ```
     #[inline]
@@ -65,7 +71,10 @@ pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
         T: 'a,
         F: FnOnce(&'a mut T) -> U,
     {
-        self.as_type_mut().as_mut().map(f)
+        match self.as_type_mut() {
+            Some(x) => Some(f(x)),
+            None => None,
+        }
     }
 }
 
@@ -80,17 +89,48 @@ impl<T> ResultLike for Option<T> {
         self.is_some()
     }
     #[inline]
+    #[cfg_attr(feature = "rust_1_46", track_caller)]
     fn to_result_(self) -> Result<Self::Item, Self::Error> {
-        self.ok_or(IsNoneError)
+        match self {
+            Some(x) => Ok(x),
+            None => Err(IsNoneError::new()),
+        }
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-/// The [ResultLike::Error]
-/// value for Option<T>
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct IsNoneError;
+/// The [`ResultLike::Error`] for `Option`
+/// 
+/// [`ResultLike::Error`]: trait.ResultLike.html#associatedtype.Error
+#[derive(Debug, Copy, Clone)]
+pub struct IsNoneError (
+    #[cfg(rust_1_46)]
+    &'static std_::panic::Location<'static>
+);
+
+impl IsNoneError {
+    /// Constructs an IsNoneError
+    #[cfg_attr(feature = "rust_1_46", track_caller)]
+    #[inline]
+    pub fn new() -> Self {
+        cfg_if!(
+            (feature = "rust_1_46") {
+                Self(std_::panic::Location::caller())
+            } else {
+                Self()
+            }
+        )
+    }
+}
+
+impl std_::cmp::PartialEq for IsNoneError {
+    fn eq(&self, _: &IsNoneError) -> bool {
+        true
+    }
+}
+
+impl std_::cmp::Eq for IsNoneError {}
 
 impl fmt::Display for IsNoneError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -111,28 +151,52 @@ impl error::Error for IsNoneError {
 /// 
 /// # Example
 /// 
-/// TODO
+/// ```rust
+/// use core_extensions::TransposeOption;
 /// 
-pub trait ToOption {
+/// assert_eq!((Some(3), Some(5)).transpose_opt(), Some((3, 5)));
+/// assert_eq!((Some(3), None::<u32>).transpose_opt(), None);
+///
+/// let ok_some: Result<Option<u32>, ()> = Ok(Some(8));
+/// let ok_none: Result<Option<u32>, ()> = Ok(None);
+/// let err: Result<Option<u32>, ()> = Err(());
+///
+/// assert_eq!(ok_some.transpose_opt(), Some(Ok(8)));
+/// assert_eq!(ok_none.transpose_opt(), None);
+/// assert_eq!(err.transpose_opt(), Some(Err(())));
+///
+/// ```
+/// 
+pub trait TransposeOption {
     /// The type in which the `Option`s are unwrapped.
     type Output;
     /// Performs the conversion
-    fn to_option(self) -> Option<Self::Output>;
+    fn transpose_opt(self) -> Option<Self::Output>;
 }
 
-impl<T> ToOption for Option<T> {
+impl<T> TransposeOption for Option<T> {
     type Output = T;
-    fn to_option(self) -> Option<Self::Output> {
+    #[inline]
+    fn transpose_opt(self) -> Option<Self::Output> {
         self
+    }
+}
+
+impl<T, E> TransposeOption for Result<Option<T>, E> {
+    type Output = Result<T, E>;
+    #[inline]
+    fn transpose_opt(self) -> Option<Result<T, E>> {
+        self.transpose()
     }
 }
 
 macro_rules! for_tuple {
     ($($t:ident $i:tt),*) => {
-        impl<$($t,)*> ToOption for ($(Option<$t>,)*) {
+        impl<$($t,)*> TransposeOption for ($(Option<$t>,)*) {
             type Output = ($($t,)*);
 
-            fn to_option(self) -> Option<Self::Output> {
+            #[inline]
+            fn transpose_opt(self) -> Option<Self::Output> {
                 Some(($(self.$i?,)*))
             }
         }
