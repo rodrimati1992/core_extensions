@@ -11,4 +11,4 @@ pub use self::option_extensions::*;
 #[doc(inline)]
 pub use self::result_extensions::*;
 #[doc(inline)]
-pub use self::result_like::ResultLike;
+pub use self::result_like::{ResultLike, ResultLikeExt};

@@ -261,7 +261,7 @@ pub use self::integers::{IntegerExt, ToTime};
 pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
 #[doc(inline)]
 pub use self::marker_traits::MarkerType;
-pub use self::option_result_ext::{OptionExt, ResultExt, ResultLike};
+pub use self::option_result_ext::{OptionExt, ResultExt, ResultLike, ResultLikeExt, TransposeOption};
 pub use self::phantom::{
     AsPhantomData,
     AndPhantom, AndPhantomCov,

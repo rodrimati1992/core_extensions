@@ -6,7 +6,7 @@ use std_::{cmp, fmt};
 ///
 /// Use this as a type parameter to enums to make the variants that use it unconstructible.
 ///
-/// This type is used in [ResultLike](../option_result_ext/trait.ResultLike.html)
+/// This type is used in [ResultLikeExt](../option_result_ext/trait.ResultLikeExt.html)
 /// to unwrap values that can only be either the ok or error variants of the type.
 ///
 /// # Interaction with unsafe code
@@ -18,7 +18,7 @@ use std_::{cmp, fmt};
 ///
 /// ```
 /// use std::str::FromStr;
-/// use core_extensions::{SelfOps,ResultLike,Void};
+/// use core_extensions::{SelfOps,ResultLikeExt,Void};
 ///
 /// #[derive(Debug,PartialEq)]
 /// pub struct Double(pub String);
@@ -32,7 +32,7 @@ use std_::{cmp, fmt};
 /// }
 ///
 /// assert_eq!(
-///     "12345".parse::<Double>().unwrap_safe(),
+///     "12345".parse::<Double>().into_item(),
 ///     Double("12345".repeat(2))
 /// );
 ///
@@ -41,7 +41,7 @@ use std_::{cmp, fmt};
 /// # Example,infinite loop which only returns on error.
 ///
 /// ```
-/// use core_extensions::{ResultLike,Void};
+/// use core_extensions::{ResultLikeExt,Void};
 ///
 /// #[derive(Debug,PartialEq)]
 /// enum Error<T>{
@@ -58,8 +58,8 @@ use std_::{cmp, fmt};
 ///     Err(Error::IteratorWasntInfinite)
 /// }
 ///
-/// assert_eq!(reading_numbers(1..100).unwrap_err_safe() , Error::IteratorWasntInfinite);
-/// assert_eq!(reading_numbers(0..).unwrap_err_safe() , Error::InvalidItem(0));
+/// assert_eq!(reading_numbers(1..100).into_error() , Error::IteratorWasntInfinite);
+/// assert_eq!(reading_numbers(0..).into_error() , Error::InvalidItem(0));
 ///
 ///
 /// ```
@@ -76,12 +76,12 @@ impl Void {
     }
 }
 
-// Conflicts with the built-in `impl Into<T> for T{...}`
-// impl<T> Into<T> for Void{
-//     fn into(_:Self)->T{
-//         self.to()
-//     }
-// }
+impl From<Void> for std_::convert::Infallible {
+    #[inline(always)]
+    fn from(this: Void) -> Self {
+        match this {}
+    }
+}
 
 #[cfg(std)]
 impl std_::error::Error for Void {

@@ -21,13 +21,16 @@ travis-ci = { repository =  "rodrimati1992/core_extensions/" }
 
 [features]
 # TODO: comment this out
-default = ["std"]
+default = ["std", "track_caller"]
 
 std=["alloc"]
 alloc=[]
 
 serde_=["serde"]
 collections=[]
+
+# Changes ResultLike to allow getting the caller location in `ResultLike::into_result_`
+track_caller = ["rust_1_46"]
 
 rust_1_44 = []
 rust_1_46 = ["rust_1_44"]

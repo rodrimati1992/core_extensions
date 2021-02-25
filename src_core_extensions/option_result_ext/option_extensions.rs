@@ -89,12 +89,22 @@ impl<T> ResultLike for Option<T> {
         self.is_some()
     }
     #[inline]
-    #[cfg_attr(feature = "rust_1_46", track_caller)]
-    fn to_result_(self) -> Result<Self::Item, Self::Error> {
+    #[cfg_attr(feature = "track_caller", track_caller)]
+    fn into_result_(self) -> Result<Self::Item, Self::Error> {
         match self {
             Some(x) => Ok(x),
             None => Err(IsNoneError::new()),
         }
+    }
+
+    #[inline]
+    fn from_item(item: Self::Item) -> Self {
+        Some(item)
+    }
+    
+    #[inline]
+    fn from_error(_err: Self::Error) -> Self {
+        None
     }
 }
 
@@ -105,20 +115,23 @@ impl<T> ResultLike for Option<T> {
 /// [`ResultLike::Error`]: trait.ResultLike.html#associatedtype.Error
 #[derive(Debug, Copy, Clone)]
 pub struct IsNoneError (
-    #[cfg(rust_1_46)]
-    &'static std_::panic::Location<'static>
+    #[cfg(feature = "track_caller")]
+    &'static std_::panic::Location<'static>,
+
+    #[cfg(not(feature = "track_caller"))]
+    (),
 );
 
 impl IsNoneError {
     /// Constructs an IsNoneError
-    #[cfg_attr(feature = "rust_1_46", track_caller)]
+    #[cfg_attr(feature = "track_caller", track_caller)]
     #[inline]
     pub fn new() -> Self {
         cfg_if!(
-            (feature = "rust_1_46") {
+            (feature = "track_caller") {
                 Self(std_::panic::Location::caller())
             } else {
-                Self()
+                Self(())
             }
         )
     }
@@ -139,11 +152,7 @@ impl fmt::Display for IsNoneError {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for IsNoneError {
-    fn description(&self) -> &str {
-        "attempted to unwrap an Option that was None"
-    }
-}
+impl error::Error for IsNoneError {}
 
 ////////////////////////////////////////////////////////////////////////////////////
 
