@@ -232,24 +232,6 @@ pub mod void;
 
 mod rust_version_assert;
 
-/// The items from this crate which are almost always used.
-pub mod prelude {
-    #[doc(inline)]
-    pub use self_ops::SelfOps;
-
-    #[doc(inline)]
-    pub use strings::StringExt;
-
-    #[doc(inline)]
-    pub use marker_traits::MarkerType;
-
-    #[doc(inline)]
-    pub use type_identity::{TIdentity, TypeIdentity};
-
-    #[doc(inline)]
-    pub use phantom::CovariantPhantom;
-}
-
 pub use self::const_default_trait::ConstDefault;
 pub use self::callable::{CallExt, CallInto, CallMut, CallRef};
 #[doc(inline)]

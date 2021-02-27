@@ -6,7 +6,7 @@ use std_::{
     mem,
 };
 
-use crate::prelude::*;
+use crate::SelfOps;
 
 /// A version of [`std::iter::OnceWith`] usable in Rust 1.41.0.
 ///

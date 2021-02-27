@@ -77,7 +77,7 @@ pub type InvariantRefPhantom<'a, T> = PhantomData<Cell<&'a T>>;
 ///////////////////////////////////////////////////////////////////////////
 
 
-/// For getting the `PhantomData<Self>` with a variety of lifetime variances.
+/// For getting a `PhantomData<Self>` with a variety of lifetime variances.
 pub trait AsPhantomData {
     #[doc(hidden)]
     const PHANTOM_QFEO7CXJP2HJSGYWRZFRBHDTHU: PhantomData<Self> = PhantomData;

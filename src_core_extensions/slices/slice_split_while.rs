@@ -56,37 +56,31 @@ where
 
 //-------------------------------------------------------------------------------------------
 
-/// KeySlice is a pair of (slice,key) returned from the (R)SplitSliceWhile iterators.
+/// A pair of (slice, key) returned by the 
+/// [RSplitSliceWhile](struct.RSplitSliceWhile.html)/
+/// [SplitSliceWhile](struct.SplitSliceWhile.html) iterators.
 ///
-/// `slice` is the slice in which `mapper` returned the same key for every character.
-///
-/// `key` is the last value returned by `mapper`
-///
-/// `mapper` is a closure of the type `impl FnMut(&'a T) -> U`
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct KeySlice<'a, T:'a, U> {
-    /// The slice where the sequence of values returned by `mapper` compared equal.
+    /// A slice where every element was mapped to the same key by a closure.
     pub slice: &'a [T],
-    /// The last value that compared equal (in a sequence) returned by `mapper` .
+    /// The value that all the elements in the slice were mapped to.
     pub key: U,
 }
 
 impl<'a, T, U> KeySlice<'a, T, U> {
-    /// Accessor for the underlying `&'a [T]`.
-    pub fn slice(&self) -> &'a [T] {
-        self.slice
-    }
-    /// Converts this KeySlice into a key/slice pair.
-    pub fn into_pair(self)->(U,&'a [T]){
-        (self.key,self.slice)
+    /// Converts this into a key-slice pair.
+    pub fn into_pair(self) -> (U, &'a [T]){
+        (self.key, self.slice)
     }
 }
 
 //-------------------------------------------------------------------------------------------
 
-/// Iterator that returns slices for the ranges in which `mapper` returns the same value.
+/// Iterator over slices,
+/// in which all the elements in each slice were mapped to the same key by a closure.
 ///
-/// Look [here](::slices::ValSliceExt::split_while) for details and examples.
+/// Look [here](trait.ValSliceExt.html#method.split_while) for examples.
 #[derive(Debug, Clone)]
 pub struct SplitSliceWhile<'a, T:'a, P, U> {
     pub(super) mapper: P,
@@ -121,10 +115,11 @@ where
 
 //-------------------------------------------------------------------------------------------
 
-/// Iterator that returns slices for the ranges in which `mapper` returns the same value
-/// ,from the end.
+/// Iterator over slices,
+/// in which all the elements in each slice were mapped to the same key by a closure,
+/// iterating from the end.
 ///
-/// Look [here](::slices::ValSliceExt::rsplit_while) for details and examples.
+/// Look [here](trait.ValSliceExt.html#method.rsplit_while) for examples.
 #[derive(Debug, Clone)]
 pub struct RSplitSliceWhile<'a, T:'a, P, U> {
     pub(super) mapper: P,
