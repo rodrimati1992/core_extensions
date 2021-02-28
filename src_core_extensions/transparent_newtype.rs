@@ -21,7 +21,8 @@ use crate::utils::transmute_ignore_size;
 ///
 /// Implementors must only implement this trait for `#[repr(transparent)]` wrappers,
 /// with the same alignment as its only non-zero-sized field,
-/// and the type of that field as the value of the [`Inner`] associated type.
+/// and the type of that field must be the value of the [`TransparentNewtype::Inner`]
+/// associated type.
 ///
 /// The recommended way to implement this trait's required methods is with:
 /// ```
@@ -83,7 +84,7 @@ use crate::utils::transmute_ignore_size;
 ///
 /// ```
 ///
-/// [`Inner`]: #associatedtype.Inner
+/// [`TransparentNewtype::Inner`]: #associatedtype.Inner
 /// [`TransparentNewtypeExt`]: ./trait.TransparentNewtypeExt.html
 ///
 pub unsafe trait TransparentNewtype {
@@ -236,7 +237,7 @@ unsafe impl<T> TransparentNewtype for core::mem::ManuallyDrop<T> {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/// Converts a `Vec` of `T` into a `Vec` of the field it wraps.
+/// Converts a `Vec` of `T` into a `Vec` of the type that `T` wraps.
 #[cfg(feature = "alloc")]
 pub fn into_inner_vec<T>(this: Vec<T>) -> Vec<T::Inner>
 where

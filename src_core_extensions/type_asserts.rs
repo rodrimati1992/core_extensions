@@ -1,11 +1,14 @@
-//! Assertions done on the type-level, most useful for tests.
+//! Type-level assertions, most useful for tests.
 
 use crate::TypeIdentity;
 
 use std_::marker::PhantomData;
 
 
-/// Struct used to assert that its type parameters are the same type.
+/// Asserts that its 2 type parameters are the same type.
+///
+/// This assertion is done on the type level,
+/// so `let _: AssertEq<T, U>;` requires that `T` must be the same type as `U`.
 ///
 /// # Example
 ///
@@ -54,17 +57,20 @@ where L:TypeIdentity<Type=R>
 }
 
 impl<A> AssertEq<A,A>{
-    /// Constructs an AssertEq.
+    /// Constructs an `AssertEq`.
     pub fn new(_: A, _: A)->Self{
         Self{_marker: PhantomData}
     }
 
-    /// Constructs an AssertEq.
+    /// Constructs an `AssertEq`.
     pub const NEW: Self = Self{_marker: PhantomData};
 }
 
 
-/// Struct used to assert that its type parameters are the same type.
+/// Asserts that its 3 type parameters are the same type.
+///
+/// This assertion is done on the type level,
+/// so `let _: AssertEq3<A, B, C>;` requires that `A`, `B`, and `C` must be the same type.
 ///
 /// # Example
 ///
@@ -124,16 +130,20 @@ where
 }
 
 impl<A> AssertEq3<A,A,A>{
-    /// Constructs an AssertEq3.
+    /// Constructs an `AssertEq3`.
     pub fn new(_: A, _: A, _: A)->Self{
         Self{_marker: PhantomData}
     }
-    /// Constructs an AssertEq3.
+    /// Constructs an `AssertEq3`.
     pub const NEW: Self = Self{_marker: PhantomData};
 }
 
 
-/// Struct used to assert that its type parameters are the same type.
+/// Asserts that its 4 type parameters are the same type.
+///
+/// This assertion is done on the type level,
+/// so `let _: AssertEq3<A, B, C, D>;` requires that 
+/// `A`, `B`, `C`, and `D` must be the same type.
 ///
 /// # Example
 ///
@@ -210,12 +220,12 @@ where
 }
 
 impl<A> AssertEq4<A,A,A,A>{
-    /// Constructs an AssertEq4.
+    /// Constructs an `AssertEq4`.
     pub fn new(_: A, _: A, _: A, _: A)->Self{
         Self{_marker: PhantomData}
     }
     
-    /// Constructs an AssertEq4.
+    /// Constructs an `AssertEq4`.
     pub const NEW: Self = Self{_marker: PhantomData};
 }
 
