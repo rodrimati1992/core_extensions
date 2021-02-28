@@ -3,17 +3,16 @@
 //!
 //!
 
-use std_::cell::{Cell,RefCell,UnsafeCell};
+use crate::const_default;
 
-use std_::cmp::Reverse;
-
-use std_::marker::PhantomData;
-
-use std_::mem::ManuallyDrop;
-
-use std_::num::Wrapping;
-
-use std_::sync::atomic::{AtomicUsize,AtomicIsize,AtomicBool};
+use std_::{
+    cell::{Cell,RefCell,UnsafeCell},
+    cmp::Reverse,
+    marker::PhantomData,
+    mem::ManuallyDrop,
+    num::Wrapping,
+    sync::atomic::{AtomicUsize,AtomicIsize,AtomicBool},
+};
 
 #[allow(unused_imports)]
 use std_::sync::atomic;
@@ -55,19 +54,6 @@ pub trait ConstDefault: Sized {
     /// The default value for `Self`.
     const DEFAULT: Self;
 }
-
-/// Gets the ConstDefault::DEFAULT associated constant for This.
-/// 
-/// Use this macro to avoid using the wrong `DEFAULT` associated cosntant,
-/// eg: a `DEFAULT` associated constant in an inherent impl block with a
-/// subset of the  constraints that the `ConstDefault` impl has.
-#[macro_export]
-macro_rules! const_default {
-    ($This:ty) => {
-        <$This as $crate::ConstDefault>::DEFAULT
-    };
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 

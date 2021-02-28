@@ -456,7 +456,8 @@ impl_call! {
 
 /**
 This macro allows more ergonomically implementing the 
-[`CallRef`], [`CallMut`], |`CallInto`] traits .
+[`CallRef`], [`CallMut`], [`CallInto`] traits .
+
 
 # Examples
 
@@ -583,7 +584,7 @@ $( where [ $( <where_predicates> )* ] )*
 
 [`CallMut`]: ./callable/trait.CallMut.html
 
-|`CallInto`]: ./callable/trait.CallInto.html
+[`CallInto`]: ./callable/trait.CallInto.html
 
 */
 #[macro_export]
