@@ -12,28 +12,36 @@ mod iterators;
 
 pub use self::iterators::{CharIndicesFrom, KeyStr, RSplitWhile, SplitWhile};
 
-/// Extension trait for strings (any type that borrows as [str]).
+/// Extension trait for strings (any type that borrows as `str`).
 pub trait StringExt: Borrow<str> {
-    /// Returns the previous character boundary,stopping at 0.
+    /// Returns the previous character boundary, stopping at 0.
     ///
-    /// if index>self.len() ,returns self.len()
+    /// if `index > self.len()`, returns `self.len()`.
     ///
     /// # Example
-    /// ```
-    /// use core_extensions::strings::StringExt;
     ///
-    /// let word="niño";
-    /// assert_eq!(word.previous_char_boundary(0),0);
-    /// assert_eq!(word.previous_char_boundary(1),0);
-    /// assert_eq!(word.previous_char_boundary(2),1);
-    /// // This index is inside of 'ñ'
-    /// assert_eq!(word.previous_char_boundary(3),2);
-    /// assert_eq!(word.previous_char_boundary(4),2);
-    /// assert_eq!(word.previous_char_boundary(5),4);
-    /// assert_eq!(word.previous_char_boundary(6),5);
-    /// assert_eq!(word.previous_char_boundary(7),5);
-    /// assert_eq!(word.previous_char_boundary(8),5);
     /// ```
+    /// use core_extensions::StringExt;
+    ///
+    /// let word = "foo速度惊人";
+    ///
+    /// assert_eq!(word.previous_char_boundary(0), 0);
+    /// assert_eq!(word.previous_char_boundary(1), 0);
+    /// assert_eq!(word.previous_char_boundary(2), 1);
+    /// assert_eq!(word.previous_char_boundary(3), 2);
+    ///
+    /// // This input index is inside of '速'
+    /// assert_eq!(word.previous_char_boundary(4), 3);
+    /// assert_eq!(word.previous_char_boundary(5), 3);
+    /// assert_eq!(word.previous_char_boundary(6), 3);
+    ///
+    /// // This input index is inside of '度'
+    /// assert_eq!(word.previous_char_boundary(7), 6);
+    ///
+    /// assert_eq!(word.previous_char_boundary(10000), word.len());
+    ///
+    /// ```
+    ///
     fn previous_char_boundary(&self, mut index: usize) -> usize {
         let this = self.borrow();
         if index > this.len() {
@@ -46,22 +54,32 @@ pub trait StringExt: Borrow<str> {
         index
     }
     /// Returns the next character boundary.
-    /// if index>self.len() ,returns self.len()
+    ///
+    /// If `index > self.len()`, returns `self.len()`
     ///
     /// # Example
-    /// ```
-    /// use core_extensions::strings::StringExt;
     ///
-    /// let word="niño";
-    /// assert_eq!(word.next_char_boundary(0),1);
-    /// assert_eq!(word.next_char_boundary(1),2);
-    /// assert_eq!(word.next_char_boundary(2),4);
-    /// // This index is inside of 'ñ'
-    /// assert_eq!(word.next_char_boundary(3),4);
-    /// assert_eq!(word.next_char_boundary(4),5);
-    /// assert_eq!(word.next_char_boundary(5),5);
-    /// assert_eq!(word.next_char_boundary(6),5);
     /// ```
+    /// use core_extensions::StringExt;
+    ///
+    /// let word = "foo誰もが";
+    ///
+    /// assert_eq!(word.next_char_boundary(0), 1);
+    /// assert_eq!(word.next_char_boundary(1), 2);
+    /// assert_eq!(word.next_char_boundary(2), 3);
+    ///
+    /// // This input index is inside of '誰'
+    /// assert_eq!(word.next_char_boundary(3), 6);
+    /// assert_eq!(word.next_char_boundary(4), 6);
+    /// assert_eq!(word.next_char_boundary(5), 6);
+    ///
+    /// // This input index is inside of 'も'
+    /// assert_eq!(word.next_char_boundary(6), 9);
+    ///
+    /// assert_eq!(word.next_char_boundary(10000), word.len());
+    ///
+    /// ```
+    ///
     fn next_char_boundary(&self, mut index: usize) -> usize {
         let this = self.borrow();
         if index >= this.len() {
@@ -73,26 +91,30 @@ pub trait StringExt: Borrow<str> {
         }
         index
     }
-    /// If index is at a character boundary it returns index,
-    /// otherwise it  returns the previous character boundary.
+    /// Returns the closest characted boundary left of `index`(including `index`).
     ///
-    /// if index>self.len() ,returns self.len()
+    /// if `index > self.len()`, returns `self.len()`
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::strings::StringExt;
+    /// use core_extensions::StringExt;
     ///
-    /// let word="niño";
-    /// assert_eq!(word.left_char_boundary(0),0);
-    /// assert_eq!(word.left_char_boundary(1),1);
-    /// assert_eq!(word.left_char_boundary(2),2);
-    /// // This index is inside of 'ñ'
-    /// assert_eq!(word.left_char_boundary(3),2);
-    /// assert_eq!(word.left_char_boundary(4),4);
-    /// assert_eq!(word.left_char_boundary(5),5);
-    /// assert_eq!(word.left_char_boundary(6),5);
-    /// assert_eq!(word.left_char_boundary(7),5);
+    /// let word = "barЯзык";
+    ///
+    /// assert_eq!(word.left_char_boundary(0), 0);
+    /// assert_eq!(word.left_char_boundary(1), 1);
+    /// assert_eq!(word.left_char_boundary(2), 2);
+    ///
+    /// // The input index is inside of 'Я'
+    /// assert_eq!(word.left_char_boundary(3), 3);
+    /// assert_eq!(word.left_char_boundary(4), 3);
+    ///
+    /// // The input index is inside of 'з'
+    /// assert_eq!(word.left_char_boundary(5), 5);
+    /// assert_eq!(word.left_char_boundary(6), 5);
+    ///
+    /// assert_eq!(word.left_char_boundary(10000), word.len());
     ///
     /// ```
     fn left_char_boundary(&self, mut index: usize) -> usize {
@@ -105,26 +127,27 @@ pub trait StringExt: Borrow<str> {
         }
         index
     }
-    /// If index is at a character boundary it returns index,
-    /// otherwise it  returns the next character boundary.
+    /// Returns the closest characted boundary right of `index`(including `index`).
     ///
-    /// if index>self.len() ,returns self.len()
+    /// if `index > self.len()`, returns `self.len()`
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::strings::StringExt;
+    /// use core_extensions::StringExt;
     ///
-    /// let word="niño";
+    /// let word = "rápido";
+    ///
     /// assert_eq!(word.right_char_boundary(0),0);
-    /// assert_eq!(word.right_char_boundary(1),1);
-    /// assert_eq!(word.right_char_boundary(2),2);
-    /// // This index is inside of 'ñ'
-    /// assert_eq!(word.right_char_boundary(3),4);
-    /// assert_eq!(word.right_char_boundary(4),4);
-    /// assert_eq!(word.right_char_boundary(5),5);
-    /// assert_eq!(word.right_char_boundary(6),5);
-    /// assert_eq!(word.right_char_boundary(7),5);
+    ///
+    /// // The input index is inside of 'á'
+    /// assert_eq!(word.right_char_boundary(1), 1);
+    /// assert_eq!(word.right_char_boundary(2), 3);
+    ///
+    /// assert_eq!(word.right_char_boundary(3), 3);
+    /// assert_eq!(word.right_char_boundary(4), 4);
+    ///
+    /// assert_eq!(word.right_char_boundary(10000), word.len());
     ///
     /// ```
     fn right_char_boundary(&self, mut index: usize) -> usize {
@@ -137,113 +160,32 @@ pub trait StringExt: Borrow<str> {
         }
         index
     }
-    /// Returns the offset of a substring inside of the `other` str.
+    /// Returns an iterator over substrings whose characters were mapped to
+    /// the same key by `mapper`.
     ///
-    /// Returns None if `self` is not a substring of `other`.
-    ///
-    /// This operation is constant time.Purely done using pointer comparisons.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let text="What is this?";
-    /// assert_eq!(
-    ///     vec![(0,"What"),(5,"is"),(8,"this?")],
-    ///     text.split_whitespace()
-    ///         .filter_map(|w|{
-    ///             w.get_offset_inside_of(text)
-    ///                 .map(|x| (x,w) )
-    ///         })
-    ///         .collect::<Vec<_>>()
-    /// );
-    ///
-    /// ```
-    fn get_offset_inside_of(&self, parent: &str) -> Option<usize> {
-        let self_addr = self.borrow().as_ptr() as usize;
-        let offset = self_addr.wrapping_sub(parent.as_ptr() as usize);
-        if offset < parent.len() {
-            Some(offset)
-        } else {
-            None
-        }
-    }
-    /// Returns the offset of a substring inside of the `other` str.
-    ///
-    /// Returns None if `self` is not a substring of `other`.
-    ///
-    /// This operation is constant time.Purely done using pointer comparisons.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let text="What is this?";
-    /// assert_eq!(
-    ///     vec![(0,"What"),(5,"is"),(8,"this?")],
-    ///     text.split_whitespace()
-    ///         .map(|w| (w.offset_inside_of(text),w) )
-    ///         .collect::<Vec<_>>()
-    /// );
-    ///
-    /// ```
-    fn offset_inside_of(&self, parent: &str) -> usize {
-        let self_addr = self.borrow().as_ptr() as usize;
-        let offset = self_addr.wrapping_sub(parent.as_ptr() as usize);
-        cmp::min(parent.len(), offset)
-    }
-    /// Returns whether `self` is a substring (in memory) of `parent`.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use core_extensions::strings::StringExt;
-    /// use core_extensions::SliceExt;
-    /// let text="What is this?";
-    /// for i in 0..text.len() {
-    ///     let sub=text.slice_lossy(i..text.len(),());
-    ///     assert!(sub.is_substring_of(text));
-    /// }
-    ///
-    /// assert!( !"What".to_string().is_substring_of(text));
-    /// assert!( !"is"  .to_string().is_substring_of(text));
-    /// assert!( !"this".to_string().is_substring_of(text));
-    /// assert!( !"".is_substring_of(text));
-    /// ```
-    fn is_substring_of(&self, parent: &str) -> bool {
-        let addr_self = self.borrow().as_ptr() as usize;
-        let addr_other = parent.as_ptr() as usize;
-        addr_self.wrapping_sub(addr_other) < parent.len()
-    }
-    /// Returns an iterator over substrings whose chars were mapped to the same key by mapper.
-    ///
-    /// Returns an impl Iterator\<Item=[KeyStr](./struct.KeyStr.html)\<T\>>
+    /// The returned type implements 
+    /// `DoubleEndedIterator<Item =`[KeyStr](./struct.KeyStr.html)`<T>>`.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
-    ///
-    /// fn func<U:Eq+Clone,F>(s:&str,f:F)->Vec<(U,&str)>
-    /// where F:FnMut(char)->U
-    /// {
-    ///     s.split_while(f).map(|v| (v.key,v.str) ).collect()
-    /// }
+    /// use core_extensions::strings::{StringExt, KeyStr};
     ///
     /// assert_eq!(
-    ///     "Hello, world!"
-    ///         .split_while(|c|c.is_alphabetic())
-    ///         .filter(|v| v.key==true )
-    ///         .map(|v| v.str )
-    ///         .collect::<Vec<_>>(),
-    ///     vec!["Hello","world"]
+    ///     "Hello, world!".split_while(|c| c.is_alphanumeric()).collect::<Vec<_>>(),
+    ///     vec![
+    ///         KeyStr{key: true, str: "Hello"},
+    ///         KeyStr{key: false, str: ", "},
+    ///         KeyStr{key: true, str: "world"},
+    ///         KeyStr{key: false, str: "!"},
+    ///     ]
     /// );
     /// assert_eq!(
-    ///     vec![(true,"Hello"),(false,", "),(true,"world"),(false,"!")] ,
-    ///     func("Hello, world!",|c| c.is_alphanumeric())
-    /// );
-    /// assert_eq!(
-    ///     vec![('a',"aaa"),('b',"bbb"),('c',"ccc")] ,
-    ///     func("aaabbbccc",|c|c)
+    ///     "aaabbbccc".split_while(|c| c).collect::<Vec<_>>(),
+    ///     vec![
+    ///         KeyStr{key: 'a', str: "aaa"},
+    ///         KeyStr{key: 'b', str: "bbb"},
+    ///         KeyStr{key: 'c', str: "ccc"},
+    ///     ]
     /// );
     ///
     /// ```
@@ -260,34 +202,33 @@ pub trait StringExt: Borrow<str> {
             s: this,
         }
     }
-    /// A variation of split_while that iterates
+    /// A variation of [`split_while`](#method.split_while) that iterates
     /// from the right(the order of substrings is reversed).
     ///
-    /// Returns an impl Iterator\<Item=[KeyStr](./struct.KeyStr.html)\<T\>>
+    /// The returned type implements 
+    /// `DoubleEndedIterator<Item =`[KeyStr](./struct.KeyStr.html)`<T>>`.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
-    ///
-    /// fn func<U:Eq+Clone,F>(s:&str,f:F)->Vec<(U,&str)>
-    /// where F:FnMut(char)->U
-    /// {
-    ///     s.rsplit_while(f).map(|v| (v.key,v.str) ).collect()
-    /// }
+    /// use core_extensions::strings::{StringExt, KeyStr};
     ///
     /// assert_eq!(
-    ///     "Hello, world!"
-    ///         .rsplit_while(|c|c.is_alphabetic())
-    ///         .filter(|v| v.key==true )
-    ///         .map(|v| v.str )
-    ///         .collect::<Vec<_>>(),
-    ///     vec!["world","Hello"]
+    ///     "Hello, world!".rsplit_while(|c| c.is_alphanumeric()).collect::<Vec<_>>(),
+    ///     vec![
+    ///         KeyStr{key: false, str: "!"},
+    ///         KeyStr{key: true, str: "world"},
+    ///         KeyStr{key: false, str: ", "},
+    ///         KeyStr{key: true, str: "Hello"},
+    ///     ]
     /// );
     /// assert_eq!(
-    ///     vec![(false,"!"),(true,"world"),(false,", "),(true,"Hello")] ,
-    ///     func("Hello, world!",|c| c.is_alphanumeric() )
+    ///     "aaabbbccc".rsplit_while(|c| c).collect::<Vec<_>>(),
+    ///     vec![
+    ///         KeyStr{key: 'c', str: "ccc"},
+    ///         KeyStr{key: 'b', str: "bbb"},
+    ///         KeyStr{key: 'a', str: "aaa"},
+    ///     ]
     /// );
-    /// assert_eq!(vec![('c',"ccc"),('b',"bbb"),('a',"aaa")],func("aaabbbccc",|c|c));
     ///
     /// ```
     fn rsplit_while<'a, P, T: Eq + Clone>(&'a self, mut mapper: P) -> RSplitWhile<'a, P, T>
@@ -303,112 +244,122 @@ pub trait StringExt: Borrow<str> {
             s: this,
         }
     }
-    /// returns the position of the nth character
+    /// The byte index of the `nth` character
     ///
-    /// if there is no nth character it returns None
+    /// If there is no `nth` character, this returns `None`.
     ///
-    /// This operation takes O(n) time,where n is self.len().
+    /// This operation takes `O(n)` time, where `n` is `self.len()`.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let word="niño";
+    /// use core_extensions::StringExt;
     ///
-    /// assert_eq!(word.get_nth_char_index(0),Some(0));
-    /// assert_eq!(word.get_nth_char_index(1),Some(1));
-    /// assert_eq!(word.get_nth_char_index(2),Some(2));
-    /// assert_eq!(word.get_nth_char_index(3),Some(4));
-    /// assert_eq!(word.get_nth_char_index(4),None);
-    /// assert_eq!(word.get_nth_char_index(5),None);
-    /// assert_eq!(word.get_nth_char_index(6),None);
+    /// let word = "fooпозволяющий";
+    ///
+    /// assert_eq!(word.get_nth_char_index(0), Some(0));
+    /// assert_eq!(word.get_nth_char_index(1), Some(1));
+    /// assert_eq!(word.get_nth_char_index(2), Some(2));
+    /// assert_eq!(word.get_nth_char_index(3), Some(3));
+    /// assert_eq!(word.get_nth_char_index(4), Some(5));
+    /// assert_eq!(word.get_nth_char_index(5), Some(7));
+    ///
+    /// assert_eq!(word.get_nth_char_index(13), Some(23));
+    /// assert_eq!(word.get_nth_char_index(14), None);
     /// ```
-    fn get_nth_char_index(&self, n: usize) -> Option<usize> {
-        self.borrow().char_indices().nth(n).map(|(i, _)| i)
+    fn get_nth_char_index(&self, nth: usize) -> Option<usize> {
+        self.borrow().char_indices().nth(nth).map(|(i, _)| i)
     }
 
-    /// returns the position of the nth character
+    /// The byte index of the `nth` character
     ///
-    /// if there is no nth character it returns self.len()
+    /// If there is no `nth` character, this returns `self.len()`.
     ///
-    /// This operation takes O(n) time,where n is self.len().
+    /// This operation takes `O(n)` time, where `n` is `self.len()`.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let word="niño";
+    /// use core_extensions::StringExt;
     ///
-    /// assert_eq!(word.nth_char_index(0),0);
-    /// assert_eq!(word.nth_char_index(1),1);
-    /// assert_eq!(word.nth_char_index(2),2);
-    /// assert_eq!(word.nth_char_index(3),4);
-    /// assert_eq!(word.nth_char_index(4),5);
-    /// assert_eq!(word.nth_char_index(5),5);
-    /// assert_eq!(word.nth_char_index(6),5);
+    /// let word = "fooпозволяющий";
+    ///
+    /// assert_eq!(word.nth_char_index(0), 0);
+    /// assert_eq!(word.nth_char_index(1), 1);
+    /// assert_eq!(word.nth_char_index(2), 2);
+    /// assert_eq!(word.nth_char_index(3), 3);
+    /// assert_eq!(word.nth_char_index(4), 5);
+    /// assert_eq!(word.nth_char_index(5), 7);
+    ///
+    /// assert_eq!(word.nth_char_index(13), 23);
+    /// assert_eq!(word.nth_char_index(14), word.len());
     /// ```
-    fn nth_char_index(&self, n: usize) -> usize {
+    fn nth_char_index(&self, nth: usize) -> usize {
         let this = self.borrow();
         this.borrow()
             .char_indices()
-            .nth(n)
+            .nth(nth)
             .map_or(this.len(), |(i, _)| i)
     }
 
-    /// Returns the nth character in the str.
+    /// Returns the `nth` character in the str.
     ///
-    /// This operation takes O(n) time,where n is self.len().
+    /// This operation takes `O(n)` time, where `n` is `self.len()`.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let word="niño";
+    /// use core_extensions::StringExt;
     ///
-    /// assert_eq!(word.nth_char(0),Some('n'));
-    /// assert_eq!(word.nth_char(1),Some('i'));
-    /// assert_eq!(word.nth_char(2),Some('ñ'));
-    /// assert_eq!(word.nth_char(3),Some('o'));
-    /// assert_eq!(word.nth_char(4),None);
-    /// assert_eq!(word.nth_char(5),None);
-    /// assert_eq!(word.nth_char(6),None);
+    /// let word = "débuter";
+    ///
+    /// assert_eq!(word.nth_char(0), Some('d'));
+    /// assert_eq!(word.nth_char(1), Some('é'));
+    /// assert_eq!(word.nth_char(2), Some('b'));
+    /// assert_eq!(word.nth_char(3), Some('u'));
+    /// assert_eq!(word.nth_char(4), Some('t'));
+    /// assert_eq!(word.nth_char(5), Some('e'));
+    /// assert_eq!(word.nth_char(6), Some('r'));
+    /// assert_eq!(word.nth_char(7), None);
     /// ```
-    fn nth_char(&self, n: usize) -> Option<char> {
-        self.borrow().chars().nth(n)
+    fn nth_char(&self, nth: usize) -> Option<char> {
+        self.borrow().chars().nth(nth)
     }
 
-    /// returns a string containing the first `n` chars.
-    /// if n > self.chars().count() it returns the entire string
+    /// Returns a string containing the first `n` chars.
+    ///
+    /// if `n` is greater than the amount of chars, this returns the entire string.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let word="niño";
+    /// use core_extensions::StringExt;
+    ///
+    /// let word = "сине";
     ///
     /// assert_eq!(word.first_chars(0),"");
-    /// assert_eq!(word.first_chars(1),"n");
-    /// assert_eq!(word.first_chars(2),"ni");
-    /// assert_eq!(word.first_chars(3),"niñ");
-    /// assert_eq!(word.first_chars(4),"niño");
-    /// assert_eq!(word.first_chars(5),"niño");
-    /// assert_eq!(word.first_chars(6),"niño");
+    /// assert_eq!(word.first_chars(1),"с");
+    /// assert_eq!(word.first_chars(2),"си");
+    /// assert_eq!(word.first_chars(3),"син");
+    /// assert_eq!(word.first_chars(4),"сине");
+    /// assert_eq!(word.first_chars(5),"сине");
     /// ```
     fn first_chars(&self, n: usize) -> &str {
         let this = self.borrow();
         &this[..this.nth_char_index(n)]
     }
-    /// returns a string containing the last `n` chars
-    /// if n > self.chars().count() it returns the entire string
+    /// Returns a string containing the last `n` chars
+    ///
+    /// if `n` is greater than the amount of chars, this returns the entire string.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let word="niño";
+    /// use core_extensions::StringExt;
+    ///
+    /// let word = "сине";
     ///
     /// assert_eq!(word.last_chars(0),"");
-    /// assert_eq!(word.last_chars(1),"o");
-    /// assert_eq!(word.last_chars(2),"ño");
-    /// assert_eq!(word.last_chars(3),"iño");
-    /// assert_eq!(word.last_chars(4),"niño");
-    /// assert_eq!(word.last_chars(5),"niño");
-    /// assert_eq!(word.last_chars(6),"niño");
+    /// assert_eq!(word.last_chars(1),"е");
+    /// assert_eq!(word.last_chars(2),"не");
+    /// assert_eq!(word.last_chars(3),"ине");
+    /// assert_eq!(word.last_chars(4),"сине");
+    /// assert_eq!(word.last_chars(5),"сине");
     /// ```
     fn last_chars(&self, n: usize) -> &str {
         let this = self.borrow();
@@ -424,39 +375,43 @@ pub trait StringExt: Borrow<str> {
             .map_or(0, |(i, _)| i);
         &this[index..]
     }
-    /// returns the string from the `n`th character
-    /// if n > self.chars().count() it returns an empty string
+    /// Returns the string from the `n`th character
+    ///
+    /// if `n` is greater than the amount of chars, this returns an empty string.
     ///
     /// # Example
-    /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let word="niño";
     ///
-    /// assert_eq!(word.from_nth_char(0),"niño");
-    /// assert_eq!(word.from_nth_char(1),"iño");
-    /// assert_eq!(word.from_nth_char(2),"ño");
-    /// assert_eq!(word.from_nth_char(3),"o");
-    /// assert_eq!(word.from_nth_char(4),"");
-    /// assert_eq!(word.from_nth_char(5),"");
-    /// assert_eq!(word.from_nth_char(6),"");
+    /// ```
+    /// use core_extensions::StringExt;
+    ///
+    /// let word = "υιός";
+    ///
+    /// assert_eq!(word.from_nth_char(0), "υιός");
+    /// assert_eq!(word.from_nth_char(1), "ιός");
+    /// assert_eq!(word.from_nth_char(2), "ός");
+    /// assert_eq!(word.from_nth_char(3), "ς");
+    /// assert_eq!(word.from_nth_char(4), "");
+    /// assert_eq!(word.from_nth_char(5), "");
+    /// assert_eq!(word.from_nth_char(6), "");
     /// ```
     fn from_nth_char(&self, n: usize) -> &str {
         let this = self.borrow();
         &this[this.nth_char_index(n)..]
     }
 
-    /// returns the length of the text in utf16
+    /// Returns the length of the string in utf16
     ///
-    /// # warning
+    /// # Warning
     ///
     /// This is calculated every time the function is called.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
+    /// use core_extensions::StringExt;
     ///
-    /// assert_eq!("niño".calc_len_utf16(),4);
-    /// assert_eq!("ññññ".calc_len_utf16(),4);
+    /// assert_eq!("foo".calc_len_utf16(), 3);
+    /// assert_eq!("υιός".calc_len_utf16(), 4);
+    /// assert_eq!("👪".calc_len_utf16(), 2);
     ///
     /// ```
     fn calc_len_utf16(&self) -> usize {
@@ -464,21 +419,33 @@ pub trait StringExt: Borrow<str> {
             .chars()
             .fold(0, |accum, c| accum + c.len_utf16())
     }
-    /// Returns the character at `at_byte` if it's an index inside of the str.
+    /// Returns the character at the `at_byte` index inside of the string,
+    /// returning `None` if the index is outside the string.
+    ///
+    /// If the index is between char boundaries,
+    /// this returns the char at the previous char boundary.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let word="niño";
+    /// use core_extensions::StringExt;
     ///
-    /// assert_eq!(word.get_char_at(0),Some('n'));
-    /// assert_eq!(word.get_char_at(1),Some('i'));
-    /// assert_eq!(word.get_char_at(2),Some('ñ'));
-    /// assert_eq!(word.get_char_at(3),Some('ñ'));
-    /// assert_eq!(word.get_char_at(4),Some('o'));
-    /// assert_eq!(word.get_char_at(5),None);
-    /// assert_eq!(word.get_char_at(6),None);
+    /// let word = "foo 効 门";
+    ///
+    /// assert_eq!(word.get_char_at(0), Some('f'));
+    /// assert_eq!(word.get_char_at(1), Some('o'));
+    /// assert_eq!(word.get_char_at(2), Some('o'));
+    /// assert_eq!(word.get_char_at(3), Some(' '));
+    /// assert_eq!(word.get_char_at(4), Some('効'));
+    /// assert_eq!(word.get_char_at(5), Some('効'));
+    /// assert_eq!(word.get_char_at(6), Some('効'));
+    /// assert_eq!(word.get_char_at(7), Some(' '));
+    /// assert_eq!(word.get_char_at(8), Some('门'));
+    /// assert_eq!(word.get_char_at(9), Some('门'));
+    /// assert_eq!(word.get_char_at(10), Some('门'));
+    /// assert_eq!(word.get_char_at(11), None);
+    ///
     /// ```
+    ///
     fn get_char_at(&self, at_byte: usize) -> Option<char> {
         let this = self.borrow();
         if at_byte >= this.len() {
@@ -488,55 +455,72 @@ pub trait StringExt: Borrow<str> {
         this[start..].chars().nth(0)
     }
 
-    /// Returns an iterator over (index,char) pairs up to (but not including) `to`.
+    /// Returns an iterator over (index,char) pairs up to 
+    /// (but not including) the char at the `to` byte.
+    ///
+    /// if `index > self.len()`, returns an iterator over the entire string.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let word="niño";
+    /// use core_extensions::StringExt;
     ///
-    /// fn func(s:&str,i:usize)->(Vec<usize>,String){
-    ///     (
-    ///         s.char_indices_to(i).map(|(i,_)|i).collect(),
-    ///         s.char_indices_to(i).map(|(_,c)|c).collect(),
-    ///     )
-    /// }
-    /// assert_eq!(func(word,0),(vec![]       ,""    .to_string()));
-    /// assert_eq!(func(word,1),(vec![0]      ,"n"   .to_string()));
-    /// assert_eq!(func(word,2),(vec![0,1]    ,"ni"  .to_string()));
-    /// assert_eq!(func(word,3),(vec![0,1,2]  ,"niñ" .to_string()));
-    /// assert_eq!(func(word,4),(vec![0,1,2]  ,"niñ" .to_string()));
-    /// assert_eq!(func(word,5),(vec![0,1,2,4],"niño".to_string()));
-    /// assert_eq!(func(word,6),(vec![0,1,2,4],"niño".to_string()));
-    /// assert_eq!(func(word,7),(vec![0,1,2,4],"niño".to_string()));
+    /// let word = "foo 効 ";
+    ///
+    /// assert_eq!(word.char_indices_to(0).collect::<Vec<_>>(), vec![]);
+    /// assert_eq!(word.char_indices_to(1).collect::<Vec<_>>(), vec![(0, 'f')]);
+    /// 
+    /// let expected_a = vec![(0, 'f'), (1, 'o'), (2, 'o'), (3, ' ')];
+    /// assert_eq!(word.char_indices_to(4).collect::<Vec<_>>(), expected_a);
+    /// assert_eq!(word.char_indices_to(5).collect::<Vec<_>>(), expected_a);
+    /// assert_eq!(word.char_indices_to(6).collect::<Vec<_>>(), expected_a);
+    /// 
+    /// let expected_b = vec![(0, 'f'), (1, 'o'), (2, 'o'), (3, ' '), (4, '効')];
+    /// assert_eq!(word.char_indices_to(7).collect::<Vec<_>>(), expected_b);
+    ///     
+    /// let expected_c = vec![(0, 'f'), (1, 'o'), (2, 'o'), (3, ' '), (4, '効'), (7, ' ')];
+    /// assert_eq!(word.char_indices_to(8).collect::<Vec<_>>(), expected_c);
+    /// assert_eq!(word.char_indices_to(100).collect::<Vec<_>>(), expected_c);
     /// ```
+    ///
     fn char_indices_to(&self, to: usize) -> CharIndices {
         let this = self.borrow();
-        let to = this.right_char_boundary(to);
+        let to = this.left_char_boundary(to);
         this[..to].char_indices()
     }
 
-    /// Returns an iterator over (index,char) pairs from `from`.
+    /// Returns an iterator over (index, char) pairs, starting from the `from` byte.
+    ///
+    /// If the index is between char boundaries,
+    /// this starts from the char at the previous char boundary.
+    ///
+    /// if `index > self.len()`, returns an empty iterator.
     ///
     /// # Example
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// let word="niño";
+    /// use core_extensions::StringExt;
     ///
-    /// fn func(s:&str,i:usize)->(Vec<usize>,String){
-    ///     (
-    ///         s.char_indices_from(i).map(|(i,_)|i).collect(),
-    ///         s.char_indices_from(i).map(|(_,c)|c).collect(),
-    ///     )
-    /// }
-    /// assert_eq!(func(word,0),(vec![0,1,2,4],"niño".to_string()));
-    /// assert_eq!(func(word,1),(vec![1,2,4]  ,"iño" .to_string()));
-    /// assert_eq!(func(word,2),(vec![2,4]    ,"ño"  .to_string()));
-    /// assert_eq!(func(word,3),(vec![2,4]    ,"ño"  .to_string()));
-    /// assert_eq!(func(word,4),(vec![4]      ,"o"   .to_string()));
-    /// assert_eq!(func(word,5),(vec![]       ,""    .to_string()));
-    /// assert_eq!(func(word,6),(vec![]       ,""    .to_string()));
-    /// assert_eq!(func(word,7),(vec![]       ,""    .to_string()));
+    /// let word = "foo 効 ";
+    ///
+    /// let expected_a = vec![(0, 'f'), (1, 'o'), (2, 'o'), (3, ' '), (4, '効'), (7, ' ')];
+    /// assert_eq!(word.char_indices_from(0).collect::<Vec<_>>(), expected_a);
+    ///
+    /// let expected_b = vec![(1, 'o'), (2, 'o'), (3, ' '), (4, '効'), (7, ' ')];
+    /// assert_eq!(word.char_indices_from(1).collect::<Vec<_>>(), expected_b);
+    ///
+    /// let expected_c = vec![(3, ' '), (4, '効'), (7, ' ')];
+    /// assert_eq!(word.char_indices_from(3).collect::<Vec<_>>(), expected_c);
+    ///
+    /// let expected_c = vec![(4, '効'), (7, ' ')];
+    /// assert_eq!(word.char_indices_from(4).collect::<Vec<_>>(), expected_c);
+    /// assert_eq!(word.char_indices_from(5).collect::<Vec<_>>(), expected_c);
+    /// assert_eq!(word.char_indices_from(6).collect::<Vec<_>>(), expected_c);
+    /// 
+    /// assert_eq!(word.char_indices_from(7).collect::<Vec<_>>(), vec![(7, ' ')]);
+    ///
+    /// assert_eq!(word.char_indices_from(8).collect::<Vec<_>>(), vec![]);
+    ///
+    /// assert_eq!(word.char_indices_from(9).collect::<Vec<_>>(), vec![]);
+    ///
     /// ```
     fn char_indices_from(&self, from: usize) -> CharIndicesFrom {
         let this = self.borrow();
@@ -552,11 +536,12 @@ pub trait StringExt: Borrow<str> {
     /// # Example
     ///
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// assert_eq!(
-    ///     "what\n  the\n    hell".left_pad(4),
-    ///     "    what\n      the\n        hell");
+    /// use core_extensions::StringExt;
     ///
+    /// assert_eq!(
+    ///     "what\n  the\n    hall".left_pad(4),
+    ///     "    what\n      the\n        hall"
+    /// );
     /// ```
     ///
     #[cfg(feature = "alloc")]
@@ -564,10 +549,22 @@ pub trait StringExt: Borrow<str> {
         use alloc_::string::ToString;
         self.left_padder(how_much).to_string()
     }
-    /// Pads the string on the left with `how_much` additional
-    /// spaces in the Display impl of LeftPadder.
+    /// Returns a value that pads the string on the left with `how_much` additional
+    /// spaces in its `Display` impl.
     ///
     /// Use this to avoid allocating an extra string.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use core_extensions::StringExt;
+    ///
+    /// assert_eq!(
+    ///     "what\n  the\n    hall".left_pad(4).to_string(),
+    ///     "    what\n      the\n        hall"
+    /// );
+    /// ```
+    ///
     fn left_padder<'a>(&'a self, how_much: usize) -> LeftPadder<'a> {
         LeftPadder::new(self.borrow(), how_much)
     }
@@ -576,11 +573,12 @@ pub trait StringExt: Borrow<str> {
     /// # Example
     ///
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// assert_eq!("".line_indentation(),0);
-    /// assert_eq!("    ".line_indentation(),4);
-    /// assert_eq!("    \n      word".line_indentation(),4);
-    /// assert_eq!("    \nword".line_indentation(),4);
+    /// use core_extensions::StringExt;
+    ///
+    /// assert_eq!("".line_indentation(), 0);
+    /// assert_eq!("    ".line_indentation(), 4);
+    /// assert_eq!("    \n      word".line_indentation(), 4);
+    /// assert_eq!("    \nword".line_indentation(), 4);
     ///
     /// ```
     ///
@@ -590,16 +588,19 @@ pub trait StringExt: Borrow<str> {
         this.len() - this.trim_start().len()
     }
 
-    /// The minimum indentation of the string.
+    /// The minimum indentation of the string, ignoring lines that only contain whitespace.
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// assert_eq!("".min_indentation(),0);
-    /// assert_eq!("    ".min_indentation(),4);
-    /// assert_eq!("    \n      word".min_indentation(),4);
-    /// assert_eq!("    \nword".min_indentation(),0);
+    /// use core_extensions::StringExt;
+    ///
+    /// assert_eq!("".min_indentation(), 0);
+    /// assert_eq!("    ".min_indentation(), 0);
+    /// assert_eq!("    \nf".min_indentation(), 0);
+    /// assert_eq!("    \n      word".min_indentation(), 6);
+    /// assert_eq!("    \n word".min_indentation(), 1);
+    /// assert_eq!("    \n\nword".min_indentation(), 0);
     ///
     /// ```
     ///
@@ -607,20 +608,22 @@ pub trait StringExt: Borrow<str> {
     fn min_indentation(&self) -> usize {
         self.borrow()
             .lines()
+            .filter(|l| !l.trim_start().is_empty())
             .map(|v| v.line_indentation())
             .min()
             .unwrap_or(0)
     }
-    /// The maximum indentation of the string.
+    /// The maximum indentation of the string, ignoring lines that only contain whitespace.
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::strings::StringExt;
-    /// assert_eq!("".max_indentation(),0);
-    /// assert_eq!("    ".max_indentation(),4);
-    /// assert_eq!("    \n      word".max_indentation(),6);
-    /// assert_eq!("    \nword".max_indentation(),4);
+    /// use core_extensions::StringExt;
+    ///
+    /// assert_eq!("".max_indentation(), 0);
+    /// assert_eq!("    ".max_indentation(), 0);
+    /// assert_eq!("    \n      word".max_indentation(), 6);
+    /// assert_eq!("    \n  word".max_indentation(), 2);
     ///
     /// ```
     ///
@@ -628,6 +631,7 @@ pub trait StringExt: Borrow<str> {
     fn max_indentation(&self) -> usize {
         self.borrow()
             .lines()
+            .filter(|l| !l.trim_start().is_empty())
             .map(|v| v.line_indentation())
             .max()
             .unwrap_or(0)
@@ -638,7 +642,20 @@ impl<T: ?Sized> StringExt for T where T: Borrow<str> {}
 
 //----------------------------------------------------------------------------------------
 
-/// Add `padding` padding to `string` in the Display impl.
+/// Add padding to a string in its `Display` impl.
+/// 
+/// # Example
+/// 
+/// ```rust
+/// use core_extensions::strings::LeftPadder;
+/// 
+/// assert_eq!(LeftPadder::new("foo\n bar", 0).to_string(), "foo\n bar");
+/// assert_eq!(LeftPadder::new("foo\n bar", 1).to_string(), " foo\n  bar");
+/// assert_eq!(LeftPadder::new("foo\n bar", 2).to_string(), "  foo\n   bar");
+/// assert_eq!(LeftPadder::new("foo\n bar", 4).to_string(), "    foo\n     bar");
+/// 
+/// 
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub struct LeftPadder<'a> {
     string: &'a str,
@@ -660,9 +677,17 @@ impl<'a> fmt::Display for LeftPadder<'a> {
             if !first {
                 f.write_char('\n')?;
             }
-            for _ in 0..self.padding {
-                f.write_char(' ')?;
+            const SPACES: &str = "                                ";
+
+            let has_non_whitespace = line.contains(|c: char| !c.is_whitespace());
+            let mut pad = if has_non_whitespace { self.padding } else { 0 };
+            
+            while let Some(next) = pad.checked_sub(SPACES.len()) {
+                f.write_str(SPACES)?;
+                pad = next;
             }
+            f.write_str(&SPACES[..pad])?;
+
             fmt::Display::fmt(line, f)?;
             first = false;
         }
@@ -680,13 +705,15 @@ mod tests {
 
     #[test]
     fn test_left_pad() {
-        let s = "what\n  the\n    hell";
+        let s = "what\n  the\n    hall";
         assert_eq!(s.left_pad(0), s);
 
         assert_eq!(
-            "what\n  the\n    hell".left_pad(4),
-            "    what\n      the\n        hell"
+            "what\n  the\n    hall".left_pad(4),
+            "    what\n      the\n        hall"
         );
+        
+        assert_eq!("\n\nfoo".left_pad(4), "\n\n    foo");
     }
 
     #[test]
@@ -701,17 +728,6 @@ mod tests {
         assert_eq!(word.right_char_boundary(5), 5);
         assert_eq!(word.right_char_boundary(6), 5);
         assert_eq!(word.right_char_boundary(7), 5);
-    }
-
-    #[test]
-    fn text_get_offset_inside_of() {
-        let text = "What is this?";
-        assert_eq!(
-            vec![(0, "What"), (5, "is"), (8, "this?")],
-            text.split_whitespace()
-                .filter_map(|w| Some((w.get_offset_inside_of(text)?, w)))
-                .collect::<Vec<_>>()
-        );
     }
 
     #[test]
@@ -731,7 +747,7 @@ mod tests {
         );
         assert_eq!(
             word.char_indices_to(3).map(|(_, c)| c).collect::<String>(),
-            "niñ"
+            "ni"
         );
         assert_eq!(
             word.char_indices_to(4).map(|(_, c)| c).collect::<String>(),
