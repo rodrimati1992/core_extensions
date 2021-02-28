@@ -25,20 +25,20 @@ use crate::utils::{self, transmute_ignore_size};
 ///
 /// # Example
 ///
-/// Defining an extension trait on Vec<T>.
+/// Defining an extension trait on `Vec<T>`.
 ///
 /// ```
 /// use core_extensions::TypeIdentity;
 ///
-/// trait VecExt<T>: TypeIdentity<Type = Vec<T>> {
+/// trait VecExt<T>: TypeIdentity<Type = Vec<T>> + Sized {
 ///     fn is_nonempty(&self) -> bool {
 ///         !self.as_type().is_empty()
 ///     }
-///     fn moved_vec(self) -> Vec<T>
-///     where Self: Sized
-///     {
+///
+///     fn moved_vec(self) -> Vec<T> {
 ///         self.into_type()
 ///     }
+///
 ///     fn mutable_vec(&mut self) -> &mut Vec<T> {
 ///         self.as_type_mut()
 ///     }
@@ -58,6 +58,7 @@ use crate::utils::{self, transmute_ignore_size};
 ///
 /// ```
 /// use core_extensions::TypeIdentity;
+///
 /// use std::slice;
 ///
 /// struct Wrapper<U>(U);
@@ -71,8 +72,8 @@ use crate::utils::{self, transmute_ignore_size};
 /// }
 ///
 /// assert_eq!(
-///     Wrapper(vec![0,1,2,3,4]).iter().cloned().collect::<Vec<_>>() ,
-///     vec![0,1,2,3,4]
+///     Wrapper(vec![0, 1, 2, 3, 4]).iter().cloned().collect::<Vec<_>>(),
+///     vec![0, 1, 2, 3, 4]
 /// );
 ///
 /// ```
@@ -82,6 +83,7 @@ use crate::utils::{self, transmute_ignore_size};
 ///
 /// ```rust
 /// use core_extensions::TypeIdentity;
+///
 /// use std::ops::Deref;
 ///
 /// struct Example<T>(T);
@@ -93,7 +95,7 @@ use crate::utils::{self, transmute_ignore_size};
 ///     Target0: Deref,
 ///     <Target0 as Deref>::Target: TypeIdentity<Type = Target1>,
 /// {   
-///     type Target=Target1;
+///     type Target = Target1;
 ///     
 ///     fn deref(&self) -> &Target1 {
 ///         &**self

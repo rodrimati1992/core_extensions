@@ -214,6 +214,8 @@ mod marker_traits;
 #[cfg(feature = "std")]
 pub mod measure_time;
 
+mod on_drop;
+
 pub mod option_result_ext;
 pub mod phantom;
 mod self_ops;
@@ -228,22 +230,24 @@ mod test_utils;
 pub mod type_asserts;
 pub mod type_level_bool;
 pub mod utils;
-pub mod void;
+mod void;
 
 mod rust_version_assert;
 
 pub use self::const_default_trait::ConstDefault;
 pub use self::callable::{CallExt, CallInto, CallMut, CallRef};
-#[doc(inline)]
 pub use self::self_ops::SelfOps;
 pub use self::strings::StringExt;
 
 pub use self::bool_extensions::BoolExt;
+pub use self::on_drop::RunOnDrop;
 pub use self::integers::{IntegerExt, ToTime};
 pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
-#[doc(inline)]
 pub use self::marker_traits::MarkerType;
+
+#[doc(no_inline)]
 pub use self::option_result_ext::{OptionExt, ResultExt, ResultLike, ResultLikeExt, TransposeOption};
+
 pub use self::phantom::{
     AsPhantomData,
     AndPhantom, AndPhantomCov,
@@ -251,10 +255,12 @@ pub use self::phantom::{
     ContraVariantPhantom,
     InvariantPhantom, InvariantRefPhantom, VariantDropPhantom, CovariantPhantom,
 };
+
+#[doc(no_inline)]
 pub use self::slices::{ValSliceExt,SliceExt};
+
 pub use self::transparent_newtype::{TransparentNewtype, TransparentNewtypeExt};
 
-#[doc(inline)]
 pub use self::type_identity::{TIdentity, TypeIdentity};
 
 pub use self::void::Void;

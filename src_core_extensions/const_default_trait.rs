@@ -30,31 +30,25 @@ use std_::sync::atomic;
 /// Implementing `ConstDefault` for a struct
 ///
 /// ```rust
-/// // use core_extensions::const_default; // in newer versions of Rust.
-/// #[macro_use(const_default)]
-/// extern crate core_extensions;
-///
-/// use core_extensions::ConstDefault;
+/// use core_extensions::{ConstDefault, const_default};
 /// 
 /// #[derive(Debug,PartialEq)]
 /// struct Point<T>{
-///     x:T,
-///     y:T,
+///     x: T,
+///     y: T,
 /// }
 ///
-/// // `+ Copy` here is required for Rust 1.20 and 1.21,
-/// // and can be removed from Rust 1.22 onwards.
 /// impl<T> ConstDefault for Point<T>
 /// where
-///     T: ConstDefault + Copy
+///     T: ConstDefault
 /// {
-///     const DEFAULT: Self= Point{ x: T::DEFAULT,  y: T::DEFAULT };
+///     const DEFAULT: Self = Point{x: T::DEFAULT, y: T::DEFAULT};
 /// }
 ///
 /// # fn main(){
-/// assert_eq!( const_default!(Point<u8>), Point{x:0, y:0} );
-/// assert_eq!( const_default!(Point<f32>), Point{x:0.0, y:0.0} );
-/// assert_eq!( const_default!(Point<Option<()>>), Point{x:None, y:None} );
+/// assert_eq!(const_default!(Point<u8>), Point{x: 0, y: 0});
+/// assert_eq!(const_default!(Point<f32>), Point{x: 0.0, y: 0.0});
+/// assert_eq!(const_default!(Point<Option<()>>), Point{x: None, y: None});
 /// # }
 /// ```
 pub trait ConstDefault: Sized {
@@ -249,7 +243,7 @@ impl_const_default!{
     for[T: ?Sized] PhantomData<T> = PhantomData,
     for[T] Option<T> = None,
     for['a] &'a str = "",
-    for['a,T:'a] &'a [T] = &[],
+    for['a, T:'a] &'a [T] = &[],
 }
 
 impl_const_default!{

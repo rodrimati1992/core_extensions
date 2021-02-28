@@ -6,60 +6,34 @@ use std_::{cmp, fmt};
 ///
 /// Use this as a type parameter to enums to make the variants that use it unconstructible.
 ///
-/// This type is used in [ResultLikeExt](../option_result_ext/trait.ResultLikeExt.html)
-/// to unwrap values that can only be either the ok or error variants of the type.
-///
 /// # Interaction with unsafe code
 ///
 /// It is only valid to convert to Void from other Void-like types,
-/// it is undefined behavior to convert from any constructible type,even if zero-sized.
+/// it is undefined behavior to convert from any constructible type, even if zero-sized.
 ///
-/// # Example,infallible FromStr implementation.
-///
-/// ```
-/// use std::str::FromStr;
-/// use core_extensions::{SelfOps,ResultLikeExt,Void};
-///
-/// #[derive(Debug,PartialEq)]
-/// pub struct Double(pub String);
-/// impl FromStr for Double{
-///     type Err=Void;
-///     fn from_str(s:&str)->Result<Self,Void>{
-///         s.repeat(2)
-///             .piped(Double)
-///             .piped(Ok)
-///     }
-/// }
-///
-/// assert_eq!(
-///     "12345".parse::<Double>().into_item(),
-///     Double("12345".repeat(2))
-/// );
+/// # Example, infinite loop which only returns on error.
 ///
 /// ```
-///
-/// # Example,infinite loop which only returns on error.
-///
-/// ```
-/// use core_extensions::{ResultLikeExt,Void};
+/// use core_extensions::{ResultLikeExt, Void};
 ///
 /// #[derive(Debug,PartialEq)]
 /// enum Error<T>{
 ///     InvalidItem(T),
 ///     IteratorWasntInfinite,
 /// }
-/// fn reading_numbers<I>(i:I)->Result<Void,Error<usize>>
-/// where I:IntoIterator<Item=usize>
+///
+/// fn reading_numbers<I>(i: I) -> Result<Void, Error<usize>>
+/// where I: IntoIterator<Item = usize>
 /// {
 ///     for elem in i{
-///         if elem==0 { return Err(Error::InvalidItem(elem)) }
-///         println!("{}",elem);
+///         if elem == 0 { return Err(Error::InvalidItem(elem)) }
+///         println!("{}", elem);
 ///     }
 ///     Err(Error::IteratorWasntInfinite)
 /// }
 ///
-/// assert_eq!(reading_numbers(1..100).into_error() , Error::IteratorWasntInfinite);
-/// assert_eq!(reading_numbers(0..).into_error() , Error::InvalidItem(0));
+/// assert_eq!(reading_numbers(1..100).into_error(), Error::IteratorWasntInfinite);
+/// assert_eq!(reading_numbers(0..).into_error(), Error::InvalidItem(0));
 ///
 ///
 /// ```

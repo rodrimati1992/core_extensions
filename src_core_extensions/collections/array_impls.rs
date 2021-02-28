@@ -9,7 +9,7 @@ use super::{
 macro_rules! array_impls {
     ()=>{
         use std_::mem::MaybeUninit;
-        use ::utils::RunOnDrop;
+        use crate::RunOnDrop;
 
         /// When the "const_params" feature is disabled,
         /// the Cloned trait is implemented for arrays up to 32 elements long.

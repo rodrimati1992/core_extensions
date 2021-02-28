@@ -1,4 +1,4 @@
-//! Contains \[extension\] traits for Option and Result
+//! Contains extension traits for Option and Result
 
 mod result_like;
 
