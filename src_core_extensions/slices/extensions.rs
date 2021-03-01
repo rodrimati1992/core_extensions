@@ -437,18 +437,31 @@ macro_rules! impl_common_slice_extensions {($T:ident) => {
 
 mod str_impls {
     use super::*;
-    use strings::StringExt;
 
     fn lossy_str_range(this: &str, mut range: Range<usize>, bias: SliceBias) -> Range<usize> {
         #[inline]
-        fn bias_bound(this: &str, bound: &mut usize, bias: BiasDirection) {
-            *bound = match bias {
-                BiasDirection::Left => this.left_char_boundary(*bound),
-                BiasDirection::Right => this.right_char_boundary(*bound),
+        fn bias_bound(this: &str, mut index: usize, bias: BiasDirection) -> usize {
+            if index > this.len() {
+                return this.len();
+            }
+            
+            match bias {
+                BiasDirection::Left => {
+                    while !this.is_char_boundary(index) {
+                        index -= 1;
+                    }
+                },
+                BiasDirection::Right => {
+                    while !this.is_char_boundary(index) {
+                        index += 1;
+                    }
+                },
             };
+
+            index
         }
-        bias_bound(this, &mut range.start, bias.start);
-        bias_bound(this, &mut range.end, bias.end);
+        range.start = bias_bound(this, range.start, bias.start);
+        range.end = bias_bound(this, range.end, bias.end);
         range.end = cmp::max(range.start, range.end);
         range
     }

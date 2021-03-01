@@ -443,9 +443,9 @@ where
 ///
 /// iter_cloner!(let iter = list.iter().map(|v|v.len()));
 ///
-/// for _ in 0..2{
-///     assert_eq!(iter.into_iter().collect::<Vec<_>>(), lengths);
-/// }
+/// assert_eq!(iter.into_iter().collect::<Vec<_>>(), lengths);
+/// assert_eq!(iter.into_iter().collect::<Vec<_>>(), lengths);
+/// assert_eq!(iter.into_iter().collect::<Vec<_>>(), lengths);
 ///
 /// ```
 #[macro_export]
