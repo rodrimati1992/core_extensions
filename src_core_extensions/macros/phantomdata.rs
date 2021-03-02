@@ -26,6 +26,7 @@ use std_::marker::PhantomData;
 /// assert_impls(ghost);
 ///
 /// ```
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "phantom")))]
 #[macro_export]
 macro_rules! map_phantomdata {
     ($expr:expr, $closure:expr) => (
@@ -75,6 +76,7 @@ pub struct ClosureTypes<P, C: FnOnce(P) -> R, R> {
 ///
 /// ```
 ///
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "phantom")))]
 #[macro_export]
 macro_rules! expr_as_phantom {
     ($e:expr) => ({
@@ -124,6 +126,7 @@ macro_rules! expr_as_phantom {
 /// assert_eq!(set.into_iter().sum_same(), 55);
 ///
 /// ```
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "phantom")))]
 #[macro_export]
 macro_rules! return_type_phantom {
     ($closure:expr) => (

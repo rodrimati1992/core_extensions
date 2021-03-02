@@ -50,6 +50,7 @@ use std_::sync::atomic;
 /// assert_eq!(const_default!(Point<Option<()>>), Point{x: None, y: None});
 /// # }
 /// ```
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_default")))]
 pub trait ConstDefault: Sized {
     /// The default value for `Self`.
     const DEFAULT: Self;

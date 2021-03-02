@@ -38,6 +38,7 @@ use std_::{cmp, fmt};
 ///
 /// ```
 #[derive(Debug, Copy, Clone, Hash)]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "void")))]
 pub enum Void {}
 
 impl Void {

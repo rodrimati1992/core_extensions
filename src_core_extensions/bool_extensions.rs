@@ -3,6 +3,7 @@
 use type_identity::TypeIdentity;
 
 /// Extension trait for `bool`.
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "bools")))]
 pub trait BoolExt: TypeIdentity<Type = bool> + Sized {
     /// Returns `Some(some())` if `self` is `true`, otherwise returns `None`.
     ///

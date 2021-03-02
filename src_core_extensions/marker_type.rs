@@ -38,6 +38,7 @@ The easiest way to enforce the requirements of being zero-sized and
 having an alignment of 1 is to have structs composed entirely of MarkerType fields (ie:CovariantPhantom , PhantomData , ()  ).
 
 */
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "marker_type")))]
 pub unsafe trait MarkerType: Copy + Sized {
     /// The value of Self.
     #[allow(const_err)]

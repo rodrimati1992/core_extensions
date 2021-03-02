@@ -142,7 +142,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
 
     /// Converts `Arc<Self::Inner>` to a `Arc<Self>`.
     #[cfg(all(feature = "alloc", feature = "rust_1_44"))]
-    #[cfg_attr(feature = "docsrs", all(feature = "alloc", feature = "rust_1_44"))]
+    #[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "alloc", feature = "rust_1_44"))))]
     #[inline(always)]
     fn from_inner_arc(v: Arc<Self::Inner>) -> Arc<Self> {
         unsafe { Arc::from_raw(Self::from_inner_raw(Arc::into_raw(v))) }
@@ -150,7 +150,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     
     /// Converts `Rc<Self::Inner>` to a `Rc<Self>`.
     #[cfg(all(feature = "alloc", feature = "rust_1_44"))]
-    #[cfg_attr(feature = "docsrs", all(feature = "alloc", feature = "rust_1_44"))]
+    #[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "alloc", feature = "rust_1_44"))))]
     #[inline(always)]
     fn from_inner_rc(v: Rc<Self::Inner>) -> Rc<Self> {
         unsafe { Rc::from_raw(Self::from_inner_raw(Rc::into_raw(v))) }
@@ -188,7 +188,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
 
     /// Converts `self` to a `Arc<Self::Inner>`.
     #[cfg(all(feature = "alloc", feature = "rust_1_44"))]
-    #[cfg_attr(feature = "docsrs", all(feature = "alloc", feature = "rust_1_44"))]
+    #[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "alloc", feature = "rust_1_44"))))]
     #[inline(always)]
     fn into_inner_arc(self: Arc<Self>) -> Arc<Self::Inner> {
         unsafe { Arc::from_raw(Self::as_inner_raw(Arc::into_raw(self))) }
@@ -196,7 +196,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
 
     /// Converts `self` to a `Rc<Self::Inner>`.
     #[cfg(all(feature = "alloc", feature = "rust_1_44"))]
-    #[cfg_attr(feature = "docsrs", all(feature = "alloc", feature = "rust_1_44"))]
+    #[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "alloc", feature = "rust_1_44"))))]
     #[inline(always)]
     fn into_inner_rc(self: Rc<Self>) -> Rc<Self::Inner> {
         unsafe { Rc::from_raw(Self::as_inner_raw(Rc::into_raw(self))) }

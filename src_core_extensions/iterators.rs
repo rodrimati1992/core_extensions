@@ -448,6 +448,8 @@ where
 /// assert_eq!(iter.into_iter().collect::<Vec<_>>(), lengths);
 ///
 /// ```
+#[cfg(feature = "iterators")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "iterators")))]
 #[macro_export]
 macro_rules! iter_cloner {
     (let $ident:ident = $expr:expr) => {

@@ -105,6 +105,7 @@ use crate::utils::{self, transmute_ignore_size};
 /// ```
 ///
 ///
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "type_identity")))]
 pub trait TypeIdentity {
     /// This is always `Self`.
     type Type: ?Sized;
@@ -208,4 +209,5 @@ impl<T: ?Sized> TypeIdentity for T {
 }
 
 /// A type-level identity function
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "type_identity")))]
 pub type TIdentity<Type> = <Type as TypeIdentity>::Type;

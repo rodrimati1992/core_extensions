@@ -198,56 +198,95 @@ extern crate typenum;
 #[cfg(test)]
 extern crate rand;
 
+
+#[cfg(feature = "bools")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "bools")))]
 mod bool_extensions;
+
+#[cfg(feature = "bools")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "bools")))]
+pub use self::bool_extensions::BoolExt;
+
+
+#[cfg(feature = "callable")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "callable")))]
 pub mod callable;
+
+#[cfg(feature = "callable")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "callable")))]
+pub use self::callable::{CallExt, CallInto, CallMut, CallRef};
+
 
 #[cfg(feature = "collections")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "collections")))]
 pub mod collections;
 
+
+#[cfg(feature = "const_default")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_default")))]
 mod const_default_trait;
+
+#[cfg(feature = "const_default")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_default")))]
+pub use self::const_default_trait::ConstDefault;
+
+
+
+#[cfg(feature = "integers")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "integers")))]
 pub mod integers;
+
+#[cfg(feature = "integers")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "integers")))]
+pub use self::integers::{IntegerExt, ToTime};
+
+
+#[cfg(feature = "iterators")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "iterators")))]
 pub mod iterators;
 
-mod marker_traits;
+#[cfg(feature = "iterators")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "iterators")))]
+pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
+
+
+#[cfg(feature = "marker_type")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "marker_type")))]
+mod marker_type;
+
+#[cfg(feature = "marker_type")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "marker_type")))]
+pub use self::marker_type::MarkerType;
+
 
 #[cfg(feature = "std")]
 pub mod measure_time;
 
+
+#[cfg(feature = "on_drop")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "on_drop")))]
 mod on_drop;
 
-pub mod option_result_ext;
-pub mod phantom;
-mod self_ops;
-pub mod slices;
-pub mod strings;
-pub mod transparent_newtype;
-mod type_identity;
-
-#[cfg(test)]
-mod test_utils;
-
-pub mod type_asserts;
-pub mod type_level_bool;
-pub mod utils;
-mod void;
-
-mod rust_version_assert;
-
-pub use self::const_default_trait::ConstDefault;
-pub use self::callable::{CallExt, CallInto, CallMut, CallRef};
-pub use self::self_ops::SelfOps;
-pub use self::strings::StringExt;
-
-pub use self::bool_extensions::BoolExt;
+#[cfg(feature = "on_drop")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "on_drop")))]
 pub use self::on_drop::RunOnDrop;
-pub use self::integers::{IntegerExt, ToTime};
-pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
-pub use self::marker_traits::MarkerType;
+
+
+#[cfg(feature = "option_result")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "option_result")))]
+pub mod option_result_ext;
 
 #[doc(no_inline)]
+#[cfg(feature = "option_result")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "option_result")))]
 pub use self::option_result_ext::{OptionExt, ResultExt, ResultLike, ResultLikeExt, TransposeOption};
 
+#[cfg(feature = "phantom")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "phantom")))]
+pub mod phantom;
+
+#[cfg(feature = "phantom")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "phantom")))]
 pub use self::phantom::{
     AsPhantomData,
     AndPhantom, AndPhantomCov,
@@ -256,11 +295,75 @@ pub use self::phantom::{
     InvariantPhantom, InvariantRefPhantom, VariantDropPhantom, CovariantPhantom,
 };
 
+
+#[cfg(feature = "self_ops")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "self_ops")))]
+mod self_ops;
+
+#[cfg(feature = "self_ops")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "self_ops")))]
+pub use self::self_ops::SelfOps;
+
+
+#[cfg(feature = "slices")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "slices")))]
+pub mod slices;
+
+#[cfg(feature = "slices")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "slices")))]
+pub mod strings;
+
+#[cfg(feature = "slices")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "slices")))]
+pub use self::strings::StringExt;
+
+#[cfg(feature = "slices")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "slices")))]
 #[doc(no_inline)]
 pub use self::slices::{ValSliceExt,SliceExt};
 
+
+#[cfg(feature = "transparent_newtype")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "transparent_newtype")))]
+pub mod transparent_newtype;
+
+#[cfg(feature = "transparent_newtype")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "transparent_newtype")))]
 pub use self::transparent_newtype::{TransparentNewtype, TransparentNewtypeExt};
 
+
+#[cfg(feature = "type_identity")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "type_identity")))]
+mod type_identity;
+
+#[cfg(feature = "type_identity")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "type_identity")))]
 pub use self::type_identity::{TIdentity, TypeIdentity};
 
+
+#[cfg(test)]
+mod test_utils;
+
+
+#[cfg(feature = "type_asserts")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "type_asserts")))]
+pub mod type_asserts;
+
+
+#[cfg(feature = "type_level_bool")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "type_level_bool")))]
+pub mod type_level_bool;
+
+
+pub mod utils;
+
+mod rust_version_assert;
+
+
+#[cfg(feature = "void")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "void")))]
+mod void;
+
+#[cfg(feature = "void")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "void")))]
 pub use self::void::Void;

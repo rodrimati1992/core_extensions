@@ -587,6 +587,8 @@ $( where [ $( <where_predicates> )* ] )*
 [`CallInto`]: ./callable/trait.CallInto.html
 
 */
+#[cfg(feature = "callable")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "callable")))]
 #[macro_export]
 macro_rules! impl_call{
     (

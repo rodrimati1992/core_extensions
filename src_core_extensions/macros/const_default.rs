@@ -82,6 +82,8 @@
 /// ```
 /// 
 /// [`ConstDefault::DEFAULT`]: trait.ConstDefault.html#associatedconstant.DEFAULT
+#[cfg(feature = "const_default")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_default")))]
 #[macro_export]
 macro_rules! const_default {
     () => {

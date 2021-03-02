@@ -2,6 +2,7 @@
 
 
 /// Extension trait for every type.
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "self_ops")))]
 pub trait SelfOps {
     /// Compares the address of `self` with the address of `other`.
     ///

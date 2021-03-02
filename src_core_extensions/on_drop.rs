@@ -27,6 +27,7 @@ mod tests;
 /// }   
 ///
 /// ```
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "on_drop")))]
 pub struct RunOnDrop<T, F>
 where
     F: FnOnce(T),

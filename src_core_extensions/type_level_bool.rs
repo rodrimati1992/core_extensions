@@ -68,12 +68,14 @@
 //!
 //!
 
-use crate::{ConstDefault, CovariantPhantom};
+use crate::ConstDefault;
 
 use std_::fmt::{self, Debug, Display};
 use std_::ops;
 
-use marker_traits::MarkerType;
+#[cfg(feature = "marker_type")]
+use crate::MarkerType;
+
 /// Represents a type-level `true`
 #[derive(Debug, Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct True;
@@ -102,7 +104,10 @@ mod sealed {
 }
 use self::sealed::Sealed;
 
+#[cfg(feature = "marker_type")]
 unsafe impl MarkerType for True {}
+
+#[cfg(feature = "marker_type")]
 unsafe impl MarkerType for False {}
 
 impl ConstDefault for True {

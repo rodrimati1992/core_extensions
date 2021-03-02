@@ -21,13 +21,55 @@ travis-ci = { repository =  "rodrimati1992/core_extensions/" }
 
 [features]
 # TODO: comment this out
-default = ["std", "track_caller"]
+default = [
+    "std",
+    "track_caller",
+]
+
+# Enables all the items in core_extensions 1.0
+in_1_0 = [
+    "bools",
+    "callable",
+    "collections",
+    "const_default",
+    "integers",
+    "iterators",
+    "marker_type",
+    "on_drop",
+    "option_result",
+    "phantom",
+    "self_ops",
+    "slices",
+    "transparent_newtype",
+    "type_asserts",
+    "type_identity",
+    "type_level_bool",
+    "void",
+]
 
 std=["alloc"]
 alloc=[]
 
 serde_=["serde"]
+
+bools=[]
+callable=[]
 collections=[]
+const_default=[]
+integers=[]
+iterators=[]
+marker_type=[]
+on_drop=[]
+option_result=[]
+phantom=[]
+self_ops=[]
+slices=[]
+strings=["slices"]
+transparent_newtype=[]
+type_asserts=[]
+type_identity=[]
+type_level_bool=[]
+void=[]
 
 # Changes ResultLike to allow getting the caller location in `ResultLike::into_result_`
 track_caller = ["rust_1_46"]
@@ -47,8 +89,7 @@ rand = "0.4.6"
 [dependencies.serde]
 version = "1.0"
 default-features = false
-optional=true
-features = ["derive"]
+optional = true
 
 [dependencies.typenum]
 version="1.10"
