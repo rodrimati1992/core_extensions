@@ -18,7 +18,7 @@ macro_rules! declare_clone_bounds {
 
         #[cfg(feature = "alloc")]
         impl<T> CloneBound for T 
-        where T: std_::borrow::ToOwned
+        where T: ?Sized + std_::borrow::ToOwned
         {}
     };
 }

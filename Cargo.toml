@@ -23,7 +23,6 @@ travis-ci = { repository =  "rodrimati1992/core_extensions/" }
 # TODO: comment this out
 default = [
     "std",
-    "track_caller",
 ]
 
 # Enables all the items in core_extensions 1.0
@@ -74,8 +73,7 @@ void=[]
 # Changes ResultLike to allow getting the caller location in `ResultLike::into_result_`
 track_caller = ["rust_1_46"]
 
-rust_1_44 = []
-rust_1_46 = ["rust_1_44"]
+rust_1_46 = []
 
 # Enables indicators in the docs for what features are required to enable items.
 docsrs = []

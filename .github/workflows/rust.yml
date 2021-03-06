@@ -11,21 +11,42 @@ jobs:
 
     strategy:
       matrix: 
-        rust: [stable, beta, nightly, 1.41.0]
+        rust: [stable, beta, nightly, 1.41.0, 1.46.0]
+
+
 
     steps:
+    - name: enable-rust-1-46
+      if: matrix.rust != '1.41.0'
+      run: echo "rust146=rust_1_46" >> $GITHUB_ENV
+
     - uses: actions/checkout@v2
     - name: ci-all-versions
       run: |
         rustup override set ${{ matrix.rust }}
         cargo -V
-        cargo build
-        cargo build --no-default-features
-        cargo build --no-default-features --features alloc
-        cargo build --no-default-features --features std
-        cargo test --features "colltraits"
-        cargo test --features "serde"
-        cargo test --features "serde colltraits"
+        cargo test --no-default-features --features "${{ env.rust146 }} std colltraits"
+        cargo test --no-default-features --features "${{ env.rust146 }} std bools"
+        cargo test --no-default-features --features "${{ env.rust146 }} std callable"
+        cargo test --no-default-features --features "${{ env.rust146 }} std collections"
+        cargo test --no-default-features --features "${{ env.rust146 }} std const_default"
+        cargo test --no-default-features --features "${{ env.rust146 }} std integers"
+        cargo test --no-default-features --features "${{ env.rust146 }} std iterators"
+        cargo test --no-default-features --features "${{ env.rust146 }} std marker_type"
+        cargo test --no-default-features --features "${{ env.rust146 }} std on_drop"
+        cargo test --no-default-features --features "${{ env.rust146 }} std option_result"
+        cargo test --no-default-features --features "${{ env.rust146 }} std phantom"
+        cargo test --no-default-features --features "${{ env.rust146 }} std self_ops"
+        cargo test --no-default-features --features "${{ env.rust146 }} std slices"
+        cargo test --no-default-features --features "${{ env.rust146 }} std transparent_newtype"
+        cargo test --no-default-features --features "${{ env.rust146 }} std type_asserts"
+        cargo test --no-default-features --features "${{ env.rust146 }} std type_identity"
+        cargo test --no-default-features --features "${{ env.rust146 }} std type_level_bool"
+        cargo test --no-default-features --features "${{ env.rust146 }} std void"
+
+        cargo test --no-default-features --features "${{ env.rust146 }} in_1_0"
+        cargo test --no-default-features --features "${{ env.rust146 }} alloc in_1_0"
+        cargo test --no-default-features --features "${{ env.rust146 }} std in_1_0"
 
   nightly-tests:
     runs-on: ubuntu-latest

@@ -136,20 +136,38 @@ pub trait TypeIdentity {
     fn into_type_box(self: Box<Self>) -> Box<Self::Type> {
         unsafe { utils::transmute_ignore_size(self) }
     }
-    /// Converts an Arc back to the original type.
-    #[cfg(feature = "alloc")]
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
-    #[inline(always)]
-    fn into_type_arc(self: Arc<Self>) -> Arc<Self::Type> {
-        unsafe { utils::transmute_ignore_size(self) }
+
+    rc_shared_docs!{
+        /// Converts an Arc back to the original type.
+        #[cfg(feature = "alloc")]
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+        #[inline(always)]
+        =>
+        fn into_type_arc(this: Arc<Self>) -> Arc<Self::Type> {
+            unsafe { utils::transmute_ignore_size(this) }
+        }
+
+        fn into_type_arc(self: Arc<Self>) -> Arc<Self::Type> {
+            unsafe { utils::transmute_ignore_size(self) }
+        }
     }
-    /// Converts an Rc back to the original type.
-    #[cfg(feature = "alloc")]
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
-    #[inline(always)]
-    fn into_type_rc(self: Rc<Self>) -> Rc<Self::Type> {
-        unsafe { utils::transmute_ignore_size(self) }
+
+    rc_shared_docs!{
+        /// Converts an Rc back to the original type.
+        #[cfg(feature = "alloc")]
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+        #[inline(always)]
+        =>
+
+        fn into_type_rc(this: Rc<Self>) -> Rc<Self::Type> {
+            unsafe { utils::transmute_ignore_size(this) }
+        }
+
+        fn into_type_rc(self: Rc<Self>) -> Rc<Self::Type> {
+            unsafe { utils::transmute_ignore_size(self) }
+        }
     }
+
 
     /// Converts a value back to the original type.
     #[inline(always)]
