@@ -31,6 +31,7 @@ in_1_0 = [
     "callable",
     "collections",
     "const_default",
+    "const_val",
     "integers",
     "iterators",
     "marker_type",
@@ -55,6 +56,7 @@ bools=[]
 callable=[]
 collections=[]
 const_default=[]
+const_val=[]
 integers=[]
 iterators=[]
 marker_type=[]

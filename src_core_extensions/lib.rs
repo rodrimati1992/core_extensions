@@ -230,6 +230,11 @@ mod const_default_trait;
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_default")))]
 pub use self::const_default_trait::ConstDefault;
 
+#[cfg(feature = "const_val")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_val")))]
+mod const_val;
+
+pub use self::const_val::ConstVal;
 
 
 #[cfg(feature = "integers")]

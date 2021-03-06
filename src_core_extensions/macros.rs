@@ -5,6 +5,9 @@
 mod const_default;
 
 #[macro_use]
+mod constval_macros;
+
+#[macro_use]
 mod internal;
 
 #[macro_use]
