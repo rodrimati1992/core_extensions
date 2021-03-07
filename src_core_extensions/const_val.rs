@@ -5,7 +5,7 @@
 /// ### Manual impl
 /// 
 /// ```rust
-/// use core_extensions::{ConstVal, constval};
+/// use core_extensions::{ConstVal, getconst};
 /// 
 /// struct Foo;
 ///
@@ -25,10 +25,10 @@
 ///     const VAL: Self::Ty = T::VAL * 3 / 2;
 /// }
 /// 
-/// assert_eq!(constval!(Foo), 3);
-/// assert_eq!(constval!(Bar<Foo>), 4);
-/// assert_eq!(constval!(Bar<Bar<Foo>>), 6);
-/// assert_eq!(constval!(Bar<Bar<Bar<Foo>>>), 9);
+/// assert_eq!(getconst!(Foo), 3);
+/// assert_eq!(getconst!(Bar<Foo>), 4);
+/// assert_eq!(getconst!(Bar<Bar<Foo>>), 6);
+/// assert_eq!(getconst!(Bar<Bar<Bar<Foo>>>), 9);
 /// 
 /// ```
 /// 

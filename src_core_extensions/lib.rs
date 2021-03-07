@@ -372,3 +372,13 @@ mod void;
 #[cfg(feature = "void")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "void")))]
 pub use self::void::Void;
+
+
+
+
+#[doc(hidden)]
+pub mod __ {
+    pub use std_::marker::PhantomData as PD;
+}
+
+
