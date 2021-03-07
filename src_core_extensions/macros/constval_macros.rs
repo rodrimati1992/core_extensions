@@ -1,30 +1,37 @@
 /// Gets the [`ConstVal::VAL`] associated constant for a type.
 /// 
-/// Use this macro to avoid accidentally using inherent `VAL` associated cosntants.
+/// Use this macro to unambiguously use the [`ConstVal::VAL`] associated constant,
+/// as opposed to an inherent `VAL` associated constant,
+/// or a `VAL` associated constant from another trait.
 /// 
 /// # Examples
 /// 
-/// ### Implementing `ConstVal` manually
+/// ### Quasiconstants
+/// 
+/// Using the [`quasiconst`] macro to declare (generic) constants.
 /// 
 /// ```rust
-/// use core_extensions::{ConstVal, getconst};
+/// use core_extensions::{getconst, quasiconst, IntegerExt};
 /// 
-/// struct Foo;
-///
-/// struct Bar;
+/// #[derive(Debug, PartialEq)]
+/// pub struct Single<T>(pub T);
 /// 
-/// impl ConstVal for Foo {
-///     type Ty = &'static str;
-///     const VAL: Self::Ty = "hello";
-/// }
-/// 
-/// impl ConstVal for Bar {
-///     type Ty = &'static str;
-///     const VAL: Self::Ty = "world";
-/// }
+/// quasiconst!{const Foo: &'static str = "hello"}
+/// quasiconst!{const Bar: &'static str = "world"}
+/// quasiconst!{const SINGLE_INT[T: (IntegerExt) = u8]: Single<T> = Single(T::ONE) }
 /// 
 /// assert_eq!(getconst!(Foo), "hello");
 /// assert_eq!(getconst!(Bar), "world");
+/// 
+/// // `SINGLE_INT` == `SINGLE_INT<u8>`, because of the defaulted type parameter
+/// assert_eq!(getconst!(SINGLE_INT), Single(1_u8)); 
+/// 
+/// assert_eq!(getconst!(SINGLE_INT<u16>), Single(1_u16));
+/// 
+/// assert_eq!(getconst!(SINGLE_INT<_>), Single(1_i8));
+/// 
+/// // `Type<..>` is special syntax from `getconst`, to infer all generic parameters.
+/// assert_eq!(getconst!(SINGLE_INT<..>), Single(1u128));
 /// 
 /// ```
 /// 
@@ -55,13 +62,22 @@
 /// ```
 /// 
 /// [`ConstVal::VAL`]: trait.ConstVal.html#associatedconstant.VAL
+/// [`quasiconst`]: ./macro.quasiconst.html
 #[macro_export]
 macro_rules! getconst {
+    (
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* <..>
+    ) => ({
+        use $crate::ConstVal;
+        $(:: $(@$leading@)? )? $first $(:: $trailing)* ::__CORE_EXTENSIONS__05FFE5XDEJHD07CTUSQMW
+    });
     ($ty:ty) => {<$ty as $crate::ConstVal>::VAL};
 }
 
 
-/// Declare a type that emulates a generic constant
+/// Declare types that emulate generic constants.
+/// 
+/// # Syntax
 /// 
 /// For an example using all the syntax, you can look at the 
 /// [All of the syntax section](#allthesyntax)
@@ -133,10 +149,11 @@ macro_rules! getconst {
 /// <span id="allthesyntax"></span>
 /// ### All of the syntax
 /// 
-/// Note: This macro allows const parameters(doesn't require enabling any features).
+/// Note: This macro allows const parameters
+/// (but doesn't require enabling the "const_generics" feature to use them).
 /// 
-#[cfg_attr(not(feature = "const_generics"), doc = " ```rust")]
-#[cfg_attr(feature = "const_generics", doc = " ```ignore")]
+#[cfg_attr(not(feature = "const_generics"), doc = " ```ignore")]
+#[cfg_attr(feature = "const_generics", doc = " ```rust")]
 /// use core_extensions::{ConstDefault, getconst, quasiconst};
 /// 
 /// assert_eq!(getconst!(REFD<'static>), "");
@@ -148,12 +165,12 @@ macro_rules! getconst {
 /// assert_eq!(getconst!(CONST_GEN<6>), [1, 3, 6, 10, 15, 21]);
 /// 
 /// quasiconst!{
-///     /// You can document and use attributes on the generated `REFD` struct like this.
+///     /// You can document and use attributes on the generated `REFD` struct.
 ///     //
 ///     // Trait bounds in the generic parameter list must be enclosed in parentheses,
 ///     // that makes it possible for this macro to parse them,
 ///     // that's why `?Sized` is inside parentheses.
-///     pub(crate) const REFD['a, T: 'a + (?Sized) = str]: &'a T
+///     pub(crate) const REFD['a: 'a, T: 'a + (?Sized) = str]: &'a T
 ///     where[&'a T: ConstDefault]
 ///     = <&'a T>::DEFAULT;
 ///     
@@ -234,6 +251,7 @@ macro_rules! __declare_const_inner {
         where
             $($constraints)*
         {
+            /// The constant that this type represents.
             $vis const VAL: <Self as $crate::ConstVal>::Ty = <Self as $crate::ConstVal>::VAL;
         }
     };
