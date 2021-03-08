@@ -171,7 +171,7 @@ pub trait TypeIdentity {
 
     /// Converts a value back to the original type.
     #[inline(always)]
-    fn from_type_val(this: Self::Type) -> Self
+    fn from_type(this: Self::Type) -> Self
     where
         Self: Sized,
         Self::Type: Sized,

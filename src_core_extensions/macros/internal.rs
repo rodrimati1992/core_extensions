@@ -11,7 +11,7 @@ macro_rules! cfg_if {
 }
 
 
-#[cfg(all(feature = "alloc", not(feature = "rust_1_46")))]
+#[cfg(not(feature = "rust_1_46"))]
 macro_rules! rc_shared_docs {
     ($(#[$attr:meta])* => $before_1_46:item  $since_1_46:item  ) => {
         $(#[$attr])*
@@ -19,7 +19,7 @@ macro_rules! rc_shared_docs {
     };
 }
 
-#[cfg(all(feature = "alloc", feature = "rust_1_46"))]
+#[cfg(feature = "rust_1_46")]
 macro_rules! rc_shared_docs {
     ($(#[$attr:meta])* => $before_1_46:item  $since_1_46:item  ) => {
         $(#[$attr])*

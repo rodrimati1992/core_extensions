@@ -169,7 +169,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
 
     /// Converts `self` to a `&Self::Inner`.
     #[inline(always)]
-    fn as_inner_ref(&self) -> &Self::Inner {
+    fn as_inner(&self) -> &Self::Inner {
         unsafe { &*Self::as_inner_raw(self) }
     }
 
