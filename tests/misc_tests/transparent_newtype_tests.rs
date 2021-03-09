@@ -1,7 +1,9 @@
-use core_extensions::{TransparentNewtype, TransparentNewtypeExt};
+use core_extensions::transparent_newtype::{
+    TransparentNewtype, TransparentNewtypeExt,
+    from_inner_vec, into_inner_vec,
+};
 
-use std::marker::PhantomData as PD;
-
+#[derive(Debug, Copy, Clone, PartialEq)]
 #[repr(transparent)]
 struct Trans<T: ?Sized>(T);
 
@@ -103,5 +105,67 @@ fn test_alloc() {
 
         assert_tyoe::<_, Rc<str>>(&Trans::into_inner_rc(Trans::from_inner_rc(make_rc())));
         assert_eq!(&*Trans::into_inner_rc(foo), "hello");
+    }
+}
+
+
+#[test]
+#[cfg(feature = "alloc")]
+fn test_other() {
+    use core::{
+        num::Wrapping,
+        mem::ManuallyDrop,
+    };
+
+    use alloc::{
+        boxed::Box,
+        rc::Rc,
+    };
+
+
+    macro_rules! test_types {
+        ($typ:ident, $make:expr) => {
+            {
+                let boxed = Box::new([3u8, 5, 8]) as Box<[u8]>;
+                let slice = || <[$typ<_>]>::from_inner_box(boxed.clone());
+                assert_tyoe::<_, Box<[$typ<u8>]>>(&slice());
+                
+                assert_tyoe::<_, Box<[u8]>>(&slice().into_inner_box());
+                assert_eq!(slice().into_inner_box(), boxed);
+            }
+            {
+                let boxed = Rc::new([3u8, 5, 8]) as Rc<[u8]>;
+                let slice = || <[$typ<_>]>::from_inner_rc(boxed.clone());
+                assert_tyoe::<_, Rc<[$typ<u8>]>>(&slice());
+                
+                assert_tyoe::<_, Rc<[u8]>>(&TransparentNewtypeExt::into_inner_rc(slice()));
+                assert_eq!(TransparentNewtypeExt::into_inner_rc(slice()), boxed);
+            }
+        }
+    }
+
+    test_types!{Trans, Trans}
+    test_types!{Wrapping, Wrapping}
+    test_types!{ManuallyDrop, ManuallyDrop::new}
+}
+
+
+
+#[test]
+#[cfg(feature = "alloc")]
+fn vec_test() {
+    {
+        let from = from_inner_vec::<Trans<_>>(vec![3u8, 5, 8]);
+
+        assert_tyoe::<_, Vec<Trans<u8>>>(&from_inner_vec::<Trans<_>>(vec![3u8, 5, 8]));
+
+        assert_eq!(from, vec![Trans(3), Trans(5), Trans(8)]);
+    }
+    {
+        let into = into_inner_vec(vec![Trans(3u8), Trans(5), Trans(8)]);
+
+        assert_tyoe::<_, Vec<u8>>(&into_inner_vec(vec![Trans(3u8), Trans(5), Trans(8)]));
+
+        assert_eq!(into, vec![3, 5, 8]);
     }
 }
