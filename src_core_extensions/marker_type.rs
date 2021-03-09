@@ -50,17 +50,13 @@ pub unsafe trait MarkerType: Copy + Sized {
 
     #[inline(always)]
     #[allow(const_err)]
-    /// Constructs a reference to Self,
-    /// this is possible because all references to zero sized types are valid.
+    /// Constructs a reference to Self.
     fn markertype_ref<'a>() -> &'a Self
     where
         Self: 'a,
     {
         unsafe {
-            const SOME_ADDRESS: usize = 1_000_000;
-            // this is safe since implementing MarkerType guarantees that
-            // this type is a 1-aligned Zero Sized Type ,in which all pointers are valid.
-            &*(SOME_ADDRESS as *const Self)
+            &*std_::ptr::NonNull::<Self>::dangling().as_ptr()
         }
     }
 
@@ -145,19 +141,6 @@ impl_zero_sized_tuple! {A,B,C,D,E,F,G,H,I,J,K,L,M,N}
 impl_zero_sized_tuple! {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O}
 impl_zero_sized_tuple! {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P}
 
-#[cfg(feature = "typenum")]
-mod typenum {
-    use super::MarkerType;
-
-    use typenum::marker_traits::{Bit, NonZero, Unsigned};
-    use typenum::{NInt, PInt, UInt, UTerm, Z0};
-
-    unsafe impl<U: Unsigned + Default + NonZero + Copy> MarkerType for PInt<U> {}
-    unsafe impl<U: Unsigned + Default + NonZero + Copy> MarkerType for NInt<U> {}
-    unsafe impl MarkerType for Z0 {}
-    unsafe impl<U: Unsigned + Default + Copy, B: Bit + Copy + Default> MarkerType for UInt<U, B> {}
-    unsafe impl MarkerType for UTerm {}
-}
 
 #[cfg(test)]
 mod tests {

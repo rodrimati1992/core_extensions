@@ -28,6 +28,44 @@ fn drop_guard() {
 }
 
 
+#[cfg(feature = "alloc")]
+#[test]
+fn consume_owned() {
+    use alloc::boxed::Box;
+
+    {
+        let guard = RunOnDrop::new(Box::new(100), |mut x|{
+            *x += 8;
+            assert_eq!(*x, 108); 
+        });
+        assert_eq!(*guard.into_inner(), 100)
+    }
+
+    {
+        let mut ran = false;
+        let guard = RunOnDrop::new(Box::new(100), |mut x|{
+            *x += 8;
+            assert_eq!(*x, 108); 
+            ran = true;
+        });
+        drop(guard);
+        assert_eq!(ran, true)
+    }
+
+    {
+        let mut ran = false;
+        let mut guard = RunOnDrop::new(Box::new(100), |x|{
+            assert_eq!(*x, 108); 
+            ran = true;
+        });
+        **guard.get_mut() += 8;
+        drop(guard);
+        assert_eq!(ran, true)
+    }
+
+}
+
+
 
 #[test]
 fn unwrap_run_on_drop() {

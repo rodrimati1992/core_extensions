@@ -91,11 +91,6 @@ version = "1.0"
 default-features = false
 optional = true
 
-[dependencies.typenum]
-version="1.10"
-features=["no_std"]
-default-features = false
-optional=true
 
 [lib]
 name = "core_extensions"

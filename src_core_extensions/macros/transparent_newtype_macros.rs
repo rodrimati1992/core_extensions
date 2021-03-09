@@ -14,7 +14,7 @@
 ///
 /// assert_eq!(list, vec![34, 21, 13, 8, 5, 3]);
 ///
-///
+/// #[repr(transparent)]
 /// #[derive(PartialEq, Eq)]
 /// struct Reverse<T: ?Sized>(T);
 ///

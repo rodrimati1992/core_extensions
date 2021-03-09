@@ -11,6 +11,12 @@ macro_rules! array_impls {
         use std_::mem::MaybeUninit;
         use crate::RunOnDrop;
 
+        struct MakeUninit<T>(T);
+        
+        impl<T> MakeUninit<T> {
+            const V: MaybeUninit<T> = MaybeUninit::uninit();
+        }
+
         /// When the "const_params" feature is disabled,
         /// the Cloned trait is implemented for arrays up to 32 elements long.
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_params")))]
@@ -28,7 +34,7 @@ macro_rules! array_impls {
                 }
                 let mut guard = {
                     let out = Written::<T::Cloned, N>{
-                        array: unsafe{ MaybeUninit::uninit().assume_init() },
+                        array: [MakeUninit::V; N],
                         written: 0,
                     };
                     RunOnDrop::new(out, |mut out|{

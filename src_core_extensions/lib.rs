@@ -4,7 +4,7 @@
 //!
 //! - SelfOps:to extend all types with generic operations.
 //!
-//! - Type-level representations of bool and unsafe  .
+//! - Type-level representations of bool.
 //!
 //! - Marker traits to encode invariants about types.
 //!
@@ -25,8 +25,6 @@
 //! `"std"`: Enables standard library support.Enabled by default.
 //!
 //! `"serde_"`: Enables serde support.Disabled by default.
-//!
-//! `"typenum"`: Enables trait impls for typenum types.Disabled by default.
 //!
 //! "collections":Enables trait impls for the collection traits in the collections module.
 //!
@@ -147,13 +145,6 @@
 //! Useful as a type parameter/associated type.
 //!
 //!
-//! ### (Un)safety represented as type
-//!
-//! [maybe_unsafe](./maybe_unsafe/index.html) emulates a safe/unsafe effect using types.
-//!
-//! Allows having traits whose implementations can choose whether their methods/functions
-//! are safe to call or not.
-//!
 //!
 //!
 
@@ -191,9 +182,6 @@ pub mod macros;
 
 #[cfg(feature = "serde_")]
 extern crate serde;
-
-#[cfg(feature = "typenum")]
-extern crate typenum;
 
 #[cfg(test)]
 extern crate rand;

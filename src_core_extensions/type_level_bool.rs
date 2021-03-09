@@ -110,6 +110,13 @@ unsafe impl MarkerType for True {}
 #[cfg(feature = "marker_type")]
 unsafe impl MarkerType for False {}
 
+const _: &[[(); 0]] = &[
+    [(); std_::mem::size_of::<True>()],
+    [(); std_::mem::size_of::<False>()],
+    [(); std_::mem::align_of::<True>() - 1],
+    [(); std_::mem::align_of::<False>() - 1],
+];
+
 impl ConstDefault for True {
     const DEFAULT: Self = True;
 }

@@ -11,6 +11,9 @@ mod misc_tests {
     #[cfg(feature = "transparent_newtype")]
     mod transparent_newtype_tests;
     
+    #[cfg(feature = "option_result")]
+    mod result_option_extension_tests;
+    
     mod utils_tests;
 
 }
