@@ -16,7 +16,7 @@
 /// const LEN: usize = 8;
 ///
 /// quasiconst!{
-///     const FIBNUMS[T: (ConstVal<Ty = u128>)]: &'static [u128; LEN] = {
+///     const FIBNUMS[T: ConstVal<Ty = u128>]: &'static [u128; LEN] = {
 ///         let mut ret = [T::VAL; LEN];
 ///         let mut i = 2;
 ///         while i < LEN {

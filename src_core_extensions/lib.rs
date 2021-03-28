@@ -159,6 +159,11 @@ pub use alloc as alloc_;
 #[doc(hidden)]
 pub use std_ as alloc_;
 
+#[cfg(feature = "enable_proc_macro_crate")]
+pub extern crate core_extensions_proc_macros;
+
+
+
 #[doc(hidden)]
 #[macro_use]
 pub mod macros;
@@ -353,6 +358,9 @@ pub use self::void::Void;
 #[doc(hidden)]
 pub mod __ {
     pub use std_::marker::PhantomData as PD;
+    
+    #[cfg(feature = "enable_proc_macro_crate")]
+    pub use core_extensions_proc_macros::__priv_remove_non_delimiter;
 }
 
 

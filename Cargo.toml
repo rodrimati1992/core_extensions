@@ -56,7 +56,7 @@ bools=[]
 callable=[]
 collections=[]
 const_default=[]
-const_val=[]
+const_val=["enable_proc_macro_crate"]
 integers=[]
 iterators=[]
 marker_type=[]
@@ -75,6 +75,8 @@ void=[]
 # Changes ResultLike to allow getting the caller location in `ResultLike::into_result_`
 track_caller = ["rust_1_46"]
 
+enable_proc_macro_crate = ["core_extensions_proc_macros"]
+
 rust_1_46 = []
 
 # Enables indicators in the docs for what features are required to enable items.
@@ -89,6 +91,11 @@ rand = "0.4.6"
 [dependencies.serde]
 version = "1.0"
 default-features = false
+optional = true
+
+[dependencies.core_extensions_proc_macros]
+version = "1.0"
+path = "./core_extensions_proc_macros"
 optional = true
 
 

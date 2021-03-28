@@ -18,7 +18,7 @@
 /// 
 /// quasiconst!{const Foo: &'static str = "hello"}
 /// quasiconst!{const Bar: &'static str = "world"}
-/// quasiconst!{const SINGLE_INT[T: (IntegerExt) = u8]: Single<T> = Single(T::ONE) }
+/// quasiconst!{const SINGLE_INT[T: IntegerExt = u8]: Single<T> = Single(T::ONE) }
 /// 
 /// assert_eq!(getconst!(Foo), "hello");
 /// assert_eq!(getconst!(Bar), "world");
@@ -123,7 +123,7 @@ macro_rules! getconst {
 /// use core_extensions::{ConstDefault, ConstVal, quasiconst};
 /// 
 /// quasiconst!{
-///     pub const PAIR[T: (ConstDefault)]: (T, T) = ConstDefault::DEFAULT;
+///     pub const PAIR[T: ConstDefault]: (T, T) = ConstDefault::DEFAULT;
 /// }
 /// 
 /// fn constant<U: ConstVal>() -> U::Ty {
@@ -166,11 +166,7 @@ macro_rules! getconst {
 /// 
 /// quasiconst!{
 ///     /// You can document and use attributes on the generated `REFD` struct.
-///     //
-///     // Trait bounds in the generic parameter list must be enclosed in parentheses,
-///     // that makes it possible for this macro to parse them,
-///     // that's why `?Sized` is inside parentheses.
-///     pub(crate) const REFD['a: 'a, T: 'a + (?Sized) = str]: &'a T
+///     pub(crate) const REFD['a: 'a, T: 'a + ?Sized = str]: &'a T
 ///     where[&'a T: ConstDefault]
 ///     = <&'a T>::DEFAULT;
 ///     
@@ -276,7 +272,6 @@ macro_rules! __declare_const_inner {
         $other:tt
         [
             $type:ident
-            $(: $($bound:lifetime $(+)? )* $(($($tbound:tt)*) $(+)? )*  )?
             $(= $default:ty)?
             , $($rem:tt)*
         ]
@@ -288,10 +283,34 @@ macro_rules! __declare_const_inner {
         $crate::__declare_const_inner!{
             $other
             [$($rem)*]
-            [$($struct_params)* $type $(: $($bound +)* $($($tbound)* +)*  )? $(= $default)? ,]
-            [$($impl_params)* $type $(: $($bound +)* $($($tbound)* +)*  )? ,]
+            [$($struct_params)* $type $(= $default)? ,]
+            [$($impl_params)* $type ,]
             [$($impl_args)* $type,]
             [$($phantoms)* $crate::__::PD<$type>,]
+        }
+    };
+    (
+        $other:tt
+        [
+            $type:ident
+            : $($rem:tt)*
+        ]
+        $struct_params:tt
+        $impl_params:tt
+        $impl_args:tt
+        $phantoms:tt
+    ) => {
+        $crate::__declare_const_type_param_bounds!{
+            (
+                $other
+                $type
+                $struct_params
+                $impl_params
+                $impl_args
+                $phantoms
+            )
+            []
+            [ + $($rem)*]
         }
     };
     (
@@ -309,6 +328,111 @@ macro_rules! __declare_const_inner {
             [$($impl_params)* const $constp: $constty,]
             [$($impl_args)* $constp,]
             $phantoms
+        }
+    };
+}
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __declare_const_type_param_bounds {
+    (
+        (
+            $other:tt
+            $type:ident
+            [$($struct_params:tt)*]
+            [$($impl_params:tt)*]
+            [$($impl_args:tt)*]
+            [$($phantoms:tt)*]
+        )
+        [$($bounds:tt)*]
+        [ $(= $default:ty)? $(, $($rem:tt)*)? ]
+    ) => {
+        $crate::__declare_const_inner!{
+            $other
+            [$($($rem)*)?]
+            [$($struct_params)* $type : $($bounds)* $(= $default)? ,]
+            [$($impl_params)* $type : $($bounds)*,]
+            [$($impl_args)* $type,]
+            [$($phantoms)* $crate::__::PD<$type>,]
+        }
+    };
+    (
+        $fixed:tt
+        [$($boundts:tt)*]
+        [ + $lt:lifetime $($rem:tt)* ]
+    ) => {
+        $crate::__declare_const_type_param_bounds!{
+            $fixed
+            [$($boundts)* $lt + ]
+            [$($rem)*]
+        }
+    };
+    (
+        $fixed:tt
+        [$($boundts:tt)*]
+        [ + ($($parenthesized:tt)*) $($rem:tt)* ]
+    ) => {
+        $crate::__declare_const_type_param_bounds!{
+            $fixed
+            [$($boundts)* ($($parenthesized)*) + ]
+            [$($rem)*]
+        }
+    };
+    (
+        $fixed:tt
+        $prev_bounds:tt
+        [ + $rem_bounds:ty $(= $default:ty)? $(, $($rem:tt)*)? ]
+    ) => {
+        $crate::__::__priv_remove_non_delimiter!{
+            $rem_bounds
+
+            $crate::__declare_const_type_param_finish!{
+                $fixed
+                $prev_bounds
+                [ ($($default)?) $(, $($rem:tt)*)? ]
+            }
+        }
+    };
+    (
+        $fixed:tt
+        [$($boundts:tt)*]
+        [ $($rem:tt)* ]
+    ) => {
+        compile_error!{concat!(
+            "Cannot parse bounds at the start of these tokens,\n\
+             you need to wrap them in parentheses:\n\t",
+            $(stringify!($rem),)*
+        )}
+    };
+}
+
+
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __declare_const_type_param_finish {
+    (
+        (
+            $other:tt
+            $type:ident
+            [$($struct_params:tt)*]
+            [$($impl_params:tt)*]
+            [$($impl_args:tt)*]
+            [$($phantoms:tt)*]
+        )
+        [$($bounds:tt)*]
+        [ ($($($default:tt)+)?) $(, $($rem:tt)*)? ]
+        ($($rem_bounds:tt)*)
+    ) => {
+        $crate::__declare_const_inner!{
+            $other
+            [$($($rem)*)?]
+            [$($struct_params)* $type : $($bounds)* $($rem_bounds)* $(= $($default)+ )? ,]
+            [$($impl_params)* $type : $($bounds)* $($rem_bounds)*,]
+            [$($impl_args)* $type,]
+            [$($phantoms)* $crate::__::PD<$type>,]
         }
     };
 }

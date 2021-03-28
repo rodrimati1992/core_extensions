@@ -5,6 +5,9 @@ extern crate core_extensions;
 
 
 mod misc_tests {
+    #[cfg(feature = "const_val")]
+    mod quasiconst_tests;
+
     #[cfg(feature = "type_identity")]
     mod type_identity_tests;
 

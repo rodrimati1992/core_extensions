@@ -1,0 +1,21 @@
+[package]
+name = "core_extensions_proc_macros"
+version = "1.0.0"
+authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
+edition = "2018"
+license="MIT/Apache-2.0"
+description = "Implementation detail of the `const_format` crate"
+keywords = []
+categories = []
+include = [
+    "Cargo.toml", 
+    "src/**/*.rs", 
+    "../APACHE_license", 
+    "../MIT_license",
+]
+
+
+[dependencies]
+
+[lib]
+proc-macro = true
