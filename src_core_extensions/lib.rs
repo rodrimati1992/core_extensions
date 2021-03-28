@@ -1,15 +1,5 @@
-//! This crate provides:
-//!
-//! - Extension traits for many standard/core library types/traits.
-//!
-//! - SelfOps:to extend all types with generic operations.
-//!
-//! - Type-level representations of bool.
-//!
-//! - Marker traits to encode invariants about types.
-//!
-//! - etc.
-//!
+//! Extension traits for many standard/core library types/traits.
+//! and other miscelaneuous types / traits / functions / macros.
 //!
 //! # no-std support
 //!
@@ -17,16 +7,85 @@
 //!
 //! # Supported Rust versions
 //!
-//! This crate support Rust back to 1.20,
-//! using a build script to automatically enable features from newer versions.
+//! This crate support Rust back to 1.41.0,
+//! requiring cargo features to enable features for newer versions.
 //!
 //! # Cargo Features
 //!
-//! `"std"`: Enables standard library support.Enabled by default.
+//! ### 1.0 crate features
 //!
-//! `"serde_"`: Enables serde support.Disabled by default.
+//! The `"in_1_0"` feature enables all of these features,
+//! you can use it instead of the ones below if you don't mind longer compile-times:
 //!
-//! "collections":Enables trait impls for the collection traits in the collections module.
+//! - "collections": Enables the [`collections`] module, with traits for collection types.
+//!
+//! - `"bools"`: Enables the [`BoolExt`] trait, extension trait for `bool`.
+//!
+//! - `"callable"`: Enables the [`callable`] module, 
+//! with stably implementable equivalents of the `Fn*` traits.
+//!
+//! - `"const_default"`:
+//! Enables the [`ConstDefault`] trait, and [`const_default`] macro.
+//!
+//! - `"const_val"`:
+//! Enables the [`ConstVal`] trait, [`getconst`] macro, and [`quasiconst`] macro.
+//!
+//! - `"integers"`: Enables the [`integers`] module, with extension traits for integer types.
+//!
+//! - `"iterators"`: Enables the [`iterators`] module, 
+//! with the [`IteratorExt`] extension trait for iterators, and iterator types.
+//!
+//! - `"marker_type"`: Enables the [`MarkerType`] trait,
+//! for trivially constructible, zero-sized, and aligned-to-1 types.
+//!
+//! - `"on_drop"`: Enables the [`RunOnDrop`] type,
+//! a wrapper type that runs a closure at the end of the scope.
+//!
+//! - `"option_result"`: Enables the [`option_result_ext`] module,
+//! with traits for `Option` and `Result`-like types.
+//!
+//! - `"phantom"`: Enables the [`phantom`] module(with `PhantomData`-related items),
+//! [`expr_as_phantom`] macro,[`map_phantomdata`] macro, and [`return_type_phantom`] macro.
+//!
+//! - `"self_ops"`: Enables the [`SelfOps`] trait, an extension trait for all types.
+//!
+//! - `"slices"`:
+//! Enables the [`slices`] module, with extension traits for `[T]` and `str` slices.
+//!
+//! - `"strings"`:
+//! Enables the [`strings`] module, with the [`StringExt`] extension trait for strings.
+//!
+//! - `"transparent_newtype"`: Enables the [`transparent_newtype`] module,
+//! with extension traits and functions for `#[repr(transparent)]` newtypes with public fields.
+//!
+//! - `"type_asserts"`: Enables the [`type_asserts`] module, with type-level assertiosn,
+//! most useful in tests.
+//!
+//! - `"type_identity"`: Enables the [`TypeIdentity`] trait,
+//! for proving that two types are equal, and converting between them in a generic context.
+//!
+//! - `"type_level_bool"`: Enables the [`type_level_bool`] module,
+//! which encodes `bool`s on the type-level.
+//!
+//! - `"void"`: Enables the [`Void`] type, for impossible situations.
+//!
+//!
+//! ### Version numbers
+//!
+//! These features enable code that require some Rust version past the minimum supported one:
+//!
+//! - "rust_1_46": Makes [`TransparentNewtype`] and [`TypeIdentity`]
+//! associated functions that take `Rc<Self>` or `Arc<Self>` callable as methods.
+//!
+//! ### Support for other crates
+//!
+//! `"std"`: Enables `std` library support. Enabled by default. Implies the `"alloc"` feature.
+//!
+//! `"alloc"`: Enables `alloc` library support. Enabled by default.
+//!
+//! `"serde_"`: Enables serde support. Disabled by default.
+//!
+//! ### Language features
 //!
 //! `"const_generics"`:
 //! Enables impls of traits for all array lengths, 
@@ -36,117 +95,41 @@
 //! Enables impls of traits for all array lengths in Rust nightly versions prior to 
 //! the stabilization of const generics.
 //!
-//! # **Contents**
 //!
+//! [`collections`]: ./collections/index.html
+//! [`callable`]: ./callable/index.html
+//! [`integers`]: ./integers/index.html
+//! [`iterators`]: ./iterators/index.html
+//! [`option_result_ext`]: ./option_result_ext/index.html
+//! [`phantom`]: ./phantom/index.html
+//! [`slices`]: ./slices/index.html
+//! [`strings`]: ./strings/index.html
+//! [`transparent_newtype`]: ./transparent_newtype/index.html
+//! [`type_asserts`]: ./type_asserts/index.html
+//! [`type_level_bool`]: ./type_level_bool/index.html
 //!
-//! ## Extension trait:[SelfOps](./trait.SelfOps.html)
+//! [`BoolExt`]: ./trait.BoolExt.html
+//! [`ConstDefault`]: ./trait.ConstDefault.html
+//! [`ConstVal`]: ./trait.ConstVal.html
+//! [`MarkerType`]: ./trait.MarkerType.html
+//! [`SelfOps`]: ./trait.SelfOps.html
+//! [`TypeIdentity`]: ./trait.TypeIdentity.html
+//! [`TransparentNewtype`]: ./transparent_newtype/trait.TransparentNewtype.html
 //!
-//! This is implemented for all types.
-//!
-//! The most importand methods in this are:
-//!
-//! - [piped](./trait.SelfOps.html#method.piped):
-//!      Allows emulating the pipeline operator.
-//!
-//! - [mutated](./trait.SelfOps.html#method.mutated):
-//!      Allows mutating `self` with a closure passing it along the method chain
-//!
-//! - [observe](./trait.SelfOps.html#method.observe):
-//!     Observes the value of `self` with a closure passing
-//!     it along the method chain unmodified.
-//!
-//! - [into_](./trait.SelfOps.html#method.into_),
-//!   [as_ref_](./trait.SelfOps.html#method.as_ref_),
-//!   [as_mut_](./trait.SelfOps.html#method.as_mut_):
-//!      Alternative syntax for the standard conversion methods.
-//!
-//! ## Other extension traits
-//!
-//!
-//! [ResultExt](./option_result_ext/trait.ResultExt.html)::Extension trait for [Result].
-//!
-//! [OptionExt](./option_result_ext/trait.OptionExt.html)::Extension trait for [Option].
-//!
-//! [BoolExt](./bool_extensions/trait.BoolExt.html):Extension trait for bool.
-//!
-//! [IntegerExt](./integers/trait.IntegerExt.html):Extension trait for integers.
-//!
-//! [ToTime](./integers/trait.ToTime.html):Extension trait for integers, to create
-//! [Duration](::std::time::Duration)s of a certain unit.
-//!
-//! [StringExt](./strings/trait.StringExt.html)Extension trait for `str`.
-//!
-//!
-//! ## Construction traits
-//!
-//! [MarkerType](./marker_traits/trait.MarkerType.html):
-//! Represents a zero-sized marker type.
-//!
-//! [ConstDefault](./trait.ConstDefault.html):
-//! A const-equivalent of the Default trait.
-//!
-//! ## Other traits
-//!
-//! [ResultLike](./option_result_ext/trait.ResultLike.html):
-//! Trait for types with item/error values,like Option and Result.
-//!
-//! [TransparentNewtype](./transparent_newtype/trait.TransparentNewtype.html)
-//! Represents a newtype that is safe to transmute to and/from its only non-zero-sized field.
-//!
-//!
-//!
-//! ## Iteration
-//!
-//! [IteratorExt](./iterators/trait.IteratorExt.html)
-//! Extension trait for [Iterator] implementors.
-//!
-//! ### Factories
-//!
-//! [IterCloner](./iterators/struct.IterCloner.html):
-//!     Constructs [Iterator]s by cloning the one it references,only possible if it is Clone.
-//!
-//! [IterConstructor](./iterators/struct.IterConstructor.html):
-//! Constructs [Iterator]s using a closure,this can be done multiple times if the closure it Copy.
-//!
-//! ### Iterators
-//!
-//! [Loop](./iterators/struct.Loop.html):
-//! Iterator that infinitely produces a value by calling an impl FnMut()->T
-//!
-//! [LazyOnce](./iterators/struct.LazyOnce.html):
-//! Lazy version of [::std::iter::Once],only evaluating the item when
-//! [Iterator::next] is called.
-//!
-//!
-//!
-//! ## Type-level stuff
-//!
-//! ### Type-Level bool
-//!
-//! This crate contains
-//! [types and operations using type-level `bool`s](./type_level_bool/index.html).
-//!    
-//! [Boolean](./type_level_bool/trait.Boolean.html):
-//! Trait representing `bool`.
-//!
-//! [True](./type_level_bool/struct.True.html)/
-//! [False](./type_level_bool/struct.False.html):
-//! Types representing `true`/`false`.
-//!
-//! ### Type equality
-//!
-//! [TypeIdentity](./trait.TypeIdentity.html)
-//! Allows converting a type back to itself.Useful in generic contexts.
-//!
-//! ### Empty type
-//!
-//! [Void](./void/enum.Void.html):
-//! Uninstantiable Type for statically impossible situations.
-//! Useful as a type parameter/associated type.
-//!
-//!
-//!
-//!
+//! [`RunOnDrop`]: ./struct.RunOnDrop.html
+//! [`Void`]: ./enum.Void.html
+//! 
+//! [`const_default`]: ./macro.const_default.html
+//! [`getconst`]: ./macro.getconst.html
+//! [`quasiconst`]: ./macro.quasiconst.html
+//! [`expr_as_phantom`]: ./macro.expr_as_phantom.html
+//! [`map_phantomdata`]: ./macro.map_phantomdata.html
+//! [`return_type_phantom`]: ./macro.return_type_phantom.html
+//! 
+//! [`IteratorExt`]: ./iterators/trait.IteratorExt.html
+//! [`StringExt`]: ./strings/trait.StringExt.html
+//! 
+//! 
 
 #![deny(missing_docs)]
 #![deny(unused_must_use)]
@@ -222,6 +205,9 @@ pub use self::const_default_trait::ConstDefault;
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_val")))]
 mod const_val;
 
+
+#[cfg(feature = "const_val")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_val")))]
 pub use self::const_val::ConstVal;
 
 

@@ -70,6 +70,7 @@
 /// 
 /// 
 /// [`quasiconst`]: ./macro.quasiconst.html
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_val")))]
 pub trait ConstVal {
     /// The type of the constant this represents.
     type Ty;
