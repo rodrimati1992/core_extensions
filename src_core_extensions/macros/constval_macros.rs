@@ -150,7 +150,7 @@ macro_rules! getconst {
 /// ### All of the syntax
 /// 
 /// Note: This macro allows const parameters
-/// (but doesn't require enabling the "const_generics" feature to use them).
+/// (and doesn't require enabling the "const_generics" feature to use them).
 /// 
 #[cfg_attr(not(feature = "const_generics"), doc = " ```ignore")]
 #[cfg_attr(feature = "const_generics", doc = " ```rust")]
@@ -201,7 +201,15 @@ macro_rules! quasiconst {
     ) => {
         $(
             $crate::__declare_const_inner!{
-                ($(#[$attr])*, $vis, $ident, $ty, [$($($constraints)*)?], $value,)
+                (
+                    $(#[$attr])*,
+                    $vis,
+                    $ident,
+                    $ty,
+                    [$($($constraints)*)?],
+                    $value,
+                    concat!("Cosntructs a `", stringify!($ident), "` (the type)"),
+                )
                 [$($($generic_params)*)? ,]
                 [] [] [] []
             }
@@ -221,6 +229,7 @@ macro_rules! __declare_const_inner {
             $ty: ty,
             [$($constraints:tt)*],
             $value:expr,
+            $new_doc:expr,
         )
         [$(,)*]
         [$($struct_params:tt)*  ]
@@ -229,6 +238,7 @@ macro_rules! __declare_const_inner {
         [$($phantoms:tt)*]
     ) => {
         $(#[$attr])*
+        #[allow(non_camel_case_types)]
         $vis struct $ident <$($struct_params)*> {
             _marker: $crate::__::PD<(
                 $($phantoms)*
@@ -247,6 +257,9 @@ macro_rules! __declare_const_inner {
         where
             $($constraints)*
         {
+            #[doc = $new_doc]
+            $vis const NEW: Self = Self{_marker: $crate::__::PD};
+
             /// The constant that this type represents.
             $vis const VAL: <Self as $crate::ConstVal>::Ty = <Self as $crate::ConstVal>::VAL;
         }
@@ -330,6 +343,21 @@ macro_rules! __declare_const_inner {
             $phantoms
         }
     };
+    (
+        $other:tt
+        [
+            $($rem:tt)*
+        ]
+        $struct_params:tt
+        $impl_params:tt
+        $impl_args:tt
+        $phantoms:tt
+    ) => {
+        compile_error!{concat!(
+            "Cannot parse these generics:\n\t",
+            $(stringify!($rem),)*
+        )}
+    };
 }
 
 
@@ -390,7 +418,7 @@ macro_rules! __declare_const_type_param_bounds {
             $crate::__declare_const_type_param_finish!{
                 $fixed
                 $prev_bounds
-                [ ($($default)?) $(, $($rem:tt)*)? ]
+                [ ($($default)?) $(, $($rem)*)? ]
             }
         }
     };
