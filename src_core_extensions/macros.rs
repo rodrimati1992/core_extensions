@@ -5,6 +5,7 @@
 mod const_default;
 
 #[macro_use]
+#[cfg(feature = "const_val")]
 mod constval_macros;
 
 #[macro_use]

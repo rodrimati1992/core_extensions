@@ -528,7 +528,8 @@ pub trait ResultLikeExt: ResultLike {
     /// ```
     ///
     /// With `core_extensions::Void` as the error 
-    /// ```
+    #[cfg_attr(feature = "void", doc = " ```rust")]
+    #[cfg_attr(not(feature = "void"), doc = " ```ignore")]
     /// use core_extensions::{ResultLikeExt, Void};
     ///
     /// let res: Result<i32, Void> = Ok(100);
@@ -551,6 +552,7 @@ pub trait ResultLikeExt: ResultLike {
     /// # Example
     ///
     /// With `std::convert::Infallible` as the item variant.
+    ///
     /// ```
     /// use core_extensions::ResultLikeExt;
     /// use core_extensions::option_result_ext::IsNoneError;
@@ -564,7 +566,8 @@ pub trait ResultLikeExt: ResultLike {
     /// ```
     /// 
     /// With `core_extensions::Void` as the item variant.
-    /// ```
+    #[cfg_attr(feature = "void", doc = " ```rust")]
+    #[cfg_attr(not(feature = "void"), doc = " ```ignore")]
     /// use core_extensions::{ResultLikeExt, Void};
     /// use core_extensions::option_result_ext::IsNoneError;
     ///

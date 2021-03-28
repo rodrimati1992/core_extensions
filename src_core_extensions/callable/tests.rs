@@ -1,6 +1,5 @@
 use crate::{
     impl_call,
-    AsPhantomData,
     CallExt, CallRef, CallMut, CallInto,
 };
 
@@ -60,8 +59,8 @@ fn test_into_call() {
         }
     }
 
-    assert_eq!(WhatInto("what").into_call(String::PHANTOM), "what");
-    assert_eq!(WhatInto(1u8).into_call(u16::PHANTOM), 1);
+    assert_eq!(WhatInto("what").into_call(PhantomData::<String>), "what");
+    assert_eq!(WhatInto(1u8).into_call(PhantomData::<u16>), 1);
 }
 
 #[test]

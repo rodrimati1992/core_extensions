@@ -270,7 +270,8 @@ impl<T: ?Sized> CovariantPhantomData<T> {
 ///
 /// # Example
 /// 
-/// ```rust
+#[cfg_attr(feature = "const_default", doc = " ```rust")]
+#[cfg_attr(not(feature = "const_default"), doc = " ```ignore")]
 /// use core_extensions::{AndPhantomCov, ConstDefault, as_covariant_phantom};
 /// 
 /// const SLICE: &[u8] = {

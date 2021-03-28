@@ -5,9 +5,6 @@
 
 use std_::{cmp, hash::Hash, fmt, ops};
 
-#[cfg(all(not(core_duration), feature = "std"))]
-use std_::time::Duration;
-#[cfg(core_duration)]
 use std_::time::Duration;
 
 /// Extension trait for built-in integers.
@@ -220,7 +217,6 @@ pub trait IntegerExt:
 
 /// Converts an integer to a Duration of the unit.
 ///
-#[cfg(any(core_duration, feature = "std"))]
 pub trait ToTime {
     /// Creates a [`Duration`] of `self` hours.
     ///
@@ -317,7 +313,6 @@ pub trait ToTime {
     fn nanoseconds(self) -> Duration;
 }
 
-#[cfg(any(core_duration, feature = "std"))]
 impl<T> ToTime for T
 where
     T: IntegerExt + Copy,

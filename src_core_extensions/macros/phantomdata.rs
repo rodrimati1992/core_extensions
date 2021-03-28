@@ -97,7 +97,8 @@ macro_rules! expr_as_phantom {
 ///
 /// # Example
 ///
-/// ```rust
+#[cfg_attr(feature = "iterators", doc = " ```rust")]
+#[cfg_attr(not(feature = "iterators"), doc = " ```ignore")]
 /// use core_extensions::{IteratorExt, return_type_phantom};
 ///
 /// use std::{

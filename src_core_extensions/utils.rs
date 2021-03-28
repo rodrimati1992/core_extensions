@@ -52,7 +52,8 @@ pub unsafe fn transmute_vec<T, U>(vector: Vec<T>) -> Vec<U> {
 /// on the assumption that this branch can't be reached.
 ///
 /// # Example
-/// ```
+#[cfg_attr(feature = "bools", doc = " ```rust")]
+#[cfg_attr(not(feature = "bools"), doc = " ```ignore")]
 /// use core_extensions::BoolExt;
 /// use core_extensions::utils::impossible;
 ///

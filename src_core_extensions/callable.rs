@@ -483,7 +483,10 @@ Environment.ref_call("what the ...");
 
 Also demonstrates a polymorphic function, not possible in Rust closures yet.
 
-```rust
+*/
+#[cfg_attr(feature = "phantom", doc = " ```rust")]
+#[cfg_attr(not(feature = "phantom"), doc = " ```ignore")]
+/**
 use core_extensions::{impl_call, AsPhantomData, CallExt};
 
 use std::marker::PhantomData;

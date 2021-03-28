@@ -13,7 +13,8 @@ use std_::{cmp, fmt};
 ///
 /// # Example, infinite loop which only returns on error.
 ///
-/// ```
+#[cfg_attr(feature = "option_result", doc = " ```rust")]
+#[cfg_attr(not(feature = "option_result"), doc = " ```ignore")]
 /// use core_extensions::{ResultLikeExt, Void};
 ///
 /// #[derive(Debug,PartialEq)]

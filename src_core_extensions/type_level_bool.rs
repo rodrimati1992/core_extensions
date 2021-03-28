@@ -4,7 +4,8 @@
 //!
 //! Access of privileges based on renamed Boolean types.
 //!
-//! ```
+#![cfg_attr(feature = "phantom", doc = " ```rust")]
+#![cfg_attr(not(feature = "phantom"), doc = " ```ignore")]
 //! use std::mem;
 //! use std::marker::PhantomData;
 //!
@@ -68,13 +69,23 @@
 //!
 //!
 
+#[cfg(feature = "const_default")]
 use crate::ConstDefault;
+
+#[cfg(not(feature = "const_default"))]
+use std_::marker::Sized as ConstDefault;
+
+
 
 use std_::fmt::{self, Debug, Display};
 use std_::ops;
 
 #[cfg(feature = "marker_type")]
 use crate::MarkerType;
+
+#[cfg(not(feature = "marker_type"))]
+use std_::marker::Sized as MarkerType;
+
 
 /// Represents a type-level `true`
 #[derive(Debug, Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -117,10 +128,12 @@ const _: &[[(); 0]] = &[
     [(); std_::mem::align_of::<False>() - 1],
 ];
 
+#[cfg(feature = "const_default")]
 impl ConstDefault for True {
     const DEFAULT: Self = True;
 }
 
+#[cfg(feature = "const_default")]
 impl ConstDefault for False {
     const DEFAULT: Self = False;
 }
@@ -167,6 +180,7 @@ impl Boolean for False {
 }
 
 mod internals {
+    #[cfg(feature = "const_default")]
     use crate::ConstDefault;
 
     use super::{Boolean, False, True, Not};
@@ -219,7 +233,14 @@ mod internals {
         type Output = Not<B>;
 
         fn bitxor(self, _: B) -> Self::Output {
-            Not::<B>::DEFAULT
+            #[cfg(feature = "const_default")]
+            {
+                Not::<B>::DEFAULT
+            }
+            #[cfg(not(feature = "const_default"))]
+            {
+                Not::<B>::default()
+            }
         }
     }
     impl<B> ops::BitXor<B> for False {

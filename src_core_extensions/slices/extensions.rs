@@ -5,8 +5,6 @@
 
 // use ranges::RangeBounds;
 use super::{BiasDirection, SliceBias,SplitSliceWhile,RSplitSliceWhile};
-#[allow(unused_imports)]
-use SelfOps;
 
 use std_::borrow::Borrow;
 use std_::cmp;

@@ -25,7 +25,6 @@ jobs:
       run: |
         rustup override set ${{ matrix.rust }}
         cargo -V
-        cargo test --no-default-features --features "${{ env.rust146 }} std colltraits"
         cargo test --no-default-features --features "${{ env.rust146 }} std bools"
         cargo test --no-default-features --features "${{ env.rust146 }} std callable"
         cargo test --no-default-features --features "${{ env.rust146 }} std collections"
@@ -63,7 +62,7 @@ jobs:
         rustup override set "$MIRI_NIGHTLY"
         rustup component add miri
         cargo miri setup
-        cargo miri test --features "serde colltraits const_generics"
+        cargo miri test --features "serde in_1_0 const_generics"
 
         rm Cargo.lock
         cargo clean
@@ -74,4 +73,4 @@ jobs:
         cargo update
         cargo build --all-features
         
-        cargo test --features "serde colltraits const_generics"
+        cargo test --features "serde in_1_0 const_generics"

@@ -71,6 +71,7 @@ fn test_alloc() {
         assert_eq!(&*foo.into_inner_box(), "hello");
     }
 
+    #[cfg(feature = "rust_1_46")]
     {
         let foo = Trans::from_inner_arc(make_arc());
         assert_tyoe::<_, Arc<Trans<str>>>(&foo);
@@ -79,7 +80,6 @@ fn test_alloc() {
         assert_tyoe::<_, Arc<str>>(&Trans::from_inner_arc(make_arc()).into_inner_arc());
         assert_eq!(&*foo.into_inner_arc(), "hello");
     }
-    #[cfg(feature = "rust_1_46")]
     {
         let foo = Trans::from_inner_arc(make_arc());
         assert_tyoe::<_, Arc<Trans<str>>>(&foo);
@@ -89,6 +89,7 @@ fn test_alloc() {
         assert_eq!(&*Trans::into_inner_arc(foo), "hello");
     }
 
+    #[cfg(feature = "rust_1_46")]
     {
         let foo = Trans::from_inner_rc(make_rc());
         assert_tyoe::<_, Rc<Trans<str>>>(&foo);
@@ -97,7 +98,6 @@ fn test_alloc() {
         assert_tyoe::<_, Rc<str>>(&Trans::from_inner_rc(make_rc()).into_inner_rc());
         assert_eq!(&*foo.into_inner_rc(), "hello");
     }
-    #[cfg(feature = "rust_1_46")]
     {
         let foo = Trans::from_inner_rc(make_rc());
         assert_tyoe::<_, Rc<Trans<str>>>(&foo);

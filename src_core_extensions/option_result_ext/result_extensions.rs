@@ -5,9 +5,8 @@ use std_::fmt;
 use alloc_::string::String;
 
 use super::ResultLike;
+
 use type_identity::TypeIdentity;
-#[allow(unused_imports)]
-use SelfOps;
 
 /// Extension trait for [`Result`].
 ///

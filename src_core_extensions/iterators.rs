@@ -6,7 +6,6 @@ use std_::{
     mem,
 };
 
-use crate::SelfOps;
 
 /// A version of [`std::iter::OnceWith`] usable in Rust 1.41.0.
 ///
@@ -139,11 +138,11 @@ where
 
         let replace = match self.state {
             RNS::Unreplaced(ref mut unreplaced) => {
-                (unreplaced.nth == unreplaced.current).observe(|v| {
-                    if !v {
-                        unreplaced.current += 1
-                    }
-                })
+                let x = unreplaced.nth == unreplaced.current;
+                if !x {
+                    unreplaced.current += 1
+                }
+                x
             }
             RNS::Replaced => false,
         };
