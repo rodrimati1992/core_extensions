@@ -556,7 +556,8 @@ pub trait StringExt: Borrow<str> {
     ///
     /// # Example
     ///
-    /// ```
+    #[cfg_attr(not(feature = "alloc"), doc = " ```ignore")]
+    #[cfg_attr(feature = "alloc", doc = " ```rust")]
     /// use core_extensions::StringExt;
     ///
     /// assert_eq!(
@@ -701,9 +702,8 @@ impl<'a> fmt::Display for LeftPadder<'a> {
 mod tests {
     use super::*;
 
-    use alloc_::vec::Vec;
-
     #[test]
+    #[cfg(feature = "alloc")]
     fn test_left_pad() {
         let s = "what\n  the\n    hall";
         assert_eq!(s.left_pad(0), s);
@@ -731,6 +731,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "alloc")]
     fn test_char_indices_to() {
         let word = "niño";
         assert_eq!(

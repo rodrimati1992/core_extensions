@@ -8,9 +8,11 @@ use std_::{
     marker::PhantomData,
 };
 
+#[cfg(feature = "alloc")]
 use alloc_::string::{String,ToString};
 
 #[test]
+#[cfg(feature = "alloc")]
 fn test_ref_call() {
     struct WhatRef<T>(T);
 
@@ -59,7 +61,9 @@ fn test_into_call() {
         }
     }
 
+    #[cfg(feature = "alloc")]
     assert_eq!(WhatInto("what").into_call(PhantomData::<String>), "what");
+
     assert_eq!(WhatInto(1u8).into_call(PhantomData::<u16>), 1);
 }
 
@@ -204,7 +208,7 @@ fn test_closures() {
         n
     };
     
-    let list = vec![0, 1, 2];
+    let list = [0, 1, 2];
     let into_fn = || list;
 
     assert_eq!(ref_fn.ref_call(()), 10);

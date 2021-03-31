@@ -119,7 +119,8 @@ macro_rules! getconst {
 /// 
 /// This example shows that you can use the generic constants with the [`ConstVal`] trait
 /// 
-/// ```
+#[cfg_attr(not(feature = "alloc"), doc = " ```ignore")]
+#[cfg_attr(feature = "alloc", doc = " ```rust")]
 /// use core_extensions::{ConstDefault, ConstVal, quasiconst};
 /// 
 /// quasiconst!{

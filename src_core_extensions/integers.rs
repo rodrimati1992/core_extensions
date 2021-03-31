@@ -556,6 +556,7 @@ impl_absolute_unsigned_numbers!(
 //---------------------------------- TESTS  -------------------------------------------
 
 #[cfg(test)]
+#[cfg(feature = "alloc")]
 mod tests {
     use super::*;
 

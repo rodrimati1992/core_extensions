@@ -429,7 +429,7 @@ pub trait ResultLikeExt: ResultLike {
     /// 
     /// [`ResultLike::into_result_`]: ./trait.ResultLike.html#tymethod.into_result_
     #[cfg_attr(feature = "track_caller", track_caller)]
-    #[cfg(any(feature = "std", test))]
+    #[cfg(feature = "std")]
     #[inline]
     fn unwrap_or_abort(self) -> Self::Item
     where
@@ -594,7 +594,7 @@ where T: ResultLike
 {}
 
 
-#[cfg(any(feature = "std", test))]
+#[cfg(feature = "std")]
 mod for_abort {
     use std_::marker::PhantomData;
 

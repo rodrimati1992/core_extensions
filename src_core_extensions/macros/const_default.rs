@@ -21,13 +21,16 @@
 /// assert_eq!(const_default!(u32), 0);
 /// assert_eq!(const_default!(bool), false);
 /// assert_eq!(const_default!((bool, Option<u32>)), (false, None));
-/// assert_eq!(const_default!(([u32; 0], Vec<u32>)), ([], Vec::new()));
+#[cfg_attr(
+    feature = "alloc",
+    doc = " assert_eq!(const_default!(([u32; 0], Vec<u32>)), ([], Vec::new()));"
+)]
 /// 
 /// let list: &[u8] = const_default!();
 /// assert!(list.is_empty());
 /// 
-/// let list: Vec<u32> = const_default!();
-/// assert!(list.is_empty());
+/// let string: &str = const_default!();
+/// assert!(string.is_empty());
 /// 
 /// ```
 /// 

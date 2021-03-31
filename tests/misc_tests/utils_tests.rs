@@ -1,4 +1,7 @@
-use core_extensions::utils::{transmute_ignore_size, transmute_vec};
+use core_extensions::utils::transmute_ignore_size;
+
+#[cfg(feature = "alloc")]
+use core_extensions::utils::transmute_vec;
 
 
 
@@ -21,6 +24,7 @@ fn transmute_ignore_size_test() {
 }
 
 #[test]
+#[cfg(feature = "alloc")]
 fn transmute_vec_test() {
     unsafe {
         assert_eq!(transmute_vec::<u8, u8>(vec![3]), vec![3]);

@@ -189,6 +189,7 @@ where
 }
 
 #[cfg(test)]
+#[cfg(feature = "alloc")]
 mod test_replace_nth {
     use alloc_::vec::Vec;
 

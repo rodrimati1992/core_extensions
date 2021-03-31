@@ -1,7 +1,7 @@
-use core_extensions::transparent_newtype::{
-    TransparentNewtype, TransparentNewtypeExt,
-    from_inner_vec, into_inner_vec,
-};
+use core_extensions::transparent_newtype::{TransparentNewtype, TransparentNewtypeExt};
+
+#[cfg(feature = "alloc")]
+use core_extensions::transparent_newtype::{from_inner_vec, into_inner_vec};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[repr(transparent)]

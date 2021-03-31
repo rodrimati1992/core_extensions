@@ -156,10 +156,14 @@ where
 
 
 #[cfg(test)]
+#[cfg(feature = "alloc")]
 mod test{
     use super::*;
 
-    use alloc_::vec::Vec;
+    use alloc_::{
+        vec::Vec,
+        vec,
+    };
 
     fn func<'a,T,U,F>(s:&'a [T],f:F)->Vec<(U,Vec<T>)>
     where

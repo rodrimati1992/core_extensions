@@ -60,7 +60,8 @@ pub use self::cloned_items::{CloneBound, CloneType, clone_this};
 ///
 /// This demonstrates how `&str` and `&[T]` elements can be cloned with the "alloc" feature
 /// 
-/// ```rust
+#[cfg_attr(feature = "alloc", doc = " ```rust")]
+#[cfg_attr(not(feature = "alloc"), doc = " ```ignore")]    
 /// use core_extensions::collections::Cloned;
 /// 
 /// assert_eq!(["foo"].cloned_(), ["foo".to_string()]);

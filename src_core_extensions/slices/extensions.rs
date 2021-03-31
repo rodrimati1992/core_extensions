@@ -511,8 +511,11 @@ mod slice_impls {
 mod tests {
     use super::*;
 
-    use alloc_::vec::Vec;
-    use alloc_::string::String;
+    #[cfg(feature = "alloc")]
+    use alloc_::{
+        vec::Vec,
+        string::String,
+    };
 
     #[test]
     fn contains_slice() {
@@ -774,6 +777,7 @@ mod tests {
         }
     }
     #[test]
+    #[cfg(feature = "alloc")]
     fn slice_lossy_slice_examples() {
         let list = vec![0, 1, 2, 3, 4, 5];
         assert_eq!(list.slice_lossy(0..list.len(), ()), &list[..]);
@@ -867,6 +871,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "alloc")]
     // Too slow to run in miri, and there's no unsafe code here.
     #[cfg(not(miri))]
     fn slice_lossy_slice_no_panic() {
@@ -893,6 +898,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "alloc")]
     // Too slow to run in miri, and there's no unsafe code here.
     #[cfg(not(miri))]
     fn slice_lossy_str_no_panic() {
