@@ -143,13 +143,16 @@ pub trait TypeIdentity {
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
         #[inline(always)]
         =>
-        fn into_type_arc(this: Arc<Self>) -> Arc<Self::Type> {
-            unsafe { utils::transmute_ignore_size(this) }
-        }
-
-        fn into_type_arc(self: Arc<Self>) -> Arc<Self::Type> {
-            unsafe { utils::transmute_ignore_size(self) }
-        }
+        (
+            fn into_type_arc(this: Arc<Self>) -> Arc<Self::Type> {
+                unsafe { utils::transmute_ignore_size(this) }
+            }
+        )
+        (
+            fn into_type_arc(self: Arc<Self>) -> Arc<Self::Type> {
+                unsafe { utils::transmute_ignore_size(self) }
+            }
+        )
     }
 
     rc_shared_docs!{
@@ -158,14 +161,16 @@ pub trait TypeIdentity {
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
         #[inline(always)]
         =>
-
-        fn into_type_rc(this: Rc<Self>) -> Rc<Self::Type> {
-            unsafe { utils::transmute_ignore_size(this) }
-        }
-
-        fn into_type_rc(self: Rc<Self>) -> Rc<Self::Type> {
-            unsafe { utils::transmute_ignore_size(self) }
-        }
+        (
+            fn into_type_rc(this: Rc<Self>) -> Rc<Self::Type> {
+                unsafe { utils::transmute_ignore_size(this) }
+            }
+        )
+        (
+            fn into_type_rc(self: Rc<Self>) -> Rc<Self::Type> {
+                unsafe { utils::transmute_ignore_size(self) }
+            }
+        )
     }
 
 

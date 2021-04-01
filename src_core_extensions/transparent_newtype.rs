@@ -198,13 +198,16 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
         #[inline(always)]
         =>
-        fn into_inner_arc(this: Arc<Self>) -> Arc<Self::Inner> {
-            unsafe { Arc::from_raw(Self::as_inner_raw(Arc::into_raw(this))) }
-        }
-
-        fn into_inner_arc(self: Arc<Self>) -> Arc<Self::Inner> {
-            unsafe { Arc::from_raw(Self::as_inner_raw(Arc::into_raw(self))) }
-        }
+        (
+            fn into_inner_arc(this: Arc<Self>) -> Arc<Self::Inner> {
+                unsafe { Arc::from_raw(Self::as_inner_raw(Arc::into_raw(this))) }
+            }
+        )
+        (
+            fn into_inner_arc(self: Arc<Self>) -> Arc<Self::Inner> {
+                unsafe { Arc::from_raw(Self::as_inner_raw(Arc::into_raw(self))) }
+            }
+        )
     }
 
     rc_shared_docs!{
@@ -219,14 +222,16 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
         #[inline(always)]
         =>
-
-        fn into_inner_rc(this: Rc<Self>) -> Rc<Self::Inner> {
-            unsafe { Rc::from_raw(Self::as_inner_raw(Rc::into_raw(this))) }
-        }
-
-        fn into_inner_rc(self: Rc<Self>) -> Rc<Self::Inner> {
-            unsafe { Rc::from_raw(Self::as_inner_raw(Rc::into_raw(self))) }
-        }
+        (
+            fn into_inner_rc(this: Rc<Self>) -> Rc<Self::Inner> {
+                unsafe { Rc::from_raw(Self::as_inner_raw(Rc::into_raw(this))) }
+            }
+        )
+        (
+            fn into_inner_rc(self: Rc<Self>) -> Rc<Self::Inner> {
+                unsafe { Rc::from_raw(Self::as_inner_raw(Rc::into_raw(self))) }
+            }
+        )
     }
 }
 

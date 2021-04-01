@@ -13,16 +13,16 @@ macro_rules! cfg_if {
 
 #[cfg(not(feature = "rust_1_46"))]
 macro_rules! rc_shared_docs {
-    ($(#[$attr:meta])* => $before_1_46:item  $since_1_46:item  ) => {
+    ($(#[$attr:meta])* => ($($before_1_46:tt)*)  ($($since_1_46:tt)*)  ) => {
         $(#[$attr])*
-        $before_1_46
+        $($before_1_46)*
     };
 }
 
 #[cfg(feature = "rust_1_46")]
 macro_rules! rc_shared_docs {
-    ($(#[$attr:meta])* => $before_1_46:item  $since_1_46:item  ) => {
+    ($(#[$attr:meta])* => ($($before_1_46:tt)*)  ($($since_1_46:tt)*)  ) => {
         $(#[$attr])*
-        $since_1_46
+        $($since_1_46)*
     };
 }

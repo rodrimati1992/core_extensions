@@ -20,6 +20,7 @@
 /// quasiconst!{const Bar: &'static str = "world"}
 /// quasiconst!{const SINGLE_INT[T: IntegerExt = u8]: Single<T> = Single(T::ONE) }
 /// 
+/// # fn main(){
 /// assert_eq!(getconst!(Foo), "hello");
 /// assert_eq!(getconst!(Bar), "world");
 /// 
@@ -32,6 +33,7 @@
 /// 
 /// // `Type<..>` is special syntax from `getconst`, to infer all generic parameters.
 /// assert_eq!(getconst!(SINGLE_INT<..>), Single(1u128));
+/// # }
 /// 
 /// ```
 /// 
@@ -142,6 +144,7 @@ macro_rules! getconst {
 ///     U::VAL
 /// }
 /// 
+/// # fn main() {
 /// assert_eq!(constant::<PAIR<[u8; 3]>>(), ([0, 0, 0], [0, 0, 0]));
 /// assert_eq!(constant::<PAIR<bool>>(), (false, false));
 /// 
@@ -150,6 +153,7 @@ macro_rules! getconst {
 ///
 /// // Pair<_> is inferred to be `Pair<String>`
 /// assert_eq!(constrained::<(String, String), PAIR<_>>(), (String::new(), String::new()));
+/// # }
 /// 
 /// ```
 /// 
