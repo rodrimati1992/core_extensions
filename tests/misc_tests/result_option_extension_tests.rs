@@ -7,9 +7,9 @@ use alloc::string::String;
 fn unwrap_unchecked_test(){
     unsafe{
         let ok: Result<String, ()> = Ok("foo".to_string());
-        assert_eq!(ok.unwrap_unchecked(), "foo");
+        assert_eq!(ok.unwrap_unchecked_(), "foo");
 
         let err: Result<(), String> = Err("bar".to_string());
-        assert_eq!(err.unwrap_err_unchecked(), "bar");
+        assert_eq!(err.unwrap_err_unchecked_(), "bar");
     }
 }

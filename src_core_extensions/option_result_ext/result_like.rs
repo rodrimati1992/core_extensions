@@ -482,12 +482,12 @@ pub trait ResultLikeExt: ResultLike {
     /// use core_extensions::ResultLikeExt;
     ///
     /// unsafe{
-    ///     assert_eq!(Some(21).unwrap_unchecked(), 21);
-    ///     assert_eq!(Ok::<_, ()>(100).unwrap_unchecked(), 100);
+    ///     assert_eq!(Some(21).unwrap_unchecked_(), 21);
+    ///     assert_eq!(Ok::<_, ()>(100).unwrap_unchecked_(), 100);
     /// }
     /// ```
     #[inline]
-    unsafe fn unwrap_unchecked(self) -> Self::Item {
+    unsafe fn unwrap_unchecked_(self) -> Self::Item {
         self.unwrap_or_else_(|_| impossible())
     }
 
@@ -504,12 +504,12 @@ pub trait ResultLikeExt: ResultLike {
     /// use core_extensions::option_result_ext::IsNoneError;
     ///
     /// unsafe{
-    ///     assert_eq!(None::<u32>.unwrap_err_unchecked(), IsNoneError::new());
-    ///     assert_eq!(Err::<(), _>(100).unwrap_err_unchecked(), 100);
+    ///     assert_eq!(None::<u32>.unwrap_err_unchecked_(), IsNoneError::new());
+    ///     assert_eq!(Err::<(), _>(100).unwrap_err_unchecked_(), 100);
     /// }
     /// ```
     #[inline]
-    unsafe fn unwrap_err_unchecked(self) -> Self::Error {
+    unsafe fn unwrap_err_unchecked_(self) -> Self::Error {
         self.unwrap_err_or_else_(|_| impossible())
     }
 
