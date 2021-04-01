@@ -27,7 +27,7 @@ pub unsafe fn transmute_ignore_size<T, U>(v: T) -> U {
 ///
 /// [`std::mem::transmute`]: https://doc.rust-lang.org/std/mem/fn.transmute.html
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg feature = "alloc"))]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
 pub unsafe fn transmute_vec<T, U>(vector: Vec<T>) -> Vec<U> {
     let len = vector.len();
     let capacity = vector.capacity();
