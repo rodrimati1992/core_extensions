@@ -29,8 +29,5 @@ fn transmute_vec_test() {
     unsafe {
         assert_eq!(transmute_vec::<u8, u8>(vec![3]), vec![3]);
         assert_eq!(transmute_vec::<u64, i64>(vec![!0]), vec![-1]);
-
-        let arrays = vec![[!0, !0, !0, !0], [0, 0, 0, 0]];
-        assert_eq!(transmute_vec::<[u8; 4], u32>(arrays), vec![!0u32, 0]);
     }
 }
