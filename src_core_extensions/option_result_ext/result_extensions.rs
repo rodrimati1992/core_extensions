@@ -2,7 +2,7 @@
 use std_::fmt;
 
 #[cfg(any(feature = "alloc"))]
-use alloc_::string::String;
+use alloc::string::String;
 
 use super::ResultLike;
 

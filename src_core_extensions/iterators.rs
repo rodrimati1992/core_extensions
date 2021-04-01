@@ -191,7 +191,7 @@ where
 #[cfg(test)]
 #[cfg(feature = "alloc")]
 mod test_replace_nth {
-    use alloc_::vec::Vec;
+    use alloc::vec::Vec;
 
     use super::*;
     #[test]
@@ -200,8 +200,6 @@ mod test_replace_nth {
 
         for i in 0..list.len() {
             let mut iter = ReplaceNth::new(list.iter().cloned(), i, 100);
-            println!("iteration:{}", i);
-            println!("values:{:?}", iter.clone().collect::<Vec<_>>());
             if i != 0 {
                 let j = i - 1;
                 assert_eq!(iter.nth(j).unwrap(), list[j])

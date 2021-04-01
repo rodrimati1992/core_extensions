@@ -14,11 +14,11 @@ macro_rules! declare_clone_bounds {
 
         $($docs)*
         #[cfg(feature = "alloc")]
-        pub trait CloneBound: std_::borrow::ToOwned {}
+        pub trait CloneBound: alloc::borrow::ToOwned {}
 
         #[cfg(feature = "alloc")]
         impl<T> CloneBound for T 
-        where T: ?Sized + std_::borrow::ToOwned
+        where T: ?Sized + alloc::borrow::ToOwned
         {}
     };
 }
@@ -50,7 +50,7 @@ macro_rules! declare_cloned_type {
 
         $($docs)*
         #[cfg(feature = "alloc")]
-        pub type CloneType<This> = <This as std_::borrow::ToOwned>::Owned;
+        pub type CloneType<This> = <This as alloc::borrow::ToOwned>::Owned;
     }
 }
 
@@ -196,7 +196,7 @@ mod tests {
     use super::*;
 
     #[cfg(feature = "alloc")]
-    use alloc_::string::ToString;
+    use alloc::string::ToString;
 
     #[test]
     fn refs() {

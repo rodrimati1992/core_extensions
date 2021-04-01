@@ -274,8 +274,8 @@ impl_const_default!{
 
 #[cfg(feature = "alloc")]
 impl_const_default!{
-    for[T] ::alloc_::vec::Vec<T> = Self::new(),
-    for[] ::alloc_::string::String = Self::new(),
+    for[T] ::alloc::vec::Vec<T> = Self::new(),
+    for[] ::alloc::string::String = Self::new(),
 }
 
 
@@ -383,8 +383,8 @@ mod tests{
     #[test]
     #[cfg(feature = "alloc")]
     fn for_rust_1_39(){
-        use alloc_::vec::Vec;
-        use alloc_::string::String;
+        use alloc::vec::Vec;
+        use alloc::string::String;
 
         assert_eq!(const_def_assert!(Vec<u8>), Vec::new());
         assert_eq!(const_def_assert!(Vec<NoDefault>), Vec::new());

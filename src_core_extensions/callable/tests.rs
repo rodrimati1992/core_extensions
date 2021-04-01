@@ -9,7 +9,7 @@ use std_::{
 };
 
 #[cfg(feature = "alloc")]
-use alloc_::string::{String,ToString};
+use alloc::string::{String,ToString};
 
 #[test]
 #[cfg(feature = "alloc")]

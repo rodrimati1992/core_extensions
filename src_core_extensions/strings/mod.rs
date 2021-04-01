@@ -6,7 +6,7 @@ use std_::fmt;
 use std_::str::CharIndices;
 
 #[cfg(feature = "alloc")]
-use alloc_::string::String;
+use alloc::string::String;
 
 mod iterators;
 
@@ -546,7 +546,7 @@ pub trait StringExt: Borrow<str> {
     ///
     #[cfg(feature = "alloc")]
     fn left_pad(&self, how_much: usize) -> String {
-        use alloc_::string::ToString;
+        use alloc::string::ToString;
         self.left_padder(how_much).to_string()
     }
     /// Returns a value that pads the string on the left with `how_much` additional

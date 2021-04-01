@@ -103,7 +103,7 @@ mod test {
     #[test]
     #[cfg(feature = "alloc")]
     fn cloned_alloc() {
-        use alloc_::string::ToString;
+        use alloc::string::ToString;
 
         assert_eq!(("5",).cloned_(), ("5".to_string(),));
         assert_eq!(("5", "8").cloned_(), ("5".to_string(), "8".to_string()));

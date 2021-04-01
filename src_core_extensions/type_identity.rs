@@ -1,7 +1,7 @@
 use std_::mem;
 
 #[cfg(feature = "alloc")]
-use alloc_::{
+use alloc::{
     boxed::Box,
     rc::Rc,
     sync::Arc,

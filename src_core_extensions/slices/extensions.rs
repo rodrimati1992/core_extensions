@@ -512,7 +512,7 @@ mod tests {
     use super::*;
 
     #[cfg(feature = "alloc")]
-    use alloc_::{
+    use alloc::{
         vec::Vec,
         string::String,
     };

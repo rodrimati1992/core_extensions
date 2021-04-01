@@ -560,7 +560,7 @@ impl_absolute_unsigned_numbers!(
 mod tests {
     use super::*;
 
-    use alloc_::vec::Vec;
+    use alloc::vec::Vec;
 
     const MAX_POWER: u32 = 38;
 
@@ -570,7 +570,6 @@ mod tests {
         N: PartialEq + fmt::Display + Default + Copy + IntegerExt,
     {
         for (n, digits) in iter {
-            println!("n:{} digits:{}", n, digits);
             assert_eq!(n.number_of_digits(), digits, " n:{} ", n);
         }
     }

@@ -1,7 +1,7 @@
 //! Miscelaneous utility functions
 
 #[cfg(feature = "alloc")]
-use alloc_::vec::Vec;
+use alloc::vec::Vec;
 
 use std_::mem::{self, ManuallyDrop};
 
