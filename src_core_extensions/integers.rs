@@ -263,7 +263,7 @@ pub trait ToTime {
     /// assert_eq!(101.seconds(), Duration::from_secs(101));
     /// ```
     fn seconds(self) -> Duration;
-    /// Creates a [`Duration`] of `self` miliseconds
+    /// Creates a [`Duration`] of `self` milliseconds
     ///
     /// [`Duration`]: https://doc.rust-lang.org/core/time/struct.Duration.html
     /// # Example
@@ -273,12 +273,12 @@ pub trait ToTime {
     ///
     /// use std::time::Duration;
     ///
-    /// assert_eq!(0.miliseconds(), Duration::from_millis(0));
-    /// assert_eq!(1.miliseconds(), Duration::from_millis(1));
-    /// assert_eq!(10.miliseconds(), Duration::from_millis(10));
+    /// assert_eq!(0.milliseconds(), Duration::from_millis(0));
+    /// assert_eq!(1.milliseconds(), Duration::from_millis(1));
+    /// assert_eq!(10.milliseconds(), Duration::from_millis(10));
     ///
     /// ```
-    fn miliseconds(self) -> Duration;
+    fn milliseconds(self) -> Duration;
     /// Creates a [`Duration`] of `self` microseconds
     ///
     /// [`Duration`]: https://doc.rust-lang.org/core/time/struct.Duration.html
@@ -327,7 +327,7 @@ where
     fn seconds(self) -> Duration {
         Duration::from_secs(self.abs_unsigned().into())
     }
-    fn miliseconds(self) -> Duration {
+    fn milliseconds(self) -> Duration {
         Duration::from_millis(self.abs_unsigned().into())
     }
     fn microseconds(self) -> Duration {
@@ -484,7 +484,7 @@ macro_rules! impl_absolute_unsigned_numbers {
             fn abs_unsigned(self) -> Self::Unsigned {
                 // using this instead of self.abs() to avoid
                 // panicking on self==Self::min_value()
-                (if self < 0 { self.wrapping_neg() }else{ self }) as Self::Unsigned
+                self.wrapping_abs() as Self::Unsigned
             }
 
             const ZERO: Self = 0;

@@ -151,6 +151,7 @@ pub extern crate core as std_;
 #[macro_use]
 pub extern crate alloc;
 
+#[doc(hidden)]
 #[cfg(feature = "enable_proc_macro_crate")]
 pub extern crate core_extensions_proc_macros;
 

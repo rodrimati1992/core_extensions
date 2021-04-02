@@ -1,6 +1,7 @@
-/*!
-Extension traits for collection types.
-*/
+//! Extension traits for collection types.
+//! 
+//! 
+
 
 mod cloned_items;
 
@@ -72,6 +73,34 @@ pub use self::cloned_items::{CloneBound, CloneType, clone_this};
 /// 
 /// ```
 ///
+/// # Implementing this trait
+///
+/// ```rust
+/// use core_extensions::collections::Cloned;
+///
+/// #[derive(Debug, PartialEq)]
+/// struct Pair<T>(T, T);
+///
+/// impl<T: Cloned> Cloned for Pair<T> {
+///     type Cloned = Pair<T::Cloned>;
+///
+///     fn cloned_(&self) -> Self::Cloned {
+///         Pair(self.0.cloned_(), self.1.cloned_())
+///     }
+/// }
+///
+/// let foo = Pair(&100, &200);
+/// assert_eq!(foo.cloned_(), Pair(100, 200));
+///
+/// let bar = Pair(Some(&81), None);
+/// assert_eq!(bar.cloned_(), Pair(Some(81), None));
+///
+/// let baz = Pair([&3, &5], [&8, &13]);
+/// assert_eq!(baz.cloned_(), Pair([3, 5], [8, 13]));
+///
+///
+/// ```
+///
 /// [`Clone`]: https://doc.rust-lang.org/std/clone/trait.Clone.html
 /// [`ToOwned`]: https://doc.rust-lang.org/std/borrow/trait.ToOwned.html
 /// [`core`]: https://doc.rust-lang.org/core
@@ -132,6 +161,29 @@ pub type ClonedOut<This> = <This as Cloned>::Cloned;
 ///
 /// ```
 /// 
+/// # Implementing this trait
+///
+/// ```rust
+/// use core_extensions::collections::IntoArray;
+///
+/// struct Pair<T>(T, T);
+///
+/// impl<T> IntoArray for Pair<T> {
+///     type Array = [T; 2];
+///
+///     fn into_array(self) -> Self::Array {
+///         [self.0, self.1]
+///     }
+/// }
+///
+/// let foo = Pair(3, 5);
+/// assert_eq!(foo.into_array(), [3, 5]);
+///
+/// let bar = Pair("hello", "world");
+/// assert_eq!(bar.into_array(), ["hello", "world"]);
+///
+/// ```
+///
 pub trait IntoArray {
     /// The type of the array of the same length.
     type Array;

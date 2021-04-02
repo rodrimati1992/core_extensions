@@ -380,7 +380,7 @@ impl<I> IteratorExt for I where I: ?Sized + Iterator {}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Constructs `Iterator`s using a closure.
+/// Uses a closure to construct `Iterator`s.
 ///
 /// This can turn this into an `Iterator` (with `IntoIterator::into_iter`)
 /// multiple times if the closure is `Copy`.
@@ -425,12 +425,15 @@ where
 
 /// Use this macro to create an
 /// [`IterCloner`](./iterators/struct.IterCloner.html)
-/// from an Iterator.
+/// from an [`IntoIterator`] (this includes all [`Iterator`]s).
 ///
-/// This macro takes an iterator by value, and then allows iterating multiple times with
-/// the same iterator, so long as it implements `Clone`.
+/// This macro then converts the [`IntoIterator`] into an iterator,
+/// and then allows iterating multiple times with the iterator, 
+/// so long as it implements `Clone`.
 ///
 /// # Example
+///
+/// ### Mapping
 ///
 /// ```rust
 /// use core_extensions::iter_cloner;
@@ -446,6 +449,22 @@ where
 /// assert_eq!(iter.into_iter().collect::<Vec<_>>(), lengths);
 ///
 /// ```
+///
+/// ### Vector
+///
+/// ```rust
+/// use core_extensions::iter_cloner;
+///
+/// iter_cloner!(let iter = vec![0, 1, 2, 3]);
+///
+/// assert_eq!(iter.into_iter().collect::<Vec<_>>(), [0, 1, 2, 3]);
+/// assert_eq!(iter.into_iter().collect::<Vec<_>>(), [0, 1, 2, 3]);
+/// assert_eq!(iter.into_iter().collect::<Vec<_>>(), [0, 1, 2, 3]);
+///
+/// ```
+///
+/// [`IntoIterator`]: https://doc.rust-lang.org/std/iter/trait.IntoIterator.html
+/// [`Iterator`]:  https://doc.rust-lang.org/std/iter/trait.Iterator.html
 #[cfg(feature = "iterators")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "iterators")))]
 #[macro_export]
