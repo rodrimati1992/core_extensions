@@ -425,6 +425,8 @@ pub trait StringExt: Borrow<str> {
     /// If the index is between char boundaries,
     /// this returns the char at the previous char boundary.
     ///
+    /// If `self.len() <= index`, this returns none.
+    ///
     /// # Example
     /// ```
     /// use core_extensions::StringExt;
@@ -457,6 +459,9 @@ pub trait StringExt: Borrow<str> {
 
     /// Returns an iterator over (index,char) pairs up to 
     /// (but not including) the char at the `to` byte.
+    ///
+    /// IF the index is between char boundaries,
+    /// it doesn't include the char that index is inside of.
     ///
     /// if `index > self.len()`, returns an iterator over the entire string.
     ///
@@ -570,6 +575,9 @@ pub trait StringExt: Borrow<str> {
         LeftPadder::new(self.borrow(), how_much)
     }
     /// The indentation of the first line.
+    ///
+    /// This considers lines that only contains whitespace to have as 
+    /// much indentation as they're long.
     ///
     /// # Example
     ///

@@ -21,7 +21,7 @@ use crate::utils::transmute_ignore_size;
 ///
 /// Implementors must only implement this trait for `#[repr(transparent)]` wrappers,
 /// with the same alignment as its only non-zero-sized field,
-/// and the type of that field must be the value of the [`TransparentNewtype::Inner`]
+/// and the type of that field must be used as the [`TransparentNewtype::Inner`]
 /// associated type.
 ///
 /// The recommended way to implement this trait's required methods is with:
@@ -76,8 +76,6 @@ use crate::utils::transmute_ignore_size;
 ///
 /// let mut list = vec![1.0, 0.0, 2.0];
 ///
-/// // This avoids the problem with using sort_by_key ,
-/// // in which the borrow can't be returned from the closure.
 /// <[TotalF32]>::from_inner_mut(&mut list).sort();
 ///
 /// assert_eq!(list, vec![0.0, 1.0, 2.0]);

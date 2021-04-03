@@ -89,12 +89,7 @@
 //!
 //! `"const_generics"`:
 //! Enables impls of traits for all array lengths, 
-//! requires versions of Rust where const generics are stable.
-//!
-//! `"nightly_const_generics"`: 
-//! Enables impls of traits for all array lengths in Rust nightly versions prior to 
-//! the stabilization of const generics.
-//!
+//! Requires Rust 1.51.0.
 //!
 //! [`collections`]: ./collections/index.html
 //! [`callable`]: ./callable/index.html
@@ -134,7 +129,6 @@
 #![deny(missing_docs)]
 #![deny(unused_must_use)]
 #![cfg_attr(not(miri), no_std)]
-#![cfg_attr(feature = "nightly_const_generics", feature(min_const_generics))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 
 #[cfg(feature="std")]

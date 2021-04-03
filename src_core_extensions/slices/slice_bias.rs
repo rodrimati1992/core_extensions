@@ -8,6 +8,9 @@
 /// (`()` is converted to [`SliceBias::OUT`](#associatedconstant.OUT)).
 ///
 /// # Example
+/// 
+/// ### String
+/// 
 /// ```
 /// use core_extensions::SliceExt;
 /// use core_extensions::slices::SliceBias;

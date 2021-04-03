@@ -142,7 +142,7 @@ impl<A> AssertEq3<A,A,A>{
 /// Asserts that its 4 type parameters are the same type.
 ///
 /// This assertion is done on the type level,
-/// so `let _: AssertEq3<A, B, C, D>;` requires that 
+/// so `let _: AssertEq4<A, B, C, D>;` requires that 
 /// `A`, `B`, `C`, and `D` must be the same type.
 ///
 /// # Example

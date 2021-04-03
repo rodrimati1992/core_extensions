@@ -83,7 +83,6 @@ rust_1_46 = []
 docsrs = []
 
 const_generics = []
-nightly_const_generics = ["const_generics"]
 
 [dev-dependencies]
 rand = "0.4.6"

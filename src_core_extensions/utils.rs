@@ -7,9 +7,43 @@ use std_::mem::{self, ManuallyDrop};
 
 /// Allows transmuting between types of different sizes.
 ///
+/// Necessary for transmuting in generic functions, since (as of Rust 1.51.0) 
+/// transmute doesn't work well with generic types.
+///
 /// # Safety
 ///
 /// This function has the same safety requirements as [`std::mem::transmute_copy`].
+///
+/// # Example
+///
+/// ```rust
+/// use core_extensions::utils::transmute_ignore_size;
+/// 
+/// use std::mem::MaybeUninit;
+/// 
+/// unsafe fn transmute_into_init<T>(array: [MaybeUninit<T>; 3]) -> [T; 3] {
+///     transmute_ignore_size(array)
+/// }
+/// 
+/// let array = [MaybeUninit::new(3), MaybeUninit::new(5), MaybeUninit::new(8)];
+/// 
+/// unsafe{ assert_eq!(transmute_into_init(array), [3, 5, 8]); }
+///
+/// ```
+///
+/// This is the error you get if you tried to use `std::mem::transmute`.
+///
+/// ```text
+/// error[E0512]: cannot transmute between types of different sizes, or dependently-sized types
+///  --> src/lib.rs:4:5
+///   |
+/// 4 |     std::mem::transmute(array)
+///   |     ^^^^^^^^^^^^^^^^^^^
+///   |
+///   = note: source type: `[MaybeUninit<T>; 3]` (size can vary because of T)
+///   = note: target type: `[T; 3]` (size can vary because of T)
+/// ```
+/// 
 ///
 /// [`std::mem::transmute_copy`]: https://doc.rust-lang.org/std/mem/fn.transmute_copy.html
 #[inline(always)]
@@ -22,8 +56,32 @@ pub unsafe fn transmute_ignore_size<T, U>(v: T) -> U {
 ///
 /// # Safety
 ///
-/// This function has the same safety requirements as [`std::mem::transmute`] 
+/// This function has the safety requirements of [`std::mem::transmute`] 
 /// regarding transmuting from `T` to `U`.
+/// `T` must also have the same alignment as `U`.
+///
+/// # Example
+///
+/// ```rust
+/// use core_extensions::utils::transmute_vec;
+///
+/// use std::mem::ManuallyDrop;
+///
+/// unsafe{
+///     assert_eq!(transmute_vec::<u32, i32>(vec![!0, 0, 1]), vec![-1, 0, 1]);
+/// }
+///
+/// fn make(s: &str) -> ManuallyDrop<String> {
+///     ManuallyDrop::new(String::from(s))
+/// }
+/// unsafe{
+///     assert_eq!(
+///         transmute_vec::<String, ManuallyDrop<String>>(vec!["hello".into(), "world".into()]),
+///         vec![make("hello"), make("world")],
+///     );
+/// }
+///
+/// ```
 ///
 /// [`std::mem::transmute`]: https://doc.rust-lang.org/std/mem/fn.transmute.html
 #[cfg(feature = "alloc")]
