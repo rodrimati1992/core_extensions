@@ -139,6 +139,13 @@ pub trait TypeIdentity {
 
     rc_shared_docs!{
         /// Converts an Arc back to the original type.
+        /// 
+        /// # Self parameter
+        /// 
+        /// Enabling the "rust_1_46" feature changes this method from 
+        /// taking a `this` parameter to taking a`self` parameter,
+        /// which allows calling it with `.into_type_arc()`
+        /// 
         #[cfg(feature = "alloc")]
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
         #[inline(always)]
@@ -157,6 +164,13 @@ pub trait TypeIdentity {
 
     rc_shared_docs!{
         /// Converts an Rc back to the original type.
+        /// 
+        /// # Self parameter
+        /// 
+        /// Enabling the "rust_1_46" feature changes this method from 
+        /// taking a `this` parameter to taking a`self` parameter,
+        /// which allows calling it with `.into_type_rc()`
+        /// 
         #[cfg(feature = "alloc")]
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
         #[inline(always)]

@@ -7,12 +7,13 @@
 ///
 /// use std::cmp::{Ordering, Ord, PartialOrd};
 ///
-///
-/// let mut list = vec![3, 13, 21, 5, 8, 34];
-/// 
-/// <[Reverse<u64>]>::from_inner_mut(&mut list).sort();
-///
-/// assert_eq!(list, vec![34, 21, 13, 8, 5, 3]);
+/// fn main(){
+///     let mut list = vec![3, 13, 21, 5, 8, 34];
+///         
+///     <[Reverse<u64>]>::from_inner_mut(&mut list).sort();
+///    
+///     assert_eq!(list, vec![34, 21, 13, 8, 5, 3]);
+/// }
 ///
 /// #[repr(transparent)]
 /// #[derive(PartialEq, Eq)]

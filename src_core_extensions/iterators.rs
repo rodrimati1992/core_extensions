@@ -427,7 +427,7 @@ where
 /// [`IterCloner`](./iterators/struct.IterCloner.html)
 /// from an [`IntoIterator`] (this includes all [`Iterator`]s).
 ///
-/// The resulting variable clones the iterator that `$expr` was converted into,
+/// The resulting variable clones the iterator (that `$expr` was converted into)
 /// every time that you call `.into_iter()` or iterate over it with a `for` loop.
 ///
 /// # Example

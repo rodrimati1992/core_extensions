@@ -7,7 +7,7 @@
 /// Using the [`quasiconst`] macro to declare types that implement this trait,
 /// and emulate generic constants.
 /// 
-/// This example requires Rust 1.46.0, because it uses a while loop in a const context
+/// This example requires Rust 1.46.0, because it uses a while loop in a const context.
 /// 
 #[cfg_attr(not(feature = "rust_1_46"), doc = " ```ignore")]
 #[cfg_attr(feature = "rust_1_46", doc = " ```rust")]

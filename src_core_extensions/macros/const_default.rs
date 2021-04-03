@@ -1,4 +1,5 @@
-/// Gets the [`ConstDefault::DEFAULT`] associated constant for a type.
+/// Gets the [`ConstDefault::DEFAULT`](trait.ConstDefault.html#associatedconstant.DEFAULT)
+/// associated constant for a type.
 /// 
 /// Use this macro to avoid accidentally using inherent `DEFAULT` associated cosntants.
 /// 
@@ -23,7 +24,7 @@
 /// assert_eq!(const_default!((bool, Option<u32>)), (false, None));
 #[cfg_attr(
     feature = "alloc",
-    doc = " assert_eq!(const_default!(([u32; 0], Vec<u32>)), ([], Vec::new()));"
+    doc = "assert_eq!(const_default!(([u32; 0], Vec<u32>)), ([], Vec::new()));"
 )]
 /// 
 /// let list: &[u8] = const_default!();

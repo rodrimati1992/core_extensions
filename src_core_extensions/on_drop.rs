@@ -8,7 +8,7 @@ mod tests;
 
 /// A wrapper type that runs a closure at the end of the scope.
 ///
-/// This takes both a value and a closure that takes the value as a parameter,
+/// This takes both a value and a closure(that takes the value as a parameter),
 /// allowing you to access the value before the closure runs.
 ///
 /// # Example

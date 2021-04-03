@@ -26,6 +26,30 @@ use std_::marker::PhantomData;
 /// assert_impls(ghost);
 ///
 /// ```
+///
+/// ### Const callable
+///
+/// This macro works in `const`ants, but not in `const fn`s (as of Rust 1.51.0).
+///
+/// ```rust
+/// use core_extensions::{as_phantom, map_phantomdata};
+///
+/// use std::marker::PhantomData;
+/// 
+/// const fn size_of_phantom<T>(_: PhantomData<T>) -> usize {
+///     std::mem::size_of::<T>()
+/// }
+///
+/// const SIZE: usize = {
+///     let tup = (0u8, 116, [3u128, 4]);
+///
+///     size_of_phantom(map_phantomdata!(as_phantom(&tup), |x| x.2[0] ))
+/// };
+///
+/// assert_eq!(SIZE, 16);
+///
+/// ```
+///
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "phantom")))]
 #[macro_export]
 macro_rules! map_phantomdata {
@@ -75,6 +99,30 @@ pub struct ClosureTypes<P, C: FnOnce(P) -> R, R> {
 /// assert_eq!(list, [0, 1])
 ///
 /// ```
+///
+/// ### Const callable
+///
+/// This macro works in `const` contexts, since Rust 1.46.0.
+///
+/// ```rust
+/// use core_extensions::{as_phantom, expr_as_phantom};
+///
+/// use std::marker::PhantomData;
+/// 
+/// const fn size_of_phantom<T>(_: PhantomData<T>) -> usize {
+///     std::mem::size_of::<T>()
+/// }
+///
+/// const fn size() -> usize {
+///     let tup = (0u8, 116, [3u64, 4]);
+///
+///     size_of_phantom(expr_as_phantom!( tup.2[0] ))
+/// }
+///
+/// assert_eq!(size(), 8);
+///
+/// ```
+///
 ///
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "phantom")))]
 #[macro_export]
@@ -127,6 +175,30 @@ macro_rules! expr_as_phantom {
 /// assert_eq!(set.into_iter().sum_same(), 55);
 ///
 /// ```
+///
+/// ### Const callable
+///
+/// This macro works in `const`ants, but not in `const fn`s (as of Rust 1.51.0).
+///
+/// ```rust
+/// use core_extensions::return_type_phantom;
+///
+/// use std::marker::PhantomData;
+/// 
+/// const fn size_of_phantom<T>(_: PhantomData<T>) -> usize {
+///     std::mem::size_of::<T>()
+/// }
+///
+/// const SIZE: usize = {
+///     let tup = (0u8, 116, [3u128, 4]);
+///
+///     size_of_phantom(return_type_phantom!(|| tup.2[0] ))
+/// };
+///
+/// assert_eq!(SIZE, 16);
+///
+/// ```
+///
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "phantom")))]
 #[macro_export]
 macro_rules! return_type_phantom {

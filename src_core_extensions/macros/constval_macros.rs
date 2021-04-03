@@ -86,7 +86,7 @@ macro_rules! getconst {
 /// 
 /// # Generated code
 /// 
-/// This macro geenerates:
+/// This macro generates:
 /// 
 /// -  A generic struct with the name and generic parameters of 
 /// the `const` definition passed to this macro.
@@ -108,7 +108,7 @@ macro_rules! getconst {
 /// ### Basic
 /// 
 /// ```rust
-/// use core_extensions::{ConstVal, getconst, quasiconst};
+/// use core_extensions::{getconst, quasiconst};
 /// 
 /// quasiconst!{ const NONE[T]: Option<T> = None }
 /// 
@@ -116,9 +116,9 @@ macro_rules! getconst {
 /// assert_eq!([getconst!(NONE<String>); 4], [None, None, None, None]);
 ///
 /// // The `VAL` associated constant is another way to get the constant.
-/// // 
-/// // In other generic constants, the inherent `VAL` associated constant can be
-/// // hidden by trait associated constants with fewer constraints.
+/// //
+/// // I get worse compiler errors with `::VAL` than with `getconst`
+/// // when the bounds of the generic constant aren't satisfied.
 /// assert_eq!([NONE::<u8>::VAL; 4], [None, None, None, None]);
 /// 
 /// ```

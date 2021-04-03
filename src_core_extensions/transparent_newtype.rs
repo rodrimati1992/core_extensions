@@ -189,8 +189,9 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         /// 
         /// # Self parameter
         /// 
-        /// Enabling the "rust_1_46" feature changes this method to have a `self` parameter,
-        /// allowing calling it with `.into_inner_arc()`
+        /// Enabling the "rust_1_46" feature changes this method 
+        /// from taking a `this` parameter to taking a `self` parameter,
+        /// which allows calling it with `.into_inner_arc()`
         /// 
         #[cfg(feature = "alloc")]
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
@@ -213,8 +214,9 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         /// 
         /// # Self parameter
         /// 
-        /// Enabling the "rust_1_46" feature changes this method to have a `self` parameter,
-        /// allowing calling it with `.into_inner_rc()`
+        /// Enabling the "rust_1_46" feature changes this method 
+        /// from taking a `this` parameter to taking a `self` parameter,
+        /// which allows calling it with `.into_inner_rc()`
         /// 
         #[cfg(feature = "alloc")]
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]

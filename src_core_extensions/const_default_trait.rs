@@ -41,7 +41,11 @@ use std_::sync::atomic;
 /// where
 ///     T: ConstDefault
 /// {
-///     const DEFAULT: Self = Point{x: T::DEFAULT, y: T::DEFAULT};
+///     const DEFAULT: Self = Point {
+///         // `const_default!()` is equivalent to `ConstDefault::DEFAULT`
+///         x: const_default!(),
+///         y: const_default!(),
+///     };
 /// }
 ///
 /// # fn main(){

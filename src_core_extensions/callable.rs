@@ -456,8 +456,10 @@ impl_call! {
 
 /**
 This macro allows more ergonomically implementing the 
-[`CallRef`], [`CallMut`], [`CallInto`] traits .
-
+[`CallRef`](./callable/trait.CallRef.html) /
+[`CallMut`](./callable/trait.CallMut.html) /
+[`CallInto`](./callable/trait.CallInto.html)
+traits .
 
 # Examples
 
@@ -556,7 +558,6 @@ fn <fn_method_name>
 // Optionally declares the generic parameters of the function.
 $( [ $( <generic_parameter> )* ] )?
 
-// <self_ident> is the identifier used to access the closure environment.
 // <self_type> is the type of the closure environment,which is implementing the Call traits.
 // <function_parameter> are optional function parameters.
 (   
@@ -566,7 +567,7 @@ $( [ $( <generic_parameter> )* ] )?
 )
 
 //<return_tyoe> optional return type,defaults to '()'.
-$( -><return_type> )?
+$( -> <return_type> )?
 
 // An optional where clause,
 // all tokens inside `[...]` get copied directly to the where clause of the impl.

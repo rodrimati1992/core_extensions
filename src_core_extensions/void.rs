@@ -59,6 +59,15 @@ impl From<Void> for std_::convert::Infallible {
     }
 }
 
+/// There's also a `impl From<Void> for std_::convert::Infallible` impl
+/// that's not appearing in the docs for some reason.
+impl From<std_::convert::Infallible> for Void {
+    #[inline(always)]
+    fn from(this: std_::convert::Infallible) -> Self {
+        match this {}
+    }
+}
+
 #[cfg(std)]
 impl std_::error::Error for Void {
     fn description(&self) -> &str {
