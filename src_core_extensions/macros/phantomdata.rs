@@ -104,7 +104,8 @@ pub struct ClosureTypes<P, C: FnOnce(P) -> R, R> {
 ///
 /// This macro works in `const` contexts, since Rust 1.46.0.
 ///
-/// ```rust
+#[cfg_attr(feature = "rust_1_46", doc = " ```rust")]
+#[cfg_attr(not(feature = "rust_1_46"), doc = " ```ignore")]
 /// use core_extensions::{as_phantom, expr_as_phantom};
 ///
 /// use std::marker::PhantomData;
