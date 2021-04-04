@@ -150,7 +150,7 @@ pub trait CallExt {
     ///
     /// ```
     /// 
-    /// [`CallInto::into_call_`]: ./trait.CallOnce.html#tymethod.into_call_
+    /// [`CallInto::into_call_`]: ./trait.CallInto.html#tymethod.into_call_
     #[inline(always)]
     fn into_call<P>(self, params: P) -> Self::Returns
     where

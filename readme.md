@@ -106,8 +106,7 @@ you can use it instead of the ones below if you don't mind longer compile-times:
 
 - `"bools"`: Enables the [`BoolExt`] trait, extension trait for `bool`.
 
-- `"callable"`: Enables the [`callable`] module, 
-with stably implementable equivalents of the `Fn*` traits.
+- `"callable"`: Enables the [`callable`] module, with stably implementable equivalents of the `Fn*` traits.
 
 - `"collections"`: Enables the [`collections`] module, with traits for collection types.
 
@@ -115,12 +114,14 @@ with stably implementable equivalents of the `Fn*` traits.
 Enables the [`ConstDefault`] trait, and [`const_default`] macro.
 
 - `"const_val"`:
-Enables the [`ConstVal`] trait, [`getconst`] macro, and [`quasiconst`] macro.
+Enables the [`ConstVal`] trait (for types that represent constants), 
+[`getconst`] macro (for getting the [`ConstVal::VAL`] associated constant),
+and [`quasiconst`] macro (for declaring types that emulate generic constants).
+
 
 - `"integers"`: Enables the [`integers`] module, with extension traits for integer types.
 
-- `"iterators"`: Enables the [`iterators`] module, 
-with the [`IteratorExt`] extension trait for iterators, and iterator types.
+- `"iterators"`: Enables the [`iterators`] module, with the [`IteratorExt`] extension trait for iterators, and a few iterator types.
 
 - `"marker_type"`: Enables the [`MarkerType`] trait,
 for trivially constructible, zero-sized, and aligned-to-1 types.
@@ -135,6 +136,7 @@ with traits for `Option` and `Result`-like types.
 [`expr_as_phantom`] macro,[`map_phantomdata`] macro, and [`return_type_phantom`] macro.
 
 - `"self_ops"`: Enables the [`SelfOps`] trait, an extension trait for all types.
+It primarily has methods for calling free functions as methods.
 
 - `"slices"`:
 Enables the [`slices`] module, with extension traits for `[T]` and `str` slices.
@@ -151,10 +153,10 @@ most useful in tests.
 - `"type_identity"`: Enables the [`TypeIdentity`] trait,
 for proving that two types are equal, and converting between them in a generic context.
 
-- `"type_level_bool"`: Enables the [`type_level_bool`] module,
-which encodes `bool`s on the type-level.
+- `"type_level_bool"`: Enables the [`type_level_bool`] module, which encodes `bool`s on the type-level.
 
-- `"void"`: Enables the [`Void`] type, for impossible situations.
+- `"void"`: Enables the [`Void`] type, a type that can't be constructed, for encodign impossible situations.
+
 
 <span id = "cargo-features-lang-section"></span>
 ### Rust Version numbers
@@ -200,38 +202,39 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 
 
-[`collections`]: https://docs.rs/core_extensions/1.*/collections/index.html
-[`callable`]: https://docs.rs/core_extensions/1.*/callable/index.html
-[`integers`]: https://docs.rs/core_extensions/1.*/integers/index.html
-[`iterators`]: https://docs.rs/core_extensions/1.*/iterators/index.html
-[`option_result_ext`]: https://docs.rs/core_extensions/1.*/option_result_ext/index.html
-[`phantom`]: https://docs.rs/core_extensions/1.*/phantom/index.html
-[`slices`]: https://docs.rs/core_extensions/1.*/slices/index.html
-[`strings`]: https://docs.rs/core_extensions/1.*/strings/index.html
-[`transparent_newtype`]: https://docs.rs/core_extensions/1.*/transparent_newtype/index.html
-[`type_asserts`]: https://docs.rs/core_extensions/1.*/type_asserts/index.html
-[`type_level_bool`]: https://docs.rs/core_extensions/1.*/type_level_bool/index.html
+[`collections`]: https://docs.rs/core_extensions/1.*/core_extensions/collections/index.html
+[`callable`]: https://docs.rs/core_extensions/1.*/core_extensions/callable/index.html
+[`integers`]: https://docs.rs/core_extensions/1.*/core_extensions/integers/index.html
+[`iterators`]: https://docs.rs/core_extensions/1.*/core_extensions/iterators/index.html
+[`option_result_ext`]: https://docs.rs/core_extensions/1.*/core_extensions/option_result_ext/index.html
+[`phantom`]: https://docs.rs/core_extensions/1.*/core_extensions/phantom/index.html
+[`slices`]: https://docs.rs/core_extensions/1.*/core_extensions/slices/index.html
+[`strings`]: https://docs.rs/core_extensions/1.*/core_extensions/strings/index.html
+[`transparent_newtype`]: https://docs.rs/core_extensions/1.*/core_extensions/transparent_newtype/index.html
+[`type_asserts`]: https://docs.rs/core_extensions/1.*/core_extensions/type_asserts/index.html
+[`type_level_bool`]: https://docs.rs/core_extensions/1.*/core_extensions/type_level_bool/index.html
 
-[`BoolExt`]: https://docs.rs/core_extensions/1.*/trait.BoolExt.html
-[`ConstDefault`]: https://docs.rs/core_extensions/1.*/trait.ConstDefault.html
-[`ConstVal`]: https://docs.rs/core_extensions/1.*/trait.ConstVal.html
-[`MarkerType`]: https://docs.rs/core_extensions/1.*/trait.MarkerType.html
-[`SelfOps`]: https://docs.rs/core_extensions/1.*/trait.SelfOps.html
-[`TypeIdentity`]: https://docs.rs/core_extensions/1.*/trait.TypeIdentity.html
-[`TransparentNewtype`]: https://docs.rs/core_extensions/1.*/transparent_newtype/trait.TransparentNewtype.html
+[`BoolExt`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.BoolExt.html
+[`ConstDefault`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.ConstDefault.html
+[`ConstVal`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.ConstVal.html
+[`ConstVal::VAL`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.ConstVal.html#associatedconstant.VAL
+[`MarkerType`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.MarkerType.html
+[`SelfOps`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.SelfOps.html
+[`TypeIdentity`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.TypeIdentity.html
+[`TransparentNewtype`]: https://docs.rs/core_extensions/1.*/core_extensions/transparent_newtype/trait.TransparentNewtype.html
 
-[`RunOnDrop`]: https://docs.rs/core_extensions/1.*/struct.RunOnDrop.html
-[`Void`]: https://docs.rs/core_extensions/1.*/enum.Void.html
+[`RunOnDrop`]: https://docs.rs/core_extensions/1.*/core_extensions/struct.RunOnDrop.html
+[`Void`]: https://docs.rs/core_extensions/1.*/core_extensions/enum.Void.html
 
-[`const_default`]: https://docs.rs/core_extensions/1.*/macro.const_default.html
-[`getconst`]: https://docs.rs/core_extensions/1.*/macro.getconst.html
-[`quasiconst`]: https://docs.rs/core_extensions/1.*/macro.quasiconst.html
-[`expr_as_phantom`]: https://docs.rs/core_extensions/1.*/macro.expr_as_phantom.html
-[`map_phantomdata`]: https://docs.rs/core_extensions/1.*/macro.map_phantomdata.html
-[`return_type_phantom`]: https://docs.rs/core_extensions/1.*/macro.return_type_phantom.html
+[`const_default`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.const_default.html
+[`getconst`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.getconst.html
+[`quasiconst`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.quasiconst.html
+[`expr_as_phantom`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.expr_as_phantom.html
+[`map_phantomdata`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.map_phantomdata.html
+[`return_type_phantom`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.return_type_phantom.html
 
-[`IteratorExt`]: https://docs.rs/core_extensions/1.*/iterators/trait.IteratorExt.html
-[`StringExt`]: https://docs.rs/core_extensions/1.*/strings/trait.StringExt.html
+[`IteratorExt`]: https://docs.rs/core_extensions/1.*/core_extensions/iterators/trait.IteratorExt.html
+[`StringExt`]: https://docs.rs/core_extensions/1.*/core_extensions/strings/trait.StringExt.html
 
 [`core`]: https://doc.rust-lang.org/core/
 [`std`]: https://doc.rust-lang.org/std/

@@ -111,12 +111,15 @@
 //! Enables the [`ConstDefault`] trait, and [`const_default`] macro.
 //!
 //! - `"const_val"`:
-//! Enables the [`ConstVal`] trait, [`getconst`] macro, and [`quasiconst`] macro.
+//! Enables the [`ConstVal`] trait (for types that represent constants), 
+//! [`getconst`] macro (for getting the [`ConstVal::VAL`] associated constant),
+//! and [`quasiconst`] macro (for declaring types that emulate generic constants).
+//! 
 //!
 //! - `"integers"`: Enables the [`integers`] module, with extension traits for integer types.
 //!
 //! - `"iterators"`: Enables the [`iterators`] module, 
-//! with the [`IteratorExt`] extension trait for iterators, and iterator types.
+//! with the [`IteratorExt`] extension trait for iterators, and a few iterator types.
 //!
 //! - `"marker_type"`: Enables the [`MarkerType`] trait,
 //! for trivially constructible, zero-sized, and aligned-to-1 types.
@@ -131,6 +134,7 @@
 //! [`expr_as_phantom`] macro,[`map_phantomdata`] macro, and [`return_type_phantom`] macro.
 //!
 //! - `"self_ops"`: Enables the [`SelfOps`] trait, an extension trait for all types.
+//! It primarily has methods for calling free functions as methods.
 //!
 //! - `"slices"`:
 //! Enables the [`slices`] module, with extension traits for `[T]` and `str` slices.
@@ -150,7 +154,8 @@
 //! - `"type_level_bool"`: Enables the [`type_level_bool`] module,
 //! which encodes `bool`s on the type-level.
 //!
-//! - `"void"`: Enables the [`Void`] type, for impossible situations.
+//! - `"void"`: Enables the [`Void`] type, a type that can't be constructed, 
+//! for encodign impossible situations.
 //!
 //! <span id = "cargo-features-lang-section"></span>
 //! ### Rust Version numbers
@@ -195,6 +200,7 @@
 //! [`BoolExt`]: ./trait.BoolExt.html
 //! [`ConstDefault`]: ./trait.ConstDefault.html
 //! [`ConstVal`]: ./trait.ConstVal.html
+//! [`ConstVal::VAL`]: ./trait.ConstDefault.html#associatedconstant.VAL
 //! [`MarkerType`]: ./trait.MarkerType.html
 //! [`SelfOps`]: ./trait.SelfOps.html
 //! [`TypeIdentity`]: ./trait.TypeIdentity.html
