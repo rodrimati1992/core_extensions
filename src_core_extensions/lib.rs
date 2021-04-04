@@ -170,11 +170,13 @@
 //!
 //! ### Support for other crates
 //!
-//! `"std"`: Enables `std` library support. Enabled by default. Implies the `"alloc"` feature.
+//! All of these are disabled by default:
 //!
-//! `"alloc"`: Enables `alloc` library support. Enabled by default.
+//! - `"std"`: Enables `std` library support. Implies the `"alloc"` feature.
 //!
-//! `"serde_"`: Enables serde support. Disabled by default.
+//! - `"alloc"`: Enables `alloc` library support.
+//!
+//! - `"serde_"`: Enables serde support.
 //!
 //! ### Miscelaneous features
 //!
