@@ -21,7 +21,7 @@ use std_::sync::atomic;
 ///
 /// # Features
 ///
-/// Enabling the "const_generics" feature allows arrays of all lengths to implement this trait,
+/// Enabling the "rust_1_51" feature allows arrays of all lengths to implement this trait,
 /// otherwise it's only implemented for arrays up to 32 elements long.
 ///
 /// # Example
@@ -62,7 +62,7 @@ pub trait ConstDefault: Sized {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 macro_rules! impl_array_const_default {
     ()=>{
         /// When the "const_params" feature is disabled,
@@ -74,12 +74,12 @@ macro_rules! impl_array_const_default {
     }
 }
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 impl_array_const_default!{}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 macro_rules! impl_array_const_default_inner {
     ([ $extra_bounds:ident ] 
         $(($size:expr)=[ $($t:ident,)* ]),*
@@ -95,7 +95,7 @@ macro_rules! impl_array_const_default_inner {
     };
 }
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 macro_rules! impl_array_const_default {
     (@inner [ $extra_bounds:ident ] 
         $(($size:expr)=[ $($t:ident,)* ]),*
@@ -126,12 +126,12 @@ fn main(){
 }
 */
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 impl<T> ConstDefault for [T;0]{
     const DEFAULT: Self=[];
 }
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 impl_array_const_default! {
     (1)=[T,],
     (2)=[T,T,],
@@ -396,8 +396,8 @@ mod tests{
     }
 
     #[test]
-    #[cfg(feature = "const_generics")]
-    fn for_const_generics(){
+    #[cfg(feature = "rust_1_51")]
+    fn for_rust_1_51(){
         // This type must not implement Copy
         #[derive(Debug, PartialEq, Eq)]
         struct F(u32);

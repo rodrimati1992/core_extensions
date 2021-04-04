@@ -20,13 +20,9 @@ include = [
 travis-ci = { repository =  "rodrimati1992/core_extensions/" }
 
 [features]
-# TODO: comment this out
-default = [
-    "std",
-]
 
-# Enables all the items in core_extensions 1.0
-in_1_0 = [
+# Enables all the items
+all_items = [
     "bools",
     "callable",
     "collections",
@@ -40,6 +36,7 @@ in_1_0 = [
     "phantom",
     "self_ops",
     "slices",
+    "strings",
     "transparent_newtype",
     "type_asserts",
     "type_identity",
@@ -78,11 +75,10 @@ track_caller = ["rust_1_46"]
 enable_proc_macro_crate = ["core_extensions_proc_macros"]
 
 rust_1_46 = []
+rust_1_51 = ["rust_1_46"]
 
 # Enables indicators in the docs for what features are required to enable items.
 docsrs = []
-
-const_generics = []
 
 [dev-dependencies]
 rand = "0.4.6"
@@ -103,7 +99,7 @@ name = "core_extensions"
 path = "src_core_extensions/lib.rs"
 
 [package.metadata.docs.rs]
-features = ["serde", "colltraits", "const_generics", "docsrs"]
+features = ["std", "serde_", "all_items", "rust_1_51", "docsrs"]
 
 
 

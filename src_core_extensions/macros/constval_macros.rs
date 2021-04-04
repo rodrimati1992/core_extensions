@@ -88,13 +88,15 @@ macro_rules! getconst {
 /// 
 /// This macro generates:
 /// 
-/// -  A generic struct with the name and generic parameters of 
+/// -  A generic zero-sized struct with the name and generic parameters of 
 /// the `const` definition passed to this macro.
 /// 
 /// - An impl of the [`ConstVal`] trait for the struct, with the value for the constant .
 /// 
-/// - An inherent impl for the struct with a `VAL` associated constant,
+/// - An inherent `VAL` associated constant for the struct,
 /// to avoid requiring that [`ConstVal`] is imported to write `Foo::VAL`.
+/// 
+/// - An inherent `NEW` associated constant that constructs the struct.
 /// 
 /// # Version compatibility
 /// 
@@ -161,10 +163,10 @@ macro_rules! getconst {
 /// ### All of the syntax
 /// 
 /// Note: This macro allows const parameters
-/// (and doesn't require enabling the "const_generics" feature to use them).
+/// (and doesn't require enabling the "rust_1_51" feature to use them).
 /// 
-#[cfg_attr(not(feature = "const_generics"), doc = " ```ignore")]
-#[cfg_attr(feature = "const_generics", doc = " ```rust")]
+#[cfg_attr(not(feature = "rust_1_51"), doc = " ```ignore")]
+#[cfg_attr(feature = "rust_1_51", doc = " ```rust")]
 /// use core_extensions::{ConstDefault, getconst, quasiconst};
 /// 
 /// assert_eq!(getconst!(REFD<'static>), "");

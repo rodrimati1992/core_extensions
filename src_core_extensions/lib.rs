@@ -1,28 +1,111 @@
 //! Extension traits for many standard/core library types/traits.
 //! and other miscelaneuous types / traits / functions / macros.
 //!
+//! # Adding as dependency
+//! 
+//! This crate requires cargo features for enabling items, to get all of them you can use:
+//! 
+//! ```toml
+//! [dependencies.core_extensions]
+//! version = "1.0"
+//! features = ["std", "all_items"]
+//! ```
+//! The "std" feature is required to enable impls and items that use [`std`] types,
+//! otherwise only the [`core`] library is supported.
+//! 
+//! For enabling features individually, [look here](#cargo-features-section).
+//! 
+//! This crate currently [requires cargo features](#cargo-features-lang-section)
+//! to use newer language features,
+//!
+//! # Examples
+//!
+//! Showcasing some features from this crate.
+//!
+//! ### `quasiconst`, generic constants.
+//!
+//! The [`quasiconst`] macro allows emulating generic constants by generating a 
+//! zero-sized generic type that implements the [`ConstVal`] trait,
+//! the preferred way to get its value is the [`getconst`] macro.
+//!
+//! This example demonstrates how you can use them to declare a generic VTABLE constant.
+//!
+#![cfg_attr(not(feature = "const_val"), doc = " ```ignore")]
+#![cfg_attr(feature = "const_val", doc = " ```rust")]
+//! use core_extensions::{getconst, quasiconst};
+//! 
+//! use std::fmt::{self, Debug};
+//! 
+//! 
+//! quasiconst!{
+//!     pub const VTABLE[T: Debug]: &'static Vtable = &Vtable {
+//!         size: std::mem::size_of::<T>(),
+//!         align: std::mem::align_of::<T>(),
+//!         drop: drop_erased::<T>,
+//!         fmt: debug_fmt_erased::<T>,
+//!     };
+//! }
+//! 
+//! # fn main() {
+//! const VTABLE_U8: &'static Vtable = getconst!(VTABLE<u8>);
+//! assert_eq!(VTABLE_U8.size, 1);
+//! assert_eq!(VTABLE_U8.align, 1);
+//! 
+//! const VTABLE_USIZE: &'static Vtable = getconst!(VTABLE<usize>);
+//! assert_eq!(VTABLE_USIZE.size, std::mem::size_of::<usize>());
+//! assert_eq!(VTABLE_USIZE.align, std::mem::align_of::<usize>());
+//! 
+//! const VTABLE_STRING: &'static Vtable = getconst!(VTABLE<&str>);
+//! assert_eq!(VTABLE_STRING.size, std::mem::size_of::<usize>() * 2);
+//! assert_eq!(VTABLE_STRING.align, std::mem::align_of::<usize>());
+//! # }
+//! 
+//! 
+//! 
+//! pub struct Vtable {
+//!     pub size: usize,
+//!     pub align: usize,
+//!     pub drop: unsafe fn(*mut ()),
+//!     pub fmt: unsafe fn(*const (), &mut fmt::Formatter<'_>) -> fmt::Result,
+//! }
+//! 
+//! unsafe fn drop_erased<T>(ptr: *mut ()) {
+//!     std::ptr::drop_in_place(ptr as *mut T)
+//! }
+//! 
+//! unsafe fn debug_fmt_erased<T>(ptr: *const (), f: &mut fmt::Formatter<'_>) -> fmt::Result 
+//! where
+//!     T: Debug,
+//! {
+//!     let this = unsafe{ &*(ptr as *const T) };
+//!     
+//!     Debug::fmt(this, f)
+//! }
+//! ```
+//!
 //! # no-std support
 //!
-//! To use this crate in no_std contexts disable the default-feature.
+//! This crate works in `#![no_std]` contexts by default.
 //!
 //! # Supported Rust versions
 //!
 //! This crate support Rust back to 1.41.0,
-//! requiring cargo features to enable features for newer versions.
+//! requiring cargo features to use language features from newer versions.
 //!
+//! <span id = "cargo-features-section"></span>
 //! # Cargo Features
 //!
-//! ### 1.0 crate features
+//! ### crate features
 //!
-//! The `"in_1_0"` feature enables all of these features,
+//! The `"all_items"` feature enables all of these features,
 //! you can use it instead of the ones below if you don't mind longer compile-times:
-//!
-//! - "collections": Enables the [`collections`] module, with traits for collection types.
 //!
 //! - `"bools"`: Enables the [`BoolExt`] trait, extension trait for `bool`.
 //!
 //! - `"callable"`: Enables the [`callable`] module, 
 //! with stably implementable equivalents of the `Fn*` traits.
+//!
+//! - `"collections"`: Enables the [`collections`] module, with traits for collection types.
 //!
 //! - `"const_default"`:
 //! Enables the [`ConstDefault`] trait, and [`const_default`] macro.
@@ -69,13 +152,15 @@
 //!
 //! - `"void"`: Enables the [`Void`] type, for impossible situations.
 //!
-//!
-//! ### Version numbers
+//! <span id = "cargo-features-lang-section"></span>
+//! ### Rust Version numbers
 //!
 //! These features enable code that require some Rust version past the minimum supported one:
 //!
 //! - "rust_1_46": Makes [`TransparentNewtype`] and [`TypeIdentity`]
 //! associated functions that take `Rc<Self>` or `Arc<Self>` callable as methods.
+//!
+//! - "rust_1_51": Enables the "rust_1_46" feature, and impls of traits for all array lengths.
 //!
 //! ### Support for other crates
 //!
@@ -85,11 +170,6 @@
 //!
 //! `"serde_"`: Enables serde support. Disabled by default.
 //!
-//! ### Language features
-//!
-//! `"const_generics"`:
-//! Enables impls of traits for all array lengths, 
-//! Requires Rust 1.51.0.
 //!
 //! [`collections`]: ./collections/index.html
 //! [`callable`]: ./callable/index.html
@@ -124,6 +204,8 @@
 //! [`IteratorExt`]: ./iterators/trait.IteratorExt.html
 //! [`StringExt`]: ./strings/trait.StringExt.html
 //! 
+//! [`core`]: https://doc.rust-lang.org/core/
+//! [`std`]: https://doc.rust-lang.org/std/
 //! 
 
 #![deny(missing_docs)]

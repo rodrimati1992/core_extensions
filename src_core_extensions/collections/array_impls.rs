@@ -5,7 +5,7 @@ use super::{
 
 
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 macro_rules! array_impls {
     ()=>{
         use std_::mem::MaybeUninit;
@@ -74,13 +74,13 @@ macro_rules! array_impls {
     }
 }
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 array_impls!{}
 
 
 /////////////////////////////////////////////////
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 macro_rules! array_impls {
     (
         $( ( $size:expr,[$($elem:expr,)*] ) )*
@@ -130,7 +130,7 @@ fn main() {
 
 */
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 array_impls! {
     (0,[])
     (1,[0,])
@@ -311,7 +311,7 @@ mod tests {
             ]
         );
 
-        #[cfg(feature = "const_generics")]
+        #[cfg(feature = "rust_1_51")]
         {
             use alloc::string::String;
             use alloc::vec::Vec;
@@ -349,7 +349,7 @@ mod tests {
             [0;32],
         }
 
-        #[cfg(feature = "const_generics")]
+        #[cfg(feature = "rust_1_51")]
         into_array_tests! {
             [0;33],
             [0;65],

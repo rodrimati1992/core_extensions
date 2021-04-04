@@ -23,7 +23,7 @@ pub use self::cloned_items::{CloneBound, CloneType, clone_this};
 /// Enabling the "alloc" or "std" features changes the impl for references from
 /// using [`Clone`] bounds to using [`ToOwned`].
 ///
-/// Enabling the "const_generics" feature allows arrays of all lengths to implement this trait,
+/// Enabling the "rust_1_51" feature allows arrays of all lengths to implement this trait,
 /// otherwise it's only implemented for arrays up to 32 elements long.
 ///
 /// [`ToOwned`] is implemented for all types that implement [`Clone`],
@@ -132,7 +132,7 @@ pub type ClonedOut<This> = <This as Cloned>::Cloned;
 ///
 /// # Features
 /// 
-/// Enabling the "const_generics" feature allows arrays of all lengths to implement this trait,
+/// Enabling the "rust_1_51" feature allows arrays of all lengths to implement this trait,
 /// otherwise it's only implemented for arrays up to 32 elements long.
 /// 
 /// # Examples

@@ -90,7 +90,7 @@ unsafe impl MarkerType for () {}
 
 ////////////////////////////////
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 macro_rules! impl_zero_sized_array {
     ()=>{
         /// When the "const_params" feature is disabled,
@@ -102,12 +102,12 @@ macro_rules! impl_zero_sized_array {
     }
 }
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 impl_zero_sized_array!{}
 
 ///////////////////////////////////
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 macro_rules! impl_zero_sized_array {
     ($($size:expr),*)=>{
         $(
@@ -118,7 +118,7 @@ macro_rules! impl_zero_sized_array {
     }
 }
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 impl_zero_sized_array! {
     00,01,02,03,04,05,06,07,08,09,
     10,11,12,13,14,15,16,17,18,19,
@@ -261,7 +261,7 @@ mod tests {
         assert_size_align!([PD; 31]);
         assert_size_align!([PD; 32]);
 
-        #[cfg(feature = "const_generics")]
+        #[cfg(feature = "rust_1_51")]
         assert_size_align!([PD; 63]);
 
         */
