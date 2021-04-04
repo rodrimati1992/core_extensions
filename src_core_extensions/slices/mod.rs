@@ -1,4 +1,4 @@
-//! Slice extensions.
+//! Slice extension traits, and related items.
 
 mod extensions;
 mod slice_bias;

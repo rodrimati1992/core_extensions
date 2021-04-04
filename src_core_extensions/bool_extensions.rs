@@ -3,16 +3,22 @@
 use type_identity::TypeIdentity;
 
 /// Extension trait for `bool`.
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "bools")))]
 pub trait BoolExt: TypeIdentity<Type = bool> + Sized {
-    /// Returns Some(`some`()) if self==true.Otherwise returns None.
+    /// Returns `Some(some())` if `self` is `true`, otherwise returns `None`.
+    ///
+    /// This method is usable in all versions supported by this library, 
+    /// and is equivalent to the [`bool::then`] method, which was stabilized in Rust 1.50.
+    ///
+    /// [`bool::then`]: https://doc.rust-lang.org/std/primitive.bool.html#method.then
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::bool_extensions::BoolExt;
+    /// use core_extensions::BoolExt;
     ///
-    /// assert_eq!(true .if_true(|| 100 ),Some(100));
-    /// assert_eq!(false.if_true(|| 100 ),None);
+    /// assert_eq!(true .if_true(|| 100 ), Some(100));
+    /// assert_eq!(false.if_true(|| 100 ), None);
     ///
     /// ```
     ///
@@ -21,21 +27,21 @@ pub trait BoolExt: TypeIdentity<Type = bool> + Sized {
     where
         F: FnOnce() -> T,
     {
-        if self.into_type_val() {
+        if self.into_type() {
             Some(some())
         } else {
             None
         }
     }
-    /// Returns Some(`some`()) if self==false.Otherwise returns None.
+    /// Returns `Some(some())` if `self` is `false`, otherwise returns `None`.
     ///
     /// # Example
     ///
     /// ```
-    /// use core_extensions::bool_extensions::BoolExt;
+    /// use core_extensions::BoolExt;
     ///
-    /// assert_eq!(false.if_false(|| 100 ),Some(100));
-    /// assert_eq!(true .if_false(|| 100 ),None);
+    /// assert_eq!(false.if_false(|| 100 ), Some(100));
+    /// assert_eq!(true .if_false(|| 100 ), None);
     ///
     /// ```
     ///
@@ -44,7 +50,7 @@ pub trait BoolExt: TypeIdentity<Type = bool> + Sized {
     where
         F: FnOnce() -> T,
     {
-        if self.into_type_val() {
+        if self.into_type() {
             None
         } else {
             Some(some())

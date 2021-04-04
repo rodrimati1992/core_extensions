@@ -1,13 +1,13 @@
 [package]
 name = "core_extensions"
-version = "0.1.20"
+version = "1.0.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
-description="This crate provides many extensions to core/std library types."
+description="Extensions for core/std library types, and other miscelaneous features."
 license="MIT/Apache-2.0"
 readme="readme.md"
 repository="https://github.com/rodrimati1992/core_extensions"
 keywords = ["no-std"]
-categories = [ "no-std" ]
+categories = ["no-std"]
 include = [
     "Cargo.toml", 
     "src_core_extensions/**/*.rs", 
@@ -20,19 +20,65 @@ include = [
 travis-ci = { repository =  "rodrimati1992/core_extensions/" }
 
 [features]
-default = ["std","serde_"]
+
+# Enables all the items
+all_items = [
+    "bools",
+    "callable",
+    "collections",
+    "const_default",
+    "const_val",
+    "integers",
+    "iterators",
+    "marker_type",
+    "on_drop",
+    "option_result",
+    "phantom",
+    "self_ops",
+    "slices",
+    "strings",
+    "transparent_newtype",
+    "type_asserts",
+    "type_identity",
+    "type_level_bool",
+    "void",
+]
 
 std=["alloc"]
 alloc=[]
 
 serde_=["serde"]
-colltraits=[]
 
-const_generics = []
-nightly_const_generics = ["const_generics"]
+bools=["type_identity"]
+callable=[]
+collections=[]
+const_default=[]
+const_val=["enable_proc_macro_crate"]
+integers=[]
+iterators=[]
+marker_type=[]
+on_drop=[]
+option_result=["type_identity"]
+phantom=[]
+self_ops=[]
+slices=[]
+strings=["slices"]
+transparent_newtype=[]
+type_asserts=["type_identity"]
+type_identity=[]
+type_level_bool=[]
+void=[]
 
+# Changes ResultLike to allow getting the caller location in `ResultLike::into_result_`
+track_caller = ["rust_1_46"]
+
+enable_proc_macro_crate = ["core_extensions_proc_macros"]
+
+rust_1_46 = []
+rust_1_51 = ["rust_1_46"]
+
+# Enables indicators in the docs for what features are required to enable items.
 docsrs = []
-
 
 [dev-dependencies]
 rand = "0.4.6"
@@ -40,18 +86,12 @@ rand = "0.4.6"
 [dependencies.serde]
 version = "1.0"
 default-features = false
-optional=true
+optional = true
 
-[dependencies.typenum]
-version="1.10"
-features=["no_std"]
-default-features = false
-optional=true
-
-
-
-[build-dependencies]
-rustc_version = "0.2.3"
+[dependencies.core_extensions_proc_macros]
+version = "=1.0.0"
+path = "./core_extensions_proc_macros"
+optional = true
 
 
 [lib]
@@ -59,7 +99,7 @@ name = "core_extensions"
 path = "src_core_extensions/lib.rs"
 
 [package.metadata.docs.rs]
-features = ["serde", "colltraits", "const_generics", "docsrs"]
+features = ["std", "serde_", "all_items", "rust_1_51", "docsrs"]
 
 
 

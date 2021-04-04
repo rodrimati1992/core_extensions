@@ -5,11 +5,17 @@ use super::{
 
 
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 macro_rules! array_impls {
     ()=>{
         use std_::mem::MaybeUninit;
-        use ::utils::RunOnDrop;
+        use crate::RunOnDrop;
+
+        struct MakeUninit<T>(T);
+        
+        impl<T> MakeUninit<T> {
+            const V: MaybeUninit<T> = MaybeUninit::uninit();
+        }
 
         /// When the "const_params" feature is disabled,
         /// the Cloned trait is implemented for arrays up to 32 elements long.
@@ -28,7 +34,7 @@ macro_rules! array_impls {
                 }
                 let mut guard = {
                     let out = Written::<T::Cloned, N>{
-                        array: unsafe{ MaybeUninit::uninit().assume_init() },
+                        array: [MakeUninit::V; N],
                         written: 0,
                     };
                     RunOnDrop::new(out, |mut out|{
@@ -68,13 +74,13 @@ macro_rules! array_impls {
     }
 }
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 array_impls!{}
 
 
 /////////////////////////////////////////////////
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 macro_rules! array_impls {
     (
         $( ( $size:expr,[$($elem:expr,)*] ) )*
@@ -124,7 +130,7 @@ fn main() {
 
 */
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 array_impls! {
     (0,[])
     (1,[0,])
@@ -287,7 +293,7 @@ mod tests {
     #[test]
     #[cfg(feature = "alloc")]
     fn cloned_alloc() {
-        use alloc_::string::ToString;
+        use alloc::string::ToString;
 
         assert_eq!(["5"].cloned_(), ["5".to_string()]);
         assert_eq!(["5", "8"].cloned_(), ["5".to_string(), "8".to_string()]);
@@ -305,10 +311,10 @@ mod tests {
             ]
         );
 
-        #[cfg(feature = "const_generics")]
+        #[cfg(feature = "rust_1_51")]
         {
-            use alloc_::string::String;
-            use alloc_::vec::Vec;
+            use alloc::string::String;
+            use alloc::vec::Vec;
 
             use std_::convert::TryInto;
 
@@ -343,7 +349,7 @@ mod tests {
             [0;32],
         }
 
-        #[cfg(feature = "const_generics")]
+        #[cfg(feature = "rust_1_51")]
         into_array_tests! {
             [0;33],
             [0;65],

@@ -1,23 +1,378 @@
-//! Contains implementable alternatives of the standard Fn/FnMut/FnOnce traits.
+//! Alternatives of the standard [`Fn`]/[`FnMut`]/[`FnOnce`] traits,
+//! implementable in stable Rust.
+//!
+//! [`Fn`]: https://doc.rust-lang.org/std/ops/trait.Fn.html
+//!
+//! [`FnMut`]: https://doc.rust-lang.org/std/ops/trait.FnMut.html
+//!
+//! [`FnOnce`]: https://doc.rust-lang.org/std/ops/trait.FnOnce.html
 
-/// implementable version of ::std::ops::Fn.
+
+
+#[cfg(test)]
+mod tests;
+
+
+
+/// Extension trait for calling `Call*` closures.
+pub trait CallExt {
+    /// For calling [`CallRef::ref_call_`],
+    /// with the ability to specify the types of the arguments..
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use core_extensions::{impl_call, CallExt};
+    ///
+    /// struct PushTwice;
+    ///
+    /// impl_call! { 
+    ///     fn ref_call[T](self: PushTwice, vector: &mut Vec<T>, value: T )
+    ///     where[ T: Clone ]
+    ///     {
+    ///         vector.push(value.clone());
+    ///         vector.push(value);
+    ///     }
+    /// }
+    ///
+    /// let mut vector = Vec::new();
+    ///
+    /// // `Call*` style closures encode multiple parameters as tuples
+    /// PushTwice.ref_call((&mut vector, 3));
+    /// assert_eq!(vector, [3, 3]);
+    ///
+    /// // The turbofish operator can be used to specify the types of the arguments.
+    /// PushTwice.ref_call::<(_, u128)>((&mut vector, 5));
+    /// assert_eq!(vector, [3, 3, 5, 5]);
+    ///
+    /// PushTwice.ref_call((&mut vector, 8));
+    /// assert_eq!(vector, [3, 3, 5, 5, 8, 8]);
+    ///
+    /// ```
+    /// 
+    /// [`CallRef::ref_call_`]: ./trait.CallRef.html#tymethod.ref_call_
+    #[inline(always)]
+    fn ref_call<P>(&self, params: P) -> Self::Returns
+    where
+        Self: CallRef<P>
+    {
+        self.ref_call_(params)
+    }
+
+    /// For calling [`CallMut::mut_call_`],
+    /// with the ability to specify the types of the arguments..
+    ///
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::{impl_call, CallExt};
+    ///
+    /// struct ComputeFib {
+    ///     nums: [u128; 2],
+    /// }
+    ///
+    /// impl_call! { 
+    ///     fn mut_call(self: ComputeFib, numbers: &mut Vec<u128>) {
+    ///         let [l, r] = self.nums;
+    ///         let next = l + r;
+    ///         self.nums = [r, next];
+    ///         numbers.push(r);
+    ///     }
+    /// }
+    ///
+    /// let mut fibs = ComputeFib {nums: [0, 1]};
+    /// 
+    /// let mut numbers = Vec::new();
+    ///
+    /// // The turbofish operator can be used to specify the types of the arguments.
+    /// fibs.mut_call::<&mut Vec<u128>>(&mut numbers);
+    /// assert_eq!(numbers, [1]);
+    ///
+    /// fibs.mut_call(&mut numbers);
+    /// assert_eq!(numbers, [1, 1]);
+    ///
+    /// fibs.mut_call(&mut numbers);
+    /// assert_eq!(numbers, [1, 1, 2]);
+    ///
+    /// fibs.mut_call(&mut numbers);
+    /// assert_eq!(numbers, [1, 1, 2, 3]);
+    ///
+    /// fibs.mut_call(&mut numbers);
+    /// assert_eq!(numbers, [1, 1, 2, 3, 5]);
+    ///
+    /// fibs.mut_call(&mut numbers);
+    /// assert_eq!(numbers, [1, 1, 2, 3, 5, 8]);
+    ///
+    ///
+    /// ```
+    /// 
+    /// [`CallMut::mut_call_`]: ./trait.CallMut.html#tymethod.mut_call_
+    #[inline(always)]
+    fn mut_call<P>(&mut self, params: P) -> Self::Returns
+    where
+        Self: CallMut<P>
+    {
+        self.mut_call_(params)
+    }
+
+    /// For calling [`CallInto::into_call_`],
+    /// with the ability to specify the types of the arguments..
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use core_extensions::{impl_call, CallExt};
+    ///
+    /// use std::iter::FromIterator;
+    ///
+    /// struct IntoElem<T>(T);
+    ///
+    /// impl_call! { 
+    ///     fn into_call[T](self: IntoElem<T>, nth: usize) -> Option<T::Item>
+    ///     where[ T: IntoIterator ]
+    ///     {
+    ///         self.0.into_iter().nth(nth)
+    ///     }
+    /// }
+    /// 
+    /// let list = vec![3, 5, 8, 13, 21, 34, 55, 89];
+    /// 
+    /// // The turbofish operator can be used to specify the types of the arguments.
+    /// assert_eq!(IntoElem(list.clone()).into_call::<usize>(0), Some(3));
+    /// 
+    /// assert_eq!(IntoElem(list.clone()).into_call(1), Some(5));
+    /// 
+    /// assert_eq!(IntoElem(list.clone()).into_call(2), Some(8));
+    /// 
+    /// assert_eq!(IntoElem(list.clone()).into_call(3), Some(13));
+    /// 
+    /// assert_eq!(IntoElem(list.clone()).into_call(7), Some(89));
+    ///
+    /// ```
+    /// 
+    /// [`CallInto::into_call_`]: ./trait.CallInto.html#tymethod.into_call_
+    #[inline(always)]
+    fn into_call<P>(self, params: P) -> Self::Returns
+    where
+        Self: Sized,
+        Self: CallInto<P>
+    {
+        self.into_call_(params)
+    }
+}
+
+impl<T: ?Sized> CallExt for T {}
+
+
+/// Implementable alternative to [`std::ops::Fn`].
+///
+/// # Parameters
+///
+/// The `Call*` traits encode multiple parameters like this:
+/// 
+/// - 0 parameters: by taking a `()` parameter, eg: `foo.ref_call(())`.
+/// 
+/// - 1 parameters: by taking the single parameter, eg: `foo.ref_call(10)`.
+/// 
+/// - 2 or more parameters: by taking a tuple of the parameters, eg: `foo.ref_call((10, 20))`.
+/// 
+/// # Example
+///
+/// ```rust
+/// use core_extensions::{impl_call, CallExt};
+///
+/// struct MulBy<T>(T);
+///
+/// impl_call! { 
+///     fn ref_call[T](self: MulBy<T>, lhs: T ) -> T
+///     where[ T: Clone + std::ops::Mul<Output = T> ]
+///     {
+///         lhs * self.0.clone()
+///     }
+/// }
+/// 
+/// let two = MulBy(2);
+/// let seven = MulBy(7);
+/// 
+/// assert_eq!(two.ref_call(3), 6);
+/// assert_eq!(two.ref_call(5), 10);
+/// 
+/// assert_eq!(seven.ref_call(3), 21);
+/// assert_eq!(seven.ref_call(5), 35);
+/// 
+/// ```
+///
+/// # Closure impls
+///
+/// Closures implement the `Call*` traits,
+/// and they always require a tuple of the parameters to be passed in.
+///
+/// ```rust
+/// use core_extensions::CallExt;
+///
+/// let fn_0 = || 10;
+/// assert_eq!(fn_0.ref_call(()), 10);
+///
+/// let fn_1 = |a: i32| a + 10;
+/// assert_eq!(fn_1.ref_call((5,)), 15);
+///
+/// let fn_2 = |a: i32, b: i32| a + b;
+/// assert_eq!(fn_2.ref_call((8, 13)), 21);
+/// ```
+///
+/// [`std::ops::Fn`]: https://doc.rust-lang.org/core/ops/trait.Fn.html
 pub trait CallRef<Params>: CallMut<Params> {
     /// calls this function
-    fn call_ref(&self, params: Params) -> Self::Returns;
+    fn ref_call_(&self, params: Params) -> Self::Returns;
 }
 
-/// implementable version of ::std::ops::FnMut.
+/// Implementable alternative to [`std::ops::FnMut`].
+///
+/// # Parameters
+///
+/// The `Call*` traits encode multiple parameters like this:
+/// 
+/// - 0 parameters: by taking a `()` parameter, eg: `foo.ref_call(())`.
+/// 
+/// - 1 parameters: by taking the single parameter, eg: `foo.ref_call(10)`.
+/// 
+/// - 2 or more parameters: by taking a tuple of the parameters, eg: `foo.ref_call((10, 20))`.
+/// 
+/// # Example
+/// 
+/// ```rust
+/// use core_extensions::{impl_call, CallExt};
+///
+/// struct Reporter{
+///     line: u32,
+/// }
+///
+/// impl_call! { 
+///     fn mut_call(self: Reporter, buffer: &mut String, person: &str, score: u32) {
+///         use std::fmt::Write;
+///
+///         writeln!(buffer, "{}- {}: {}", self.line, person, score).unwrap();
+///         
+///         self.line += 1;
+///     }
+/// }
+///
+/// let mut reporter = Reporter{line: 0};
+/// 
+/// let mut buffer = String::new();
+///
+/// reporter.mut_call((&mut buffer, "foo", 10));
+/// reporter.mut_call((&mut buffer, "bar", 7));
+/// reporter.mut_call((&mut buffer, "baz", 1000));
+///
+/// assert_eq!(
+///     buffer,
+///     "\
+///         0- foo: 10\n\
+///         1- bar: 7\n\
+///         2- baz: 1000\n\
+///     "
+/// );
+///
+/// ```
+///
+///
+/// # Closure impls
+///
+/// Closures implement the `Call*` traits,
+/// and they always require a tuple of the parameters to be passed in.
+///
+/// ```rust
+/// use core_extensions::CallExt;
+///
+/// let mut i = 0;
+///
+/// let mut fn_0 = ||{i += 1; i};
+/// assert_eq!(fn_0.mut_call(()), 1);
+///
+/// let mut fn_1 = |a: i32|{i += 1; a + i};
+/// assert_eq!(fn_1.mut_call((5,)), 7);
+///
+/// let mut fn_2 = |a: i32, b: i32|{i += 1; a + b + i};
+/// assert_eq!(fn_2.mut_call((8, 13)), 24);
+/// ```
+/// 
+/// [`std::ops::FnMut`]: https://doc.rust-lang.org/core/ops/trait.FnMut.html
 pub trait CallMut<Params>: CallInto<Params> {
     /// calls this function
-    fn call_mut(&mut self, params: Params) -> Self::Returns;
+    fn mut_call_(&mut self, params: Params) -> Self::Returns;
 }
 
-/// implementable version of ::std::ops::FnOnce.
+/// Implementable alternative to [`std::ops::FnOnce`].
+///
+/// # Parameters
+///
+/// The `Call*` traits encode multiple parameters like this:
+/// 
+/// - 0 parameters: by taking a `()` parameter, eg: `foo.ref_call(())`.
+/// 
+/// - 1 parameters: by taking the single parameter, eg: `foo.ref_call(10)`.
+/// 
+/// - 2 or more parameters: by taking a tuple of the parameters, eg: `foo.ref_call((10, 20))`.
+/// 
+/// # Example
+///
+/// ```rust
+/// use core_extensions::{impl_call, CallExt};
+///
+/// use std::iter::FromIterator;
+///
+/// struct Duplicator<T>(T);
+///
+/// impl_call! { 
+///     fn into_call[T](self: Duplicator<T>) -> T
+///     where[
+///         T: IntoIterator + Default,
+///         T: FromIterator<<T as IntoIterator>::Item>,
+///         T::Item: Clone,
+///     ] {
+///         self.0
+///             .into_iter()
+///             .flat_map(|elem| vec![elem; 2] )
+///             .collect()
+///     }
+/// }
+/// 
+/// assert_eq!(Duplicator(vec![3, 5]).into_call(()), vec![3, 3, 5, 5]);
+///
+/// assert_eq!(Duplicator(vec!["hi", "ho"]).into_call(()), vec!["hi", "hi", "ho", "ho"]);
+/// 
+/// ```
+///
+/// # Closure impls
+///
+/// Closures implement the `Call*` traits,
+/// and they always require a tuple of the parameters to be passed in.
+///
+/// ```rust
+/// use core_extensions::CallExt;
+///
+/// let orig = vec![3, 5, 8, 13, 21, 34];
+///
+/// let list = orig.clone();
+/// let fn_0 = || list.into_iter().next();
+/// assert_eq!(fn_0.into_call(()), Some(3));
+///
+/// let list = orig.clone();
+/// let fn_1 = |i: usize| list.into_iter().nth(i);
+/// assert_eq!(fn_1.into_call((3,)), Some(13));
+///
+/// let list = orig.clone();
+/// let fn_2 = |s: usize, i: usize| list.into_iter().skip(s).nth(i);
+/// assert_eq!(fn_2.into_call((3, 1)), Some(21));
+/// ```
+///
+/// [`std::ops::FnOnce`]: https://doc.rust-lang.org/core/ops/trait.FnOnce.html
 pub trait CallInto<Params> {
     /// The return type of this function
     type Returns;
     /// calls this function
-    fn call_into(self, params: Params) -> Self::Returns;
+    fn into_call_(self, params: Params) -> Self::Returns;
 }
 
 macro_rules! impl_call {
@@ -27,7 +382,7 @@ macro_rules! impl_call {
             where Func:Fn($($ty,)*)->Ret
             {
                 #[allow(non_snake_case)]
-                fn call_ref(&self,($($ty,)*):($($ty,)*))->Ret{
+                fn ref_call_(&self,($($ty,)*):($($ty,)*))->Ret{
                     self($($ty),*)
                 }
             }
@@ -36,7 +391,7 @@ macro_rules! impl_call {
             where Func:FnMut($($ty,)*)->Ret
             {
                 #[allow(non_snake_case)]
-                fn call_mut(&mut self,($($ty,)*):($($ty,)*))->Ret{
+                fn mut_call_(&mut self,($($ty,)*):($($ty,)*))->Ret{
                     self($($ty,)*)
                 }
             }
@@ -44,10 +399,10 @@ macro_rules! impl_call {
             impl<$($ty,)* Func,Ret> CallInto<($($ty,)*)> for Func
             where Func:FnOnce($($ty,)*)->Ret
             {
-                type Returns=Ret;
+                type Returns = Ret;
 
                 #[allow(non_snake_case)]
-                fn call_into(self,($($ty,)*):($($ty,)*))->Ret{
+                fn into_call_(self,($($ty,)*):($($ty,)*))->Ret{
                     self($($ty,)*)
                 }
             }
@@ -60,7 +415,7 @@ impl<F, Ret> CallRef<()> for F
 where
     F: Fn() -> Ret,
 {
-    fn call_ref(&self, _: ()) -> Ret {
+    fn ref_call_(&self, _: ()) -> Ret {
         self()
     }
 }
@@ -69,7 +424,7 @@ impl<F, Ret> CallMut<()> for F
 where
     F: FnMut() -> Ret,
 {
-    fn call_mut(&mut self, _: ()) -> Ret {
+    fn mut_call_(&mut self, _: ()) -> Ret {
         self()
     }
 }
@@ -79,7 +434,7 @@ where
     F: FnOnce() -> Ret,
 {
     type Returns = Ret;
-    fn call_into(self, _: ()) -> Ret {
+    fn into_call_(self, _: ()) -> Ret {
         self()
     }
 }
@@ -100,94 +455,81 @@ impl_call! {
 }
 
 /**
-This macro allows more ergonomically implementing the Call(Ref|Mut|Into) traits .
-
+This macro allows more ergonomically implementing the 
+[`CallRef`](./callable/trait.CallRef.html) /
+[`CallMut`](./callable/trait.CallMut.html) /
+[`CallInto`](./callable/trait.CallInto.html)
+traits .
 
 # Examples
 
-Implementing CallRef.
-The lifetime is written out explicitly because this macro desugars to
-impl blocks,which don't elide lifetime parameters in Rust 2015 edition.
+### Implementing `CallRef`.
 
 ```rust
 
-# #[macro_use]
-# extern crate core_extensions;
-# use core_extensions::*;
+use core_extensions::{impl_call, CallExt};
 
 struct Environment;
 
-callable_impl!{
-    fn call_ref['a](this:Environment => printing:&'a str ){
+impl_call!{
+    fn ref_call(self: Environment, printing: &str ) {
         println!("printing '{}'",printing);
     }
 }
 
-
-# fn main(){
-    Environment.call_ref("what the ...");
-# }
+Environment.ref_call("what the ...");
 
 ```
 
-Implementing CallMut.
-Also demonstrates a polymorphic function,
-not possible in Rust closures until it gets higher ranked closures.
+### Implementing `CallMut`.
 
+Also demonstrates a polymorphic function, not possible in Rust closures yet.
 
+*/
+#[cfg_attr(feature = "phantom", doc = " ```rust")]
+#[cfg_attr(not(feature = "phantom"), doc = " ```ignore")]
+/**
+use core_extensions::{impl_call, AsPhantomData, CallExt};
 
-```rust
-
-# #[macro_use]
-# extern crate core_extensions;
-# use core_extensions::*;
-# use std::marker::PhantomData;
+use std::marker::PhantomData;
 
 struct Environment{
-    i:u16,
+    i: u16,
 }
 
-callable_impl!{
-    fn call_mut[T](this:Environment => _a:VariantPhantom<T>)->T
-    where [ u16:Into<T>, ]
+impl_call!{
+    // The PhantomData parameter is necessary because closures can't return a generic type
+    // that doesn't appear in the parameter.
+    fn mut_call[T](self: Environment, _a: PhantomData<T>) -> T
+    where [ u16: Into<T>, ]
     {
-        this.i+=1;
-        this.i.into()
+        self.i += 1;
+        self.i.into()
     }
 }
 
-
-# fn main(){
-    let mut env=Environment{i:0};
-    assert_eq!(env.call_mut(u16::T),1);
-    assert_eq!(env.call_mut(u32::T),2);
-# }
+let mut env = Environment{i:0};
+assert_eq!(env.mut_call(u16::PHANTOM), 1);
+assert_eq!(env.mut_call(u32::PHANTOM), 2);
 ```
 
 
-
-Implementing CallInto.
-
+### Implementing `CallInto`.
 
 ```rust
-
-# #[macro_use]
-# extern crate core_extensions;
-# use core_extensions::*;
+use core_extensions::{impl_call, CallExt};
 
 struct Environment<T>(T);
 
-callable_impl!{
-    fn call_into[T](this:Environment<T>)->T{
-        this.0
+impl_call!{
+    fn into_call[T](self: Environment<T>)->T{
+        self.0
     }
 }
 
 
-# fn main(){
-    let env=Environment("hello");
-    assert_eq!(env.call_into(()),"hello");
-# }
+let env = Environment("hello");
+assert_eq!(env.into_call(()), "hello");
 ```
 
 
@@ -209,22 +551,23 @@ callable_impl!{
 
 $(#[$meta:meta])*
 
-// <fn_method_name> is one of (call_into|call_mut|call_ref),determining which trait
+// <fn_method_name> is one of (into_call|mut_call|ref_call),determining which trait
 // is implemented.
 fn <fn_method_name>
 
 // Optionally declares the generic parameters of the function.
 $( [ $( <generic_parameter> )* ] )?
 
-// <self_ident> is the identifier used to access the closure environment.
 // <self_type> is the type of the closure environment,which is implementing the Call traits.
 // <function_parameter> are optional function parameters.
-(   <self_ident>:<self_type>
-    $( => $( <function_parameter> ),* )?
+(   
+    self: <self_type>
+    $(, <function_parameter> )*
+    $(,)?
 )
 
 //<return_tyoe> optional return type,defaults to '()'.
-$( -><return_type> )?
+$( -> <return_type> )?
 
 // An optional where clause,
 // all tokens inside `[...]` get copied directly to the where clause of the impl.
@@ -240,261 +583,171 @@ $( where [ $( <where_predicates> )* ] )*
 ```
 
 
+
+[`CallRef`]: ./callable/trait.CallRef.html
+
+[`CallMut`]: ./callable/trait.CallMut.html
+
+[`CallInto`]: ./callable/trait.CallInto.html
+
 */
+#[cfg(feature = "callable")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "callable")))]
 #[macro_export]
-macro_rules! callable_impl{
+macro_rules! impl_call{
     (
         $(#[$meta:meta])*
         fn $fn_kind:ident
         $( [ $( $fn_gen_params:tt )* ] )*
         ( $( $fn_params:tt )* )
-        $( ->$ret_ty:ty )*
+        $( -> $ret_ty:ty )?
         $( where [ $( $where_preds:tt )* ] )*
-        {
-            $( $fn_contents:tt )*
-        }
+        $body:block
 
     )=>{
-        callable_impl!{inner_fn;
-            $(#[$meta])*
-            fn $fn_kind
-            [ $( $( $fn_gen_params )* )* ]
+        $crate::__priv_impl_call!{
+            outer_step_a;
+            (
+                $(#[$meta])*
+                fn $fn_kind
+                [ $( $( $fn_gen_params )* )* ]
+            )
             ( $( $fn_params )* )
-            $(-> $ret_ty )*
-            where [ $( $( $where_preds )* )* ]
-            {
-                $( $fn_contents )*
-            }
-
+            ($($ret_ty)?)
+            (
+                where [ $( $( $where_preds )* )* ]
+                $body
+            )
         }
-    };
-
-    (inner_param; $param:expr $(,)* )=>{
-        let ()=$param;
-    };
-
-    (inner_param; $param:expr , $param0:ident : $param0_ty:ty $(,)* )=>{
-        let $param0=$param;
-    };
-
-    (inner_param; $param:expr , $( $params:ident : $params_ty:ty ),+ $(,)* )=>{
-        let ($($params,)+)=$param;
-    };
-
-    (inner_param_ty; $(,)* )=>{
-        ()
-    };
-
-    (inner_param_ty; $param0:ident : $param0_ty:ty $(,)* )=>{
-        $param0_ty
-    };
-
-    (inner_param_ty; $( $params:ident : $params_ty:ty ),+ $(,)* )=>{
-        ($($params_ty,)+)
-    };
-
-    (inner_fn;
-        $(#[$meta:meta])*
-        fn call_into
-        [ $( $fn_gen_params:tt )* ]
-        ( $self_:ident:$fn_ty:ty $(=>  $($rem_param:tt)* )*  )
-        $(->$ret_ty:ty)*
-        where [ $( $where_preds:tt )* ]
-        {
-            $( $fn_contents:tt )*
-        }
-    )=>{
-        $(#[$meta])*
-        impl< $($fn_gen_params)* >
-            $crate::callable::CallInto< callable_impl!{inner_param_ty; $($($rem_param)*)* } >
-
-        for $fn_ty
-        where
-            $( $where_preds )*
-        {
-            #[allow(unused_parens)]
-            type Returns=($($ret_ty)*);
-
-            fn call_into(
-                self,
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
-            )->Self::Returns{
-                callable_impl!{inner_param; param, $($($rem_param)*)* }
-                let $self_=self;
-                $( $fn_contents )*
-            }
-        }
-    };
-
-
-    (inner_fn;
-        $(#[$meta:meta])*
-        fn call_mut
-        [ $( $fn_gen_params:tt )* ]
-        ( $self_:ident:$fn_ty:ty $(=>  $($rem_param:tt)* )*  )
-        $(->$ret_ty:ty)*
-        where [ $( $where_preds:tt )* ]
-        {
-            $( $fn_contents:tt )*
-        }
-    )=>{
-        $(#[$meta])*
-        impl< $($fn_gen_params)* >
-            $crate::callable::CallInto< callable_impl!{inner_param_ty; $($($rem_param)*)* }  >
-        for $fn_ty
-        where $( $where_preds )*
-        {
-            #[allow(unused_parens)]
-            type Returns=($($ret_ty)*);
-
-            fn call_into(
-                mut self,
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
-            )->Self::Returns{
-                self.call_mut(param)
-            }
-        }
-
-        $(#[$meta])*
-        impl< $($fn_gen_params)* >
-            $crate::callable::CallMut< callable_impl!{inner_param_ty; $($($rem_param)*)* }  >
-        for $fn_ty
-        where $( $where_preds )*
-        {
-            fn call_mut(
-                &mut self,
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
-            )->Self::Returns{
-                callable_impl!{inner_param; param, $($($rem_param)*)* }
-                let $self_=self;
-                $( $fn_contents )*
-            }
-        }
-    };
-
-    (inner_fn;
-        $(#[$meta:meta])*
-        fn call_ref
-        [ $( $fn_gen_params:tt )* ]
-        ( $self_:ident:$fn_ty:ty $(=>  $($rem_param:tt)* )*  )
-        $(->$ret_ty:ty)*
-        where [ $( $where_preds:tt )* ]
-        {
-            $( $fn_contents:tt )*
-        }
-    )=>{
-        $(#[$meta])*
-        impl< $($fn_gen_params)* >
-            $crate::callable::CallInto< callable_impl!{inner_param_ty; $($($rem_param)*)* }  >
-        for $fn_ty
-        where $( $where_preds )*
-        {
-            #[allow(unused_parens)]
-            type Returns=($($ret_ty)*);
-
-            fn call_into(
-                self,
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
-            )->Self::Returns{
-                self.call_ref(param)
-            }
-        }
-
-        $(#[$meta])*
-        impl< $($fn_gen_params)* >
-            $crate::callable::CallMut< callable_impl!{inner_param_ty; $($($rem_param)*)* }  >
-        for $fn_ty
-        where $( $where_preds )*
-        {
-            fn call_mut(
-                &mut self,
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
-            )->Self::Returns{
-                self.call_ref(param)
-            }
-        }
-
-        $(#[$meta])*
-        impl< $($fn_gen_params)* >
-            $crate::callable::CallRef< callable_impl!{inner_param_ty; $($($rem_param)*)* }  >
-        for $fn_ty
-        where $( $where_preds )*
-        {
-            fn call_ref(
-                &self,
-                param : callable_impl!{inner_param_ty; $($($rem_param)*)* }
-            )->Self::Returns{
-                callable_impl!{inner_param; param, $($($rem_param)*)* }
-                let $self_=self;
-                $( $fn_contents )*
-            }
-        }
-
-
     };
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __priv_impl_call {
+    (outer_step_a; $prefn:tt $fn_params:tt () $postfn:tt ) => {
+        $crate::__priv_impl_call!{outer_step_b; $prefn $fn_params (()) $postfn}
+    };
+    (outer_step_a; $prefn:tt $fn_params:tt ($ret_ty:ty) $postfn:tt ) => {
+        $crate::__priv_impl_call!{outer_step_b; $prefn $fn_params ($ret_ty) $postfn}
+    };
+    
+   (outer_step_b;
+        ($($prefn:tt)*)
+        ( $self:ident: $fn_ty:ty, $params:ident : $params_ty:ty $(,)? )
+        ($ret_ty:ty)
+        ($($postfn:tt)*)
+    ) => {
+        $crate::__priv_impl_call!{
+            inner_fn;
+            $($prefn)*
+            ( $self: $fn_ty, $params, $params_ty)
+            -> $ret_ty
+            $($postfn)*
+        }
+    };
+   (outer_step_b;
+        ($($prefn:tt)*)
+        ( $self:ident: $fn_ty:ty  $(, $params:ident : $params_ty:ty )* $(,)? )
+        ($ret_ty:ty)
+        ($($postfn:tt)*)
+    ) => {
+        $crate::__priv_impl_call!{
+            inner_fn;
+            $($prefn)*
+            ( $self: $fn_ty, ($($params),*), ($($params_ty),*))
+            -> $ret_ty
+            $($postfn)*
+        }
+    };
 
-    use prelude::*;
+    (inner_fn;
+        $(#[$meta:meta])*
+        fn into_call
+        [ $( $fn_gen_params:tt )* ]
+        ( $self:ident: $fn_ty:ty, $params_pati:pat, $params_ty:ty)
+        -> $ret_ty:ty
+        where [ $( $where_preds:tt )* ]
+        $body:block
+    )=>{
+        $(#[$meta])*
+        impl< $($fn_gen_params)* > $crate::CallInto<$params_ty> for $fn_ty
+        where
+            $( $where_preds )*
+        {
+            type Returns = $ret_ty;
 
-    use std_::cmp::PartialEq;
+            fn into_call_($self, $params_pati: $params_ty) -> $ret_ty 
+            $body
+        }
+    };
+    (inner_fn;
+        $(#[$meta:meta])*
+        fn mut_call
+        [ $( $fn_gen_params:tt )* ]
+        ( $self:ident: $fn_ty:ty, $params_pati:pat, $params_ty:ty)
+        -> $ret_ty:ty
+        where [ $( $where_preds:tt )* ]
+        $body:block
+    )=>{
+        $(#[$meta])*
+        impl< $($fn_gen_params)* > $crate::CallInto<$params_ty> for $fn_ty
+        where $( $where_preds )*
+        {
+            type Returns = $ret_ty;
 
-    use alloc_::string::{String,ToString};
-
-    #[test]
-    fn test_call_ref() {
-        struct WhatRef<T>(T);
-
-        callable_impl! {
-            fn call_ref['a,T,U](this:WhatRef<T> => what:U )->bool
-            where [ T:PartialEq<U>, ]
-            {
-                this.0==what
+            #[inline(always)]
+            fn into_call_(mut $self, param : $params_ty) -> $ret_ty {
+                $crate::CallMut::mut_call_(&mut $self, param)
             }
         }
 
-        let env = WhatRef("hello".to_string());
-        assert_eq!(env.call_ref("hello"), true);
-        assert_eq!(env.call_ref("hello".to_string()), true);
-        assert_eq!(env.call_ref("lo"), false);
-    }
-
-    #[test]
-    fn test_call_mut() {
-        struct WhatMut {
-            state: usize,
+        $(#[$meta])*
+        impl< $($fn_gen_params)* > $crate::CallMut<$params_ty> for $fn_ty
+        where $( $where_preds )*
+        {
+            fn mut_call_(&mut $self, $params_pati: $params_ty) -> $ret_ty
+            $body
         }
+    };
 
-        callable_impl! {
-            fn call_mut(this:WhatMut)->usize{
-                this.state+=1;
-                this.state
+    (inner_fn;
+        $(#[$meta:meta])*
+        fn ref_call
+        [ $( $fn_gen_params:tt )* ]
+        ( $self:ident: $fn_ty:ty, $params_pati:pat, $params_ty:ty)
+        -> $ret_ty:ty
+        where [ $( $where_preds:tt )* ]
+        $body:block
+    )=>{
+        $(#[$meta])*
+        impl< $($fn_gen_params)* > $crate::CallInto<$params_ty> for $fn_ty
+        where $( $where_preds )*
+        {
+            type Returns = $ret_ty;
+
+            #[inline(always)]
+            fn into_call_($self, param : $params_ty) -> $ret_ty {
+                $crate::CallRef::ref_call_(&$self, param)
             }
         }
 
-        let mut env = WhatMut { state: 0 };
-        assert_eq!(env.call_mut(()), 1);
-        assert_eq!(env.call_mut(()), 2);
-        assert_eq!(env.call_mut(()), 3);
-    }
-
-    #[test]
-    fn test_call_into() {
-        struct WhatInto<T>(T);
-
-        callable_impl! {
-            fn call_into[T,U](this:WhatInto<T> => _a:VariantPhantom<U>)->U
-            where [ T:Into<U> ]
-            {
-                this.0.into()
+        $(#[$meta])*
+        impl< $($fn_gen_params)* > $crate::CallMut<$params_ty> for $fn_ty
+        where $( $where_preds )*
+        {
+            #[inline(always)]
+            fn mut_call_(&mut $self, param : $params_ty) -> $ret_ty {
+                $crate::CallRef::ref_call_($self, param)
             }
         }
 
-        assert_eq!(WhatInto("what").call_into(String::T), "what");
-        assert_eq!(WhatInto(1u8).call_into(u16::T), 1);
-    }
-
+        $(#[$meta])*
+        impl< $($fn_gen_params)* > $crate::CallRef<$params_ty> for $fn_ty
+        where $( $where_preds )*
+        {
+            fn ref_call_(&$self, $params_pati: $params_ty) -> $ret_ty
+            $body
+        }
+    };
 }

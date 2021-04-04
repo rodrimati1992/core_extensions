@@ -1,4 +1,4 @@
-//! Contains \[extension\] traits for Option and Result
+//! Contains extension traits for Option and Result
 
 mod result_like;
 
@@ -11,4 +11,4 @@ pub use self::option_extensions::*;
 #[doc(inline)]
 pub use self::result_extensions::*;
 #[doc(inline)]
-pub use self::result_like::ResultLike;
+pub use self::result_like::{ResultLike, ResultLikeExt};

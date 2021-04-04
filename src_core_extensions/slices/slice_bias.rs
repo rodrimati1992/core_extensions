@@ -1,71 +1,78 @@
-/// What directions SliceExt::slice_lossy\[_mut\] is biased towards.
+/// What directions [`SliceExt`]`::{`[`slice_lossy`]`, `[`slice_lossy_mut`]`}` are biased towards.
 ///
 /// For `str` this has the effect of going in those directions if
-/// the start/end bound is between char boundaries.
+/// the `start` and/or `end` bound is between char boundaries.
 ///
 /// For `[T]` this has no effect and
-/// it is recommended to use `()` as a parameter instead.
+/// it is recommended to use `()` as a parameter instead
+/// (`()` is converted to [`SliceBias::OUT`](#associatedconstant.OUT)).
 ///
 /// # Example
+/// 
+/// ### String
+/// 
 /// ```
 /// use core_extensions::SliceExt;
 /// use core_extensions::slices::SliceBias;
 ///
-/// let word="niño";
+/// let word = "niño";
 ///
 /// assert_eq!(
 ///     word.char_indices().collect::<Vec<_>>(),
-///     &[(0,'n'),(1,'i'),(2,'ñ'),(4,'o')]
+///     &[(0, 'n'), (1, 'i'), (2, 'ñ'), (4, 'o')]
 /// );
 ///
-/// assert_eq!(word.slice_lossy(0..1000      ,()            ),word);
-/// assert_eq!(word.slice_lossy(10..10000    ,()            ),"");
-/// assert_eq!(word.slice_lossy(0 ..4        ,()            ),"niñ");
-/// assert_eq!(word.slice_lossy(0 ..3        ,()            ),"niñ");
-/// assert_eq!(word.slice_lossy(0 ..2        ,()            ),"ni");
-/// assert_eq!(word.slice_lossy(3 ..3        ,()            ),"ñ");
-/// assert_eq!(word.slice_lossy(3 ..4        ,()            ),"ñ");
-/// assert_eq!(word.slice_lossy(2 ..3        ,()            ),"ñ");
+/// assert_eq!(word.slice_lossy(0..1000, ()), word);
+/// assert_eq!(word.slice_lossy(10..10000, ()), "");
+/// assert_eq!(word.slice_lossy(0..4, ()), "niñ");
+/// assert_eq!(word.slice_lossy(0..3, ()), "niñ");
+/// assert_eq!(word.slice_lossy(0..2, ()), "ni");
+/// assert_eq!(word.slice_lossy(3..3, ()), "ñ");
+/// assert_eq!(word.slice_lossy(3..4, ()), "ñ");
+/// assert_eq!(word.slice_lossy(2..3, ()), "ñ");
 ///
-/// assert_eq!(word.slice_lossy(0..1000      ,SliceBias::OUT),word);
-/// assert_eq!(word.slice_lossy(10..10000    ,SliceBias::OUT),"");
-/// assert_eq!(word.slice_lossy(0 ..4        ,SliceBias::OUT),"niñ");
-/// assert_eq!(word.slice_lossy(0 ..3        ,SliceBias::OUT),"niñ");
-/// assert_eq!(word.slice_lossy(0 ..2        ,SliceBias::OUT),"ni");
-/// assert_eq!(word.slice_lossy(3 ..3        ,SliceBias::OUT),"ñ");
-/// assert_eq!(word.slice_lossy(3 ..4        ,SliceBias::OUT),"ñ");
-/// assert_eq!(word.slice_lossy(2 ..3        ,SliceBias::OUT),"ñ");
+/// assert_eq!(word.slice_lossy(0..1000, SliceBias::OUT), word);
+/// assert_eq!(word.slice_lossy(10..10000, SliceBias::OUT), "");
+/// assert_eq!(word.slice_lossy(0..4, SliceBias::OUT), "niñ");
+/// assert_eq!(word.slice_lossy(0..3, SliceBias::OUT), "niñ");
+/// assert_eq!(word.slice_lossy(0..2, SliceBias::OUT), "ni");
+/// assert_eq!(word.slice_lossy(3..3, SliceBias::OUT), "ñ");
+/// assert_eq!(word.slice_lossy(3..4, SliceBias::OUT), "ñ");
+/// assert_eq!(word.slice_lossy(2..3, SliceBias::OUT), "ñ");
 ///
-/// assert_eq!(word.slice_lossy(0 ..10000    ,SliceBias::IN),word);
-/// assert_eq!(word.slice_lossy(10..10000    ,SliceBias::IN),"");
-/// assert_eq!(word.slice_lossy(0 ..4        ,SliceBias::IN),"niñ");
-/// assert_eq!(word.slice_lossy(0 ..3        ,SliceBias::IN),"ni");
-/// assert_eq!(word.slice_lossy(0 ..2        ,SliceBias::IN),"ni");
-/// assert_eq!(word.slice_lossy(3 ..3        ,SliceBias::IN),"");
-/// assert_eq!(word.slice_lossy(3 ..4        ,SliceBias::IN),"");
-/// assert_eq!(word.slice_lossy(2 ..3        ,SliceBias::IN),"");
+/// assert_eq!(word.slice_lossy(0..10000, SliceBias::IN), word);
+/// assert_eq!(word.slice_lossy(10..10000, SliceBias::IN), "");
+/// assert_eq!(word.slice_lossy(0..4, SliceBias::IN), "niñ");
+/// assert_eq!(word.slice_lossy(0..3, SliceBias::IN), "ni");
+/// assert_eq!(word.slice_lossy(0..2, SliceBias::IN), "ni");
+/// assert_eq!(word.slice_lossy(3..3, SliceBias::IN), "");
+/// assert_eq!(word.slice_lossy(3..4, SliceBias::IN), "");
+/// assert_eq!(word.slice_lossy(2..3, SliceBias::IN), "");
 ///
-/// assert_eq!(word.slice_lossy(0..1000      ,SliceBias::LEFT),word);
-/// assert_eq!(word.slice_lossy(10..10000    ,SliceBias::LEFT),"");
-/// assert_eq!(word.slice_lossy(0 ..4        ,SliceBias::LEFT),"niñ");
-/// assert_eq!(word.slice_lossy(0 ..3        ,SliceBias::LEFT),"ni");
-/// assert_eq!(word.slice_lossy(0 ..2        ,SliceBias::LEFT),"ni");
-/// assert_eq!(word.slice_lossy(3 ..3        ,SliceBias::LEFT),"");
-/// assert_eq!(word.slice_lossy(3 ..4        ,SliceBias::LEFT),"ñ");
-/// assert_eq!(word.slice_lossy(2 ..3        ,SliceBias::LEFT),"");
+/// assert_eq!(word.slice_lossy(0..1000, SliceBias::LEFT), word);
+/// assert_eq!(word.slice_lossy(10..10000, SliceBias::LEFT), "");
+/// assert_eq!(word.slice_lossy(0..4, SliceBias::LEFT), "niñ");
+/// assert_eq!(word.slice_lossy(0..3, SliceBias::LEFT), "ni");
+/// assert_eq!(word.slice_lossy(0..2, SliceBias::LEFT), "ni");
+/// assert_eq!(word.slice_lossy(3..3, SliceBias::LEFT), "");
+/// assert_eq!(word.slice_lossy(3..4, SliceBias::LEFT), "ñ");
+/// assert_eq!(word.slice_lossy(2..3, SliceBias::LEFT), "");
 ///
-/// assert_eq!(word.slice_lossy(0..1000      ,SliceBias::RIGHT),word);
-/// assert_eq!(word.slice_lossy(10..10000    ,SliceBias::RIGHT),"");
-/// assert_eq!(word.slice_lossy(0 ..4        ,SliceBias::RIGHT),"niñ");
-/// assert_eq!(word.slice_lossy(0 ..3        ,SliceBias::RIGHT),"niñ");
-/// assert_eq!(word.slice_lossy(0 ..2        ,SliceBias::RIGHT),"ni");
-/// assert_eq!(word.slice_lossy(3 ..3        ,SliceBias::RIGHT),"");
-/// assert_eq!(word.slice_lossy(3 ..4        ,SliceBias::RIGHT),"");
-/// assert_eq!(word.slice_lossy(2 ..3        ,SliceBias::RIGHT),"ñ");
-///
+/// assert_eq!(word.slice_lossy(0..1000, SliceBias::RIGHT), word);
+/// assert_eq!(word.slice_lossy(10..10000, SliceBias::RIGHT), "");
+/// assert_eq!(word.slice_lossy(0..4, SliceBias::RIGHT), "niñ");
+/// assert_eq!(word.slice_lossy(0..3, SliceBias::RIGHT), "niñ");
+/// assert_eq!(word.slice_lossy(0..2, SliceBias::RIGHT), "ni");
+/// assert_eq!(word.slice_lossy(3..3, SliceBias::RIGHT), "");
+/// assert_eq!(word.slice_lossy(3..4, SliceBias::RIGHT), "");
+/// assert_eq!(word.slice_lossy(2..3, SliceBias::RIGHT), "ñ");
 ///
 ///
 /// ```
+///
+/// [`SliceExt`]: ./trait.SliceExt.html
+/// [`slice_lossy`]: ./trait.SliceExt.html#tymethod.slice_lossy
+/// [`slice_lossy_mut`]: ./trait.SliceExt.html#tymethod.slice_lossy_mut
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SliceBias {
     /// bias of the start bound
@@ -74,7 +81,7 @@ pub struct SliceBias {
     pub end: BiasDirection,
 }
 
-/// The direction the range bound is biased towards.
+/// The direction a range bound is moved towards to make the bound a valid index.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BiasDirection {
     /// Means that the bound is biased to lower indices
@@ -84,28 +91,29 @@ pub enum BiasDirection {
 }
 
 impl SliceBias {
-    /// Biased inwards,start bounds go right,end bounds go left.
+    /// Biased inwards, start bounds go right, end bounds go left.
     pub const IN: Self = Self {
         start: BiasDirection::Right,
         end: BiasDirection::Left,
     };
-    /// Biased outwards,start bounds go left,end bounds go right.
+    /// Biased outwards, start bounds go left, end bounds go right.
     pub const OUT: Self = Self {
         start: BiasDirection::Left,
         end: BiasDirection::Right,
     };
-    /// Biased leftwards,both bounds go left.
+    /// Biased leftwards, both bounds go left.
     pub const LEFT: Self = Self {
         start: BiasDirection::Left,
         end: BiasDirection::Left,
     };
-    /// Biased rightwards.both bounds go right.
+    /// Biased rightwards. both bounds go right.
     pub const RIGHT: Self = Self {
         start: BiasDirection::Right,
         end: BiasDirection::Right,
     };
 }
 
+/// Returns a [`SliceBias::OUT`](#associatedconstant.OUT)
 impl From<()> for SliceBias {
     fn from(_: ()) -> Self {
         Self::OUT

@@ -55,28 +55,19 @@ where
 
 //-------------------------------------------------------------------------------------------
 
-/// KeyStr is a pair of (str_slice,key) returned from the (R)SplitWhile iterators.
-///
-/// `str_slice` is the string slice in which `mapper` returned the same key for every character.
-///
-/// `key` is the last value returned by `mapper`
-///
-/// `mapper` is a closure of the type `impl FnMut(char) -> T`
+/// A pair of (string slice, key) returned by the 
+/// [RSplitWhile](struct.RSplitWhile.html)/
+/// [SplitWhile](struct.SplitWhile.html) iterators.
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct KeyStr<'a, T> {
-    /// The string slice where the sequence of values returned by `mapper` compared equal.
+    /// `str_slice` is a string slice for which all characters were mapped to `key` by a closure.
     pub str: &'a str,
-    /// The last value that compared equal (in a sequence) returned by `mapper` .
+    /// The value that all the chars in the string slice were mapped to.
     pub key: T,
 }
 
 impl<'a, T> KeyStr<'a, T> {
-    /// Accessor for the underlying `&'a str`.
-    pub fn str(&self) -> &'a str {
-        self.str
-    }
-
-    /// Converts this KeyStr into a key/string slice pair
+    /// Converts this into a key, string slice pair
     pub fn into_pair(self)->(T,&'a str){
         (self.key,self.str)
     }
@@ -84,9 +75,10 @@ impl<'a, T> KeyStr<'a, T> {
 
 //-------------------------------------------------------------------------------------------
 
-/// Iterator that returns string slices for the ranges in which `mapper` returns the same value.
+/// Iterator over string slices,
+/// in which all the chars in each string were mapped to the same key by a closure.
 ///
-/// Look [here](::strings::StringExt::split_while) for details and examples.
+/// Look [here](trait.StringExt.html#method.split_while) for examples.
 #[derive(Debug, Clone)]
 pub struct SplitWhile<'a, P, T> {
     pub(super) mapper: P,
@@ -116,10 +108,11 @@ where
 
 //-------------------------------------------------------------------------------------------
 
-/// Iterator that returns string slices for the ranges in which `mapper` returns the same value
-/// ,from the end.
+/// Iterator over string slices,
+/// in which all the chars in each string were mapped to the same key by a closure,
+/// iterating from the end.
 ///
-/// Look [here](::strings::StringExt::rsplit_while) for details and examples.
+/// Look [here](trait.StringExt.html#method.rsplit_while) for examples.
 #[derive(Debug, Clone)]
 pub struct RSplitWhile<'a, P, T> {
     pub(super) mapper: P,
@@ -149,9 +142,17 @@ where
 
 //-------------------------------------------------------------------------------------------
 
-/// Like CharIndices which starts from an offset.
+/// Like [`CharIndices`], which starts from an offset.
 ///
-/// Look [here](::strings::StringExt::char_indices_from) for details and examples.
+/// Look [here](trait.StringExt.html#method.char_indices_from) for examples.
+///
+/// # Motivation
+/// 
+/// The reason to use this instead of `string[from..].char_indices()` is that 
+/// this gives you the position of the characters in `string`, 
+/// while [`CharIndices`] gives you the position of the characters in `string[from..]`.
+/// 
+/// [`CharIndices`]: https://doc.rust-lang.org/std/str/struct.CharIndices.html
 #[derive(Clone, Debug)]
 pub struct CharIndicesFrom<'a> {
     pub(super) offset: usize,

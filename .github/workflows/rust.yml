@@ -11,21 +11,43 @@ jobs:
 
     strategy:
       matrix: 
-        rust: [stable, beta, nightly, 1.20.0, 1.22.0, 1.26.0, 1.29.0, 1.34.0, 1.36.0]
+        rust: [stable, beta, nightly, 1.41.0, 1.46.0]
+
+
 
     steps:
+    - name: enable-rust-1-46
+      if: matrix.rust != '1.41.0'
+      run: echo "rust146=rust_1_46" >> $GITHUB_ENV
+
     - uses: actions/checkout@v2
     - name: ci-all-versions
       run: |
         rustup override set ${{ matrix.rust }}
         cargo -V
-        cargo build
-        cargo build --no-default-features
-        cargo build --no-default-features --features alloc
-        cargo build --no-default-features --features std
-        cargo test --features "colltraits"
-        cargo test --features "serde"
-        cargo test --features "serde colltraits"
+        cargo test --no-default-features --features "${{ env.rust146 }} std bools"
+        cargo test --no-default-features --features "${{ env.rust146 }} std callable"
+        cargo test --no-default-features --features "${{ env.rust146 }} std collections"
+        cargo test --no-default-features --features "${{ env.rust146 }} std const_default"
+        cargo test --no-default-features --features "${{ env.rust146 }} std const_val"
+        cargo test --no-default-features --features "${{ env.rust146 }} std integers"
+        cargo test --no-default-features --features "${{ env.rust146 }} std iterators"
+        cargo test --no-default-features --features "${{ env.rust146 }} std marker_type"
+        cargo test --no-default-features --features "${{ env.rust146 }} std on_drop"
+        cargo test --no-default-features --features "${{ env.rust146 }} std option_result"
+        cargo test --no-default-features --features "${{ env.rust146 }} std phantom"
+        cargo test --no-default-features --features "${{ env.rust146 }} std self_ops"
+        cargo test --no-default-features --features "${{ env.rust146 }} std slices"
+        cargo test --no-default-features --features "${{ env.rust146 }} std strings"
+        cargo test --no-default-features --features "${{ env.rust146 }} std transparent_newtype"
+        cargo test --no-default-features --features "${{ env.rust146 }} std type_asserts"
+        cargo test --no-default-features --features "${{ env.rust146 }} std type_identity"
+        cargo test --no-default-features --features "${{ env.rust146 }} std type_level_bool"
+        cargo test --no-default-features --features "${{ env.rust146 }} std void"
+
+        cargo test --no-default-features --features "${{ env.rust146 }} all_items"
+        cargo test --no-default-features --features "${{ env.rust146 }} alloc all_items"
+        cargo test --no-default-features --features "${{ env.rust146 }} std all_items"
 
   nightly-tests:
     runs-on: ubuntu-latest
@@ -42,7 +64,7 @@ jobs:
         rustup override set "$MIRI_NIGHTLY"
         rustup component add miri
         cargo miri setup
-        cargo miri test --features "serde colltraits const_generics"
+        cargo miri test --features "serde all_items rust_1_51"
 
         rm Cargo.lock
         cargo clean
@@ -53,4 +75,4 @@ jobs:
         cargo update
         cargo build --all-features
         
-        cargo test --features "serde colltraits const_generics"
+        cargo test --features "serde all_items rust_1_51"

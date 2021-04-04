@@ -5,7 +5,6 @@
 
 use std_::marker::PhantomData;
 
-#[cfg(rust_1_22)]
 use std_::mem::ManuallyDrop;
 
 #[allow(dead_code)]
@@ -20,25 +19,31 @@ Represents a zero-sized marker type .
 Types implementing this trait are zero-sized and can safely be stored in any
 `#[repr(C)]` type without changing their layout.
 
-# Features
-
-Enabling the "const_generics" feature allows arrays of all lengths to implement this trait,
-otherwise it's only implemented for arrays up to 32 elements long.
-
 # Safety
 
 Implementors of this trait must ensure:
 
--that the type is zero-sized,
+- That the type is zero-sized,
 
--that it has an alignment of 1.
+- That it has an alignment of 1.
 
--that the type is trivially constructible,eg:by implementing ::std::default::Default.
+- That the type is trivially constructible, eg: by implementing [`Default`].
 
 The easiest way to enforce the requirements of being zero-sized and
-having an alignment of 1 is to have structs composed entirely of MarkerType fields (ie:VariantPhantom , PhantomData , ()  ).
+having an alignment of 1 is to have structs composed entirely of MarkerType fields
+(ie: `CovariantPhantom` , `PhantomData`).
 
+# Built-in impls
+
+This trait is not implemented for arrays because it's not yet clear
+what the behavior of `#[repr(C)]` types will be with zero-sized arrays.
+The ["repr(C) is unsound on MSVC targets" issue](https://github.com/rust-lang/rust/issues/81996)
+could possibly require zero-length arrays(or `#[repr(C)]` structs)
+in `#[repr(C)]` types not being zero sized on MSVC.
+
+[`Default`]: https://doc.rust-lang.org/std/default/trait.Default.html
 */
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "marker_type")))]
 pub unsafe trait MarkerType: Copy + Sized {
     /// The value of Self.
     #[allow(const_err)]
@@ -50,17 +55,13 @@ pub unsafe trait MarkerType: Copy + Sized {
 
     #[inline(always)]
     #[allow(const_err)]
-    /// Constructs a reference to Self,
-    /// this is possible because all references to zero sized types are valid.
+    /// Constructs a reference to Self.
     fn markertype_ref<'a>() -> &'a Self
     where
         Self: 'a,
     {
         unsafe {
-            const SOME_ADDRESS: usize = 1_000_000;
-            // this is safe since implementing MarkerType guarantees that
-            // this type is a 1-aligned Zero Sized Type ,in which all pointers are valid.
-            &*(SOME_ADDRESS as *const Self)
+            &*std_::ptr::NonNull::<Self>::dangling().as_ptr()
         }
     }
 
@@ -73,17 +74,23 @@ pub unsafe trait MarkerType: Copy + Sized {
 
 unsafe impl<T: ?Sized> MarkerType for PhantomData<T> {}
 
-#[cfg(rust_1_22)]
 unsafe impl<T> MarkerType for ManuallyDrop<T> 
 where
     T: MarkerType
 {}
 
+/*
+// Uncomment once the rules around zero sized types in `#[repr(C)]` types are figured out,
+// and it treats these types as zero sized.
+// Then uncomment all `Uncomment` comments
+// 
+// https://github.com/rust-lang/rust/issues/81996
+
 unsafe impl MarkerType for () {}
 
 ////////////////////////////////
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 macro_rules! impl_zero_sized_array {
     ()=>{
         /// When the "const_params" feature is disabled,
@@ -95,12 +102,12 @@ macro_rules! impl_zero_sized_array {
     }
 }
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 impl_zero_sized_array!{}
 
 ///////////////////////////////////
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 macro_rules! impl_zero_sized_array {
     ($($size:expr),*)=>{
         $(
@@ -111,7 +118,7 @@ macro_rules! impl_zero_sized_array {
     }
 }
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 impl_zero_sized_array! {
     00,01,02,03,04,05,06,07,08,09,
     10,11,12,13,14,15,16,17,18,19,
@@ -145,20 +152,7 @@ impl_zero_sized_tuple! {A,B,C,D,E,F,G,H,I,J,K,L,M}
 impl_zero_sized_tuple! {A,B,C,D,E,F,G,H,I,J,K,L,M,N}
 impl_zero_sized_tuple! {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O}
 impl_zero_sized_tuple! {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P}
-
-#[cfg(feature = "typenum")]
-mod typenum {
-    use super::MarkerType;
-
-    use typenum::marker_traits::{Bit, NonZero, Unsigned};
-    use typenum::{NInt, PInt, UInt, UTerm, Z0};
-
-    unsafe impl<U: Unsigned + Default + NonZero + Copy> MarkerType for PInt<U> {}
-    unsafe impl<U: Unsigned + Default + NonZero + Copy> MarkerType for NInt<U> {}
-    unsafe impl MarkerType for Z0 {}
-    unsafe impl<U: Unsigned + Default + Copy, B: Bit + Copy + Default> MarkerType for UInt<U, B> {}
-    unsafe impl MarkerType for UTerm {}
-}
+*/
 
 #[cfg(test)]
 mod tests {
@@ -177,10 +171,10 @@ mod tests {
     type PD = PhantomData<u64>;
 
     #[test]
-    #[cfg(rust_1_22)]
     fn test_manuallydrop(){
         assert_size_align!(ManuallyDrop<PD>);
-        assert_size_align!(ManuallyDrop<(PD,PD)>);
+        // Uncomment at the same time as the impls
+        // assert_size_align!(ManuallyDrop<(PD,PD)>);
     }
 
     #[test]
@@ -189,6 +183,9 @@ mod tests {
         assert_size_align!(());
         assert_size_align!(PhantomData<()>);
         assert_size_align!(PhantomData<u64>);
+
+        /*
+        // Uncomment at the same time as the impls
         assert_size_align!((PD,));
         assert_size_align!((PD, PD,));
         assert_size_align!((PD, PD, PD,));
@@ -264,8 +261,10 @@ mod tests {
         assert_size_align!([PD; 31]);
         assert_size_align!([PD; 32]);
 
-        #[cfg(feature = "const_generics")]
+        #[cfg(feature = "rust_1_51")]
         assert_size_align!([PD; 63]);
+
+        */
     }
 }
 

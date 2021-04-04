@@ -3,19 +3,16 @@
 //!
 //!
 
-#[cfg(rust_1_24)]
-use std_::cell::{Cell,RefCell,UnsafeCell};
+use crate::const_default;
 
-use std_::cmp::Reverse;
-
-use std_::marker::PhantomData;
-
-#[cfg(rust_1_32)]
-use std_::mem::ManuallyDrop;
-
-use std_::num::Wrapping;
-
-use std_::sync::atomic::{AtomicUsize,AtomicIsize,AtomicBool};
+use std_::{
+    cell::{Cell,RefCell,UnsafeCell},
+    cmp::Reverse,
+    marker::PhantomData,
+    mem::ManuallyDrop,
+    num::Wrapping,
+    sync::atomic::{AtomicUsize,AtomicIsize,AtomicBool},
+};
 
 #[allow(unused_imports)]
 use std_::sync::atomic;
@@ -24,7 +21,7 @@ use std_::sync::atomic;
 ///
 /// # Features
 ///
-/// Enabling the "const_generics" feature allows arrays of all lengths to implement this trait,
+/// Enabling the "rust_1_51" feature allows arrays of all lengths to implement this trait,
 /// otherwise it's only implemented for arrays up to 32 elements long.
 ///
 /// # Example
@@ -32,54 +29,40 @@ use std_::sync::atomic;
 /// Implementing `ConstDefault` for a struct
 ///
 /// ```rust
-/// // use core_extensions::const_default; // in newer versions of Rust.
-/// #[macro_use(const_default)]
-/// extern crate core_extensions;
-///
-/// use core_extensions::ConstDefault;
+/// use core_extensions::{ConstDefault, const_default};
 /// 
 /// #[derive(Debug,PartialEq)]
 /// struct Point<T>{
-///     x:T,
-///     y:T,
+///     x: T,
+///     y: T,
 /// }
 ///
-/// // `+ Copy` here is required for Rust 1.20 and 1.21,
-/// // and can be removed from Rust 1.22 onwards.
 /// impl<T> ConstDefault for Point<T>
 /// where
-///     T: ConstDefault + Copy
+///     T: ConstDefault
 /// {
-///     const DEFAULT: Self= Point{ x: T::DEFAULT,  y: T::DEFAULT };
+///     const DEFAULT: Self = Point {
+///         // `const_default!()` is equivalent to `ConstDefault::DEFAULT`
+///         x: const_default!(),
+///         y: const_default!(),
+///     };
 /// }
 ///
 /// # fn main(){
-/// assert_eq!( const_default!(Point<u8>), Point{x:0, y:0} );
-/// assert_eq!( const_default!(Point<f32>), Point{x:0.0, y:0.0} );
-/// assert_eq!( const_default!(Point<Option<()>>), Point{x:None, y:None} );
+/// assert_eq!(const_default!(Point<u8>), Point{x: 0, y: 0});
+/// assert_eq!(const_default!(Point<f32>), Point{x: 0.0, y: 0.0});
+/// assert_eq!(const_default!(Point<Option<()>>), Point{x: None, y: None});
 /// # }
 /// ```
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_default")))]
 pub trait ConstDefault: Sized {
     /// The default value for `Self`.
     const DEFAULT: Self;
 }
 
-/// Gets the ConstDefault::DEFAULT associated constant for This.
-/// 
-/// Use this macro to avoid using the wrong `DEFAULT` associated cosntant,
-/// eg: a `DEFAULT` associated constant in an inherent impl block with a
-/// subset of the  constraints that the `ConstDefault` impl has.
-#[macro_export]
-macro_rules! const_default {
-    ($This:ty) => {
-        <$This as $crate::ConstDefault>::DEFAULT
-    };
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 macro_rules! impl_array_const_default {
     ()=>{
         /// When the "const_params" feature is disabled,
@@ -91,12 +74,12 @@ macro_rules! impl_array_const_default {
     }
 }
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 impl_array_const_default!{}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 macro_rules! impl_array_const_default_inner {
     ([ $extra_bounds:ident ] 
         $(($size:expr)=[ $($t:ident,)* ]),*
@@ -112,7 +95,7 @@ macro_rules! impl_array_const_default_inner {
     };
 }
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 macro_rules! impl_array_const_default {
     (@inner [ $extra_bounds:ident ] 
         $(($size:expr)=[ $($t:ident,)* ]),*
@@ -127,10 +110,6 @@ macro_rules! impl_array_const_default {
         )*
     };
     ($($args:tt)*) => (
-        #[cfg(not(rust_1_22))]
-        impl_array_const_default_inner!{[Copy] $($args)* }
-
-        #[cfg(rust_1_22)]
         impl_array_const_default_inner!{[Sized] $($args)* }
     );
 }
@@ -147,12 +126,12 @@ fn main(){
 }
 */
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 impl<T> ConstDefault for [T;0]{
     const DEFAULT: Self=[];
 }
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 impl_array_const_default! {
     (1)=[T,],
     (2)=[T,T,],
@@ -192,10 +171,6 @@ impl_array_const_default! {
 
 macro_rules! impl_tuple_const_default {
     ($($ty:ident),*) => (
-        #[cfg(not(rust_1_22))]
-        impl_tuple_const_default!{@inner [Copy] $($ty),* }
-
-        #[cfg(rust_1_22)]
         impl_tuple_const_default!{@inner [Sized] $($ty),* }
     );
     (@inner [ $extra_bounds:ident ] $($ty:ident),*)=>{
@@ -259,21 +234,14 @@ impl_const_default!{
     for[T: ?Sized] PhantomData<T> = PhantomData,
     for[T] Option<T> = None,
     for['a] &'a str = "",
-    for['a,T:'a] &'a [T] = &[],
+    for['a, T:'a] &'a [T] = &[],
 }
 
-#[cfg(not(rust_1_22))]
-impl_const_default!{
-    for[T: ConstDefault + Copy] Wrapping<T> = Wrapping(T::DEFAULT),
-    for[T: ConstDefault + Copy] Reverse<T> = Reverse(T::DEFAULT),
-}
-#[cfg(rust_1_22)]
 impl_const_default!{
     for[T: ConstDefault] Wrapping<T> = Wrapping(T::DEFAULT),
     for[T: ConstDefault] Reverse<T> = Reverse(T::DEFAULT),
 }
 
-#[cfg(rust_1_24)]
 impl_const_default!{
     for[] AtomicUsize = AtomicUsize::new(0),
     for[] AtomicIsize = AtomicIsize::new(0),
@@ -283,31 +251,20 @@ impl_const_default!{
     for[T: ConstDefault] UnsafeCell<T> = UnsafeCell::new(T::DEFAULT),
 }
 
-// Using the `*_INIT` constants conditionally to avoid deprecation warnings
-#[cfg(not(rust_1_24))]
-impl_const_default!{
-    for[] AtomicUsize = atomic::ATOMIC_USIZE_INIT,
-    for[] AtomicIsize = atomic::ATOMIC_ISIZE_INIT,
-    for[] AtomicBool = atomic::ATOMIC_BOOL_INIT,
-}
-
-#[cfg(rust_1_25)]
 impl_const_default!{
     for[] ::std_::time::Duration = ::std_::time::Duration::from_secs(0),
 }
 
-#[cfg(rust_1_26)]
 impl_const_default!{
     for[] i128=0,
     for[] u128=0,
 }
 
-#[cfg(rust_1_32)]
 impl_const_default!{
     for[T: ConstDefault] ManuallyDrop<T> = ManuallyDrop::new(T::DEFAULT),
 }
 
-#[cfg(all(rust_1_34, not(target_arch = "powerpc")))]
+#[cfg(not(target_arch = "powerpc"))]
 impl_const_default!{
     for[] atomic::AtomicI8 = atomic::AtomicI8::new(0),
     for[] atomic::AtomicU8 = atomic::AtomicU8::new(0),
@@ -319,10 +276,10 @@ impl_const_default!{
     for[] atomic::AtomicU64 = atomic::AtomicU64::new(0),
 }
 
-#[cfg(all(feature = "alloc",rust_1_39))]
+#[cfg(feature = "alloc")]
 impl_const_default!{
-    for[T] ::alloc_::vec::Vec<T> = Self::new(),
-    for[] ::alloc_::string::String = Self::new(),
+    for[T] ::alloc::vec::Vec<T> = Self::new(),
+    for[] ::alloc::string::String = Self::new(),
 }
 
 
@@ -336,7 +293,6 @@ mod tests{
     #[derive(Debug,PartialEq)]
     struct NonCopy;
 
-    #[cfg(rust_1_22)]
     impl ConstDefault for NonCopy{
         const DEFAULT:Self=NonCopy;
     }
@@ -382,7 +338,6 @@ mod tests{
     }
 
     #[test]
-    #[cfg(rust_1_22)]
     fn for_rust_1_22(){
         assert_eq!(const_def_assert!([NonCopy;2]), [NonCopy,NonCopy]);
         
@@ -395,7 +350,6 @@ mod tests{
         assert_eq!(const_def_assert!(Reverse<NonCopy>).0, NonCopy);
     }
     #[test]
-    #[cfg(rust_1_24)]
     fn for_rust_1_24(){
         assert_eq!(const_def_assert!(Cell<Option<()>>).into_inner(), None);
         assert_eq!(const_def_assert!(RefCell<Option<()>>).into_inner(), None);
@@ -403,7 +357,6 @@ mod tests{
     }
 
     #[test]
-    #[cfg(rust_1_34)]
     fn for_rust_1_34(){
         assert_eq!(const_def_assert!(atomic::AtomicU8).into_inner(), 0);
         assert_eq!(const_def_assert!(atomic::AtomicI8).into_inner(), 0);
@@ -412,7 +365,6 @@ mod tests{
     }
 
     #[test]
-    #[cfg(rust_1_25)]
     fn for_rust_1_25(){
         use std_::time::Duration;
 
@@ -420,14 +372,12 @@ mod tests{
     }
 
     #[test]
-    #[cfg(rust_1_26)]
     fn for_rust_1_26(){
         assert_eq!(const_def_assert!(i128), 0);
         assert_eq!(const_def_assert!(u128), 0);
     }
 
     #[test]
-    #[cfg(rust_1_32)]
     fn for_rust_1_32(){
         assert_eq!(const_def_assert!(ManuallyDrop<u8>), ManuallyDrop::new(0));
         assert_eq!(const_def_assert!(ManuallyDrop<bool>), ManuallyDrop::new(false));
@@ -435,10 +385,10 @@ mod tests{
     }
 
     #[test]
-    #[cfg(all(feature = "alloc",rust_1_39))]
+    #[cfg(feature = "alloc")]
     fn for_rust_1_39(){
-        use alloc_::vec::Vec;
-        use alloc_::string::String;
+        use alloc::vec::Vec;
+        use alloc::string::String;
 
         assert_eq!(const_def_assert!(Vec<u8>), Vec::new());
         assert_eq!(const_def_assert!(Vec<NoDefault>), Vec::new());
@@ -446,8 +396,8 @@ mod tests{
     }
 
     #[test]
-    #[cfg(feature = "const_generics")]
-    fn for_const_generics(){
+    #[cfg(feature = "rust_1_51")]
+    fn for_rust_1_51(){
         // This type must not implement Copy
         #[derive(Debug, PartialEq, Eq)]
         struct F(u32);

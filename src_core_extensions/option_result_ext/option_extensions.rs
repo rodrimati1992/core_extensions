@@ -5,45 +5,11 @@ use std_::fmt;
 use super::ResultLike;
 use type_identity::TypeIdentity;
 
-/// Extension trait for [Option].
+/// Extension trait for [`Option`].
+/// 
+/// 
+/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
 pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
-    /// Allows using Option::filter before Rust 1.27.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use core_extensions::OptionExt;
-    ///
-    /// let text="what the ";
-    ///
-    /// assert_eq!(Some(text).filter_(|x| x.len()==9 ).is_some(),true);
-    ///
-    /// assert_eq!(
-    ///     text.split_whitespace().next()
-    ///         .filter_(|x| x.len()==4 ),
-    ///     Some("what"));
-    ///
-    /// assert_eq!(Some(text).filter_(|x| x.len()==20 ),None);
-    ///
-    /// assert_eq!(
-    ///     text.split_whitespace().next()
-    ///         .filter_(|x| x.len()==10 ),
-    ///     None);
-    ///
-    /// ```
-    ///
-    #[inline]
-    fn filter_<F>(self, predicate: F) -> Option<T>
-    where
-        F: FnOnce(&T) -> bool,
-    {
-        if let Some(v) = self.into_type_val() {
-            if predicate(&v) {
-                return Some(v);
-            }
-        }
-        None
-    }
     /// Maps as reference to the contents.
     ///
     /// # Example
@@ -52,16 +18,16 @@ pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
     /// use core_extensions::OptionExt;
     ///
     /// struct User{
-    ///     name:String,
-    ///     surname:String,
+    ///     name: String,
+    ///     surname: String,
     /// }
     ///
-    /// let user=Some(User{name:"Matt".into(),surname:"Parker".into()});
-    /// let name   =user.map_ref(|v| v.name.as_str() );
-    /// let surname=user.map_ref(|v| v.surname.as_str() );
+    /// let user = Some(User{name: "Bob".to_string(), surname: "Math".to_string()});
+    /// let name    = user.map_ref(|v| v.name.as_str() );
+    /// let surname = user.map_ref(|v| v.surname.as_str() );
     ///
-    /// assert_eq!(name,Some("Matt"));
-    /// assert_eq!(surname,Some("Parker"));
+    /// assert_eq!(name, Some("Bob"));
+    /// assert_eq!(surname, Some("Math"));
     ///
     /// ```
     #[inline]
@@ -70,7 +36,10 @@ pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
         T: 'a,
         F: FnOnce(&'a T) -> U,
     {
-        self.into_type_ref().as_ref().map(f)
+        match self.as_type() {
+            Some(x) => Some(f(x)),
+            None => None,
+        }
     }
     /// Maps as mutable reference to the contents.
     ///
@@ -80,20 +49,20 @@ pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
     /// use core_extensions::OptionExt;
     ///
     /// struct User{
-    ///     name:String,
-    ///     surname:String,
+    ///     name: String,
+    ///     surname: String,
     /// }
     ///
-    /// let mut user=Some(User{name:"Matt".into(),surname:"Parker".into()});
+    /// let mut user = Some(User{name: "Matt".into(), surname: "Parker".into()});
     /// {
-    ///     let name   =user.map_mut(|v|{
-    ///         v.name.push_str("hew") ;
+    ///     let name = user.map_mut(|v|{
+    ///         v.name.push_str("hew");
     ///         v.name.as_str()
     ///     });
     ///     
-    ///     assert_eq!(name,Some("Matthew"));
+    ///     assert_eq!(name, Some("Matthew"));
     /// }
-    /// assert_eq!(user.unwrap().name,"Matthew");
+    /// assert_eq!(user.unwrap().name, "Matthew");
     ///
     /// ```
     #[inline]
@@ -102,7 +71,10 @@ pub trait OptionExt<T>: ResultLike + TypeIdentity<Type = Option<T>> + Sized {
         T: 'a,
         F: FnOnce(&'a mut T) -> U,
     {
-        self.into_type_mut().as_mut().map(f)
+        match self.as_type_mut() {
+            Some(x) => Some(f(x)),
+            None => None,
+        }
     }
 }
 
@@ -117,17 +89,61 @@ impl<T> ResultLike for Option<T> {
         self.is_some()
     }
     #[inline]
-    fn to_result_(self) -> Result<Self::Item, Self::Error> {
-        self.ok_or(IsNoneError)
+    #[cfg_attr(feature = "track_caller", track_caller)]
+    fn into_result_(self) -> Result<Self::Item, Self::Error> {
+        match self {
+            Some(x) => Ok(x),
+            None => Err(IsNoneError::new()),
+        }
+    }
+
+    #[inline]
+    fn from_item(item: Self::Item) -> Self {
+        Some(item)
+    }
+    
+    #[inline]
+    fn from_error(_err: Self::Error) -> Self {
+        None
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-/// The [ResultLike::Error]
-/// value for Option<T>
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct IsNoneError;
+/// The [`ResultLike::Error`] for `Option`
+/// 
+/// [`ResultLike::Error`]: trait.ResultLike.html#associatedtype.Error
+#[derive(Debug, Copy, Clone)]
+pub struct IsNoneError (
+    #[cfg(feature = "track_caller")]
+    &'static std_::panic::Location<'static>,
+
+    #[cfg(not(feature = "track_caller"))]
+    (),
+);
+
+impl IsNoneError {
+    /// Constructs an IsNoneError
+    #[cfg_attr(feature = "track_caller", track_caller)]
+    #[inline]
+    pub fn new() -> Self {
+        cfg_if!(
+            (feature = "track_caller") {
+                Self(std_::panic::Location::caller())
+            } else {
+                Self(())
+            }
+        )
+    }
+}
+
+impl std_::cmp::PartialEq for IsNoneError {
+    fn eq(&self, _: &IsNoneError) -> bool {
+        true
+    }
+}
+
+impl std_::cmp::Eq for IsNoneError {}
 
 impl fmt::Display for IsNoneError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -136,72 +152,68 @@ impl fmt::Display for IsNoneError {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for IsNoneError {
-    fn description(&self) -> &str {
-        "attempted to unwrap an Option that was None"
-    }
-}
+impl error::Error for IsNoneError {}
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 /// Converts a type containing options into an option containing the type
-pub trait ToOption {
+/// 
+/// # Example
+/// 
+/// ```rust
+/// use core_extensions::TransposeOption;
+/// 
+/// assert_eq!((Some(3), Some(5)).transpose_opt(), Some((3, 5)));
+/// assert_eq!((Some(3), None::<u32>).transpose_opt(), None);
+///
+/// let ok_some: Result<Option<u32>, ()> = Ok(Some(8));
+/// let ok_none: Result<Option<u32>, ()> = Ok(None);
+/// let err: Result<Option<u32>, ()> = Err(());
+///
+/// assert_eq!(ok_some.transpose_opt(), Some(Ok(8)));
+/// assert_eq!(ok_none.transpose_opt(), None);
+/// assert_eq!(err.transpose_opt(), Some(Err(())));
+///
+/// ```
+/// 
+pub trait TransposeOption {
     /// The type in which the `Option`s are unwrapped.
-    ///
-    /// Example:
-    /// Self==(Option<i32>,Option<i32>)
-    /// type Output=(i32,i32);
     type Output;
     /// Performs the conversion
-    fn to_option(self) -> Option<Self::Output>;
+    fn transpose_opt(self) -> Option<Self::Output>;
 }
 
-impl<T> ToOption for Option<T> {
+impl<T> TransposeOption for Option<T> {
     type Output = T;
-    fn to_option(self) -> Option<Self::Output> {
+    #[inline]
+    fn transpose_opt(self) -> Option<Self::Output> {
         self
     }
 }
 
-impl<T> ToOption for (Option<T>, Option<T>) {
-    type Output = (T, T);
-
-    fn to_option(self) -> Option<Self::Output> {
-        Some((try_opt!(self.0), try_opt!(self.1)))
+impl<T, E> TransposeOption for Result<Option<T>, E> {
+    type Output = Result<T, E>;
+    #[inline]
+    fn transpose_opt(self) -> Option<Result<T, E>> {
+        self.transpose()
     }
 }
 
-impl<T> ToOption for (Option<T>, Option<T>, Option<T>) {
-    type Output = (T, T, T);
+macro_rules! for_tuple {
+    ($($t:ident $i:tt),*) => {
+        impl<$($t,)*> TransposeOption for ($(Option<$t>,)*) {
+            type Output = ($($t,)*);
 
-    fn to_option(self) -> Option<Self::Output> {
-        Some((try_opt!(self.0), try_opt!(self.1), try_opt!(self.2)))
-    }
+            #[inline]
+            fn transpose_opt(self) -> Option<Self::Output> {
+                Some(($(self.$i?,)*))
+            }
+        }
+    };
 }
 
-impl<T> ToOption for (Option<T>, Option<T>, Option<T>, Option<T>) {
-    type Output = (T, T, T, T);
-
-    fn to_option(self) -> Option<Self::Output> {
-        Some((
-            try_opt!(self.0),
-            try_opt!(self.1),
-            try_opt!(self.2),
-            try_opt!(self.3),
-        ))
-    }
-}
-
-impl<T> ToOption for (Option<T>, Option<T>, Option<T>, Option<T>, Option<T>) {
-    type Output = (T, T, T, T, T);
-
-    fn to_option(self) -> Option<Self::Output> {
-        Some((
-            try_opt!(self.0),
-            try_opt!(self.1),
-            try_opt!(self.2),
-            try_opt!(self.3),
-            try_opt!(self.4),
-        ))
-    }
-}
+for_tuple!{A 0}
+for_tuple!{A 0, B 1}
+for_tuple!{A 0, B 1, C 2}
+for_tuple!{A 0, B 1, C 2, D 3}
+for_tuple!{A 0, B 1, C 2, D 3, E 4}
