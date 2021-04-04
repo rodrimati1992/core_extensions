@@ -108,7 +108,8 @@
 //! - `"collections"`: Enables the [`collections`] module, with traits for collection types.
 //!
 //! - `"const_default"`:
-//! Enables the [`ConstDefault`] trait, and [`const_default`] macro.
+//! Enables the [`ConstDefault`] trait, and [`const_default`] macro,
+//! for a `const` equivalent of the `Default` trait.
 //!
 //! - `"const_val"`:
 //! Enables the [`ConstVal`] trait (for types that represent constants), 
