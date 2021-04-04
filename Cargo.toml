@@ -2,12 +2,12 @@
 name = "core_extensions"
 version = "0.1.20"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
-description="This crate provides many extensions to core/std library types."
+description="Extensions for core/std library types, and other miscelaneous features."
 license="MIT/Apache-2.0"
 readme="readme.md"
 repository="https://github.com/rodrimati1992/core_extensions"
 keywords = ["no-std"]
-categories = [ "no-std" ]
+categories = ["no-std"]
 include = [
     "Cargo.toml", 
     "src_core_extensions/**/*.rs", 

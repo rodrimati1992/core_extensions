@@ -10,7 +10,8 @@
 /// 
 /// Using the [`quasiconst`] macro to declare (generic) constants.
 /// 
-/// ```rust
+#[cfg_attr(not(feature = "integers"), doc = " ```ignore")]
+#[cfg_attr(feature = "integers", doc = " ```rust")]
 /// use core_extensions::{getconst, quasiconst, IntegerExt};
 /// 
 /// #[derive(Debug, PartialEq)]
@@ -65,6 +66,7 @@
 /// 
 /// [`ConstVal::VAL`]: trait.ConstVal.html#associatedconstant.VAL
 /// [`quasiconst`]: ./macro.quasiconst.html
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_val")))]
 #[macro_export]
 macro_rules! getconst {
     (
@@ -129,8 +131,8 @@ macro_rules! getconst {
 /// 
 /// This example shows that you can use the generic constants with the [`ConstVal`] trait
 /// 
-#[cfg_attr(not(feature = "alloc"), doc = " ```ignore")]
-#[cfg_attr(feature = "alloc", doc = " ```rust")]
+#[cfg_attr(not(all(feature = "const_default", feature = "alloc")), doc = " ```ignore")]
+#[cfg_attr(all(feature = "const_default", feature = "alloc"), doc = " ```rust")]
 /// use core_extensions::{ConstDefault, ConstVal, quasiconst};
 /// 
 /// quasiconst!{
@@ -199,6 +201,7 @@ macro_rules! getconst {
 /// 
 /// [`ConstVal`]: ./trait.ConstVal.html
 /// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_val")))]
 #[macro_export]
 macro_rules! quasiconst {
     (

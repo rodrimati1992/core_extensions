@@ -170,6 +170,15 @@
 //!
 //! `"serde_"`: Enables serde support. Disabled by default.
 //!
+//! ### Miscelaneous features
+//!
+//! `"track_caller"`:
+//! Enables the "rust_1_46" feature.
+//! Changes `ResultLike` to allow getting the caller location in `ResultLike::into_result_`,
+//! and makes `IsNoneError` store where it was constructed.
+//!
+//! `"docsrs"`: Used to document the required features in docs.rs, requires Rust nightly.
+//! Doesn't enable any items itself.
 //!
 //! [`collections`]: ./collections/index.html
 //! [`callable`]: ./callable/index.html

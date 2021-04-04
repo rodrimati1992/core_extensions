@@ -1,3 +1,5 @@
+clear;
+clear;
 cargo test --no-default-features --features "std bools"
 cargo test --no-default-features --features "std callable"
 cargo test --no-default-features --features "std collections"
