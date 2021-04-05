@@ -1,4 +1,5 @@
-/// Gets the [`ConstVal::VAL`] associated constant for a type.
+/// Gets the [`ConstVal::VAL`](trait.ConstVal.html#associatedconstant.VAL)
+/// associated constant for a type.
 /// 
 /// Use this macro to unambiguously use the [`ConstVal::VAL`] associated constant,
 /// as opposed to an inherent `VAL` associated constant,
@@ -216,18 +217,20 @@ macro_rules! quasiconst {
         $(;)?
     ) => {
         $(
-            $crate::__declare_const_inner!{
-                (
-                    $(#[$attr])*,
-                    $vis,
-                    $ident,
-                    $ty,
-                    [$($($constraints)*)?],
-                    $value,
-                    concat!("Cosntructs a `", stringify!($ident), "` (the type)"),
-                )
-                [$($($generic_params)*)? ,]
-                [] [] [] []
+            $crate::parse_generics!{
+                $crate::__declare_const_inner!{
+                    (
+                        $(#[$attr])*,
+                        $vis,
+                        $ident,
+                        $ty,
+                        [$($($constraints)*)?],
+                        $value,
+                        concat!("Cosntructs a `", stringify!($ident), "` (the type)"),
+                    )
+                }
+
+                ($($($generic_params)*)?)
             }
         )*
     };
@@ -247,18 +250,15 @@ macro_rules! __declare_const_inner {
             $value:expr,
             $new_doc:expr,
         )
-        [$(,)*]
-        [$($struct_params:tt)*  ]
-        [$($impl_params:tt)*]
-        [$($impl_args:tt)*]
-        [$($phantoms:tt)*]
+        ($($struct_params:tt)*)
+        ($($impl_params:tt)*)
+        ($($impl_args:tt)*)
+        ($($phantoms:tt)*)
     ) => {
         $(#[$attr])*
         #[allow(non_camel_case_types)]
         $vis struct $ident <$($struct_params)*> {
-            _marker: $crate::__::PD<(
-                $($phantoms)*
-            )>
+            _marker: $($phantoms)*
         }
         
         impl<$($impl_params)*> $crate::ConstVal for $ident<$($impl_args)*> 
@@ -278,205 +278,6 @@ macro_rules! __declare_const_inner {
 
             /// The constant that this type represents.
             $vis const VAL: <Self as $crate::ConstVal>::Ty = <Self as $crate::ConstVal>::VAL;
-        }
-    };
-    (
-        $other:tt
-        [$lifetime:lifetime $(: $($bound:lifetime $(+)? )*)? , $($rem:tt)*]
-        [$($struct_params:tt)*]
-        [$($impl_params:tt)*]
-        [$($impl_args:tt)*]
-        [$($phantoms:tt)*]
-    ) => {
-        $crate::__declare_const_inner!{
-            $other
-            [$($rem)*]
-            [$($struct_params)* $lifetime $(: $($bound + )*)?,]
-            [$($impl_params)* $lifetime $(: $($bound + )*)?,]
-            [$($impl_args)* $lifetime,]
-            [$($phantoms)* &$lifetime (),]
-        }
-    };
-    (
-        $other:tt
-        [
-            $type:ident
-            $(= $default:ty)?
-            , $($rem:tt)*
-        ]
-        [$($struct_params:tt)*  ]
-        [$($impl_params:tt)*]
-        [$($impl_args:tt)*]
-        [$($phantoms:tt)*]
-    ) => {
-        $crate::__declare_const_inner!{
-            $other
-            [$($rem)*]
-            [$($struct_params)* $type $(= $default)? ,]
-            [$($impl_params)* $type ,]
-            [$($impl_args)* $type,]
-            [$($phantoms)* $crate::__::PD<$type>,]
-        }
-    };
-    (
-        $other:tt
-        [
-            $type:ident
-            : $($rem:tt)*
-        ]
-        $struct_params:tt
-        $impl_params:tt
-        $impl_args:tt
-        $phantoms:tt
-    ) => {
-        $crate::__declare_const_type_param_bounds!{
-            (
-                $other
-                $type
-                $struct_params
-                $impl_params
-                $impl_args
-                $phantoms
-            )
-            []
-            [ + $($rem)*]
-        }
-    };
-    (
-        $other:tt
-        [ const $constp:ident : $constty:ty $(= $default:expr)? , $($rem:tt)* ]
-        [$($struct_params:tt)*  ]
-        [$($impl_params:tt)*]
-        [$($impl_args:tt)*]
-        $phantoms:tt
-    ) => {
-        $crate::__declare_const_inner!{
-            $other
-            [$($rem)*]
-            [$($struct_params)* const $constp: $constty $(= $default)? ,]
-            [$($impl_params)* const $constp: $constty,]
-            [$($impl_args)* $constp,]
-            $phantoms
-        }
-    };
-    (
-        $other:tt
-        [
-            $($rem:tt)*
-        ]
-        $struct_params:tt
-        $impl_params:tt
-        $impl_args:tt
-        $phantoms:tt
-    ) => {
-        compile_error!{concat!(
-            "Cannot parse these generics:\n\t",
-            $(stringify!($rem),)*
-        )}
-    };
-}
-
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! __declare_const_type_param_bounds {
-    (
-        (
-            $other:tt
-            $type:ident
-            [$($struct_params:tt)*]
-            [$($impl_params:tt)*]
-            [$($impl_args:tt)*]
-            [$($phantoms:tt)*]
-        )
-        [$($bounds:tt)*]
-        [ $(= $default:ty)? $(, $($rem:tt)*)? ]
-    ) => {
-        $crate::__declare_const_inner!{
-            $other
-            [$($($rem)*)?]
-            [$($struct_params)* $type : $($bounds)* $(= $default)? ,]
-            [$($impl_params)* $type : $($bounds)*,]
-            [$($impl_args)* $type,]
-            [$($phantoms)* $crate::__::PD<$type>,]
-        }
-    };
-    (
-        $fixed:tt
-        [$($boundts:tt)*]
-        [ + $lt:lifetime $($rem:tt)* ]
-    ) => {
-        $crate::__declare_const_type_param_bounds!{
-            $fixed
-            [$($boundts)* $lt + ]
-            [$($rem)*]
-        }
-    };
-    (
-        $fixed:tt
-        [$($boundts:tt)*]
-        [ + ($($parenthesized:tt)*) $($rem:tt)* ]
-    ) => {
-        $crate::__declare_const_type_param_bounds!{
-            $fixed
-            [$($boundts)* ($($parenthesized)*) + ]
-            [$($rem)*]
-        }
-    };
-    (
-        $fixed:tt
-        $prev_bounds:tt
-        [ + $rem_bounds:ty $(= $default:ty)? $(, $($rem:tt)*)? ]
-    ) => {
-        $crate::__::__priv_remove_non_delimiter!{
-            $rem_bounds
-
-            $crate::__declare_const_type_param_finish!{
-                $fixed
-                $prev_bounds
-                [ ($($default)?) $(, $($rem)*)? ]
-            }
-        }
-    };
-    (
-        $fixed:tt
-        [$($boundts:tt)*]
-        [ $($rem:tt)* ]
-    ) => {
-        compile_error!{concat!(
-            "Cannot parse bounds at the start of these tokens,\n\
-             you need to wrap them in parentheses:\n\t",
-            $(stringify!($rem),)*
-        )}
-    };
-}
-
-
-
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! __declare_const_type_param_finish {
-    (
-        (
-            $other:tt
-            $type:ident
-            [$($struct_params:tt)*]
-            [$($impl_params:tt)*]
-            [$($impl_args:tt)*]
-            [$($phantoms:tt)*]
-        )
-        [$($bounds:tt)*]
-        [ ($($($default:tt)+)?) $(, $($rem:tt)*)? ]
-        ($($rem_bounds:tt)*)
-    ) => {
-        $crate::__declare_const_inner!{
-            $other
-            [$($($rem)*)?]
-            [$($struct_params)* $type : $($bounds)* $($rem_bounds)* $(= $($default)+ )? ,]
-            [$($impl_params)* $type : $($bounds)* $($rem_bounds)*,]
-            [$($impl_args)* $type,]
-            [$($phantoms)* $crate::__::PD<$type>,]
         }
     };
 }
