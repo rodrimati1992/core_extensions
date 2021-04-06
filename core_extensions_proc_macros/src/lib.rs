@@ -1,19 +1,33 @@
 #![no_std]
 
-extern crate proc_macro;
+#[cfg(not(test))]
+extern crate proc_macro as used_proc_macro;
+
+#[cfg(test)]
+extern crate proc_macro2 as used_proc_macro;
 
 extern crate alloc;
 
-use proc_macro::{Delimiter, Group, Spacing, TokenStream, TokenTree};
+#[cfg(test)]
+extern crate std;
+
+use used_proc_macro::{Delimiter, Group, Spacing, TokenStream, TokenTree};
 
 use core::iter::once;
 
 use alloc::string::ToString;
 
+#[cfg(test)]
+mod tests;
+
 
 #[doc(hidden)]
 #[proc_macro]
-pub fn __priv_remove_non_delimiter(input_tokens: TokenStream) -> TokenStream {
+pub fn __priv_remove_non_delimiter(
+    input_tokens: proc_macro::TokenStream
+) -> proc_macro::TokenStream {
+    let input_tokens: TokenStream = input_tokens.into();
+
     let mut iter = input_tokens.into_iter();
 
     let ty_tt = iter.next().expect("__priv_remove_non_delimiter expected more tokens");
@@ -46,13 +60,18 @@ pub fn __priv_remove_non_delimiter(input_tokens: TokenStream) -> TokenStream {
         }
     }
 
-    out
+    out.into()
 }
 
 
 #[doc(hidden)]
 #[proc_macro]
-pub fn __priv_split_generics(input_tokens: TokenStream) -> TokenStream {
+pub fn __priv_split_generics(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    split_generics(input_tokens.into()).into()
+}
+
+#[doc(hidden)]
+fn split_generics(input_tokens: TokenStream) -> TokenStream {
     let mut iter = input_tokens.into_iter();
 
     let ty_tt = iter.next().expect("skip_generics expected more tokens");
@@ -63,7 +82,7 @@ pub fn __priv_split_generics(input_tokens: TokenStream) -> TokenStream {
     };
 
     let mut curr_joint = false;
-    let mut prev_joint = false;
+    let mut prev_joint;
     let mut depth = 0;
 
     let mut generics = TokenStream::new();
@@ -79,7 +98,8 @@ pub fn __priv_split_generics(input_tokens: TokenStream) -> TokenStream {
             curr_joint = false;
             if let TokenTree::Punct(punct) = &$tt {
                 let char = punct.as_char();
-                curr_joint = char == '-' || punct.spacing() == Spacing::Joint && char != '>';
+                curr_joint = char == '-' ||
+                    punct.spacing() == Spacing::Joint && char != '>' && char != '<';
 
                 if char == '<' {
                     depth += 1;

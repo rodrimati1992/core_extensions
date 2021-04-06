@@ -16,11 +16,11 @@ impl<T> GetSize<T> for Func {
 
 
 core_extensions::quasiconst!{
-    const LT['a]: &'a u16 = &1337;
+    const LT<'a>: &'a u16 = &1337;
     const LT_COMMA['a,]: &'a u16 = &8337;
     
     const LT_BOUND_BOUND['a: ]: &'a u16 = &8000;
-    const LT_TWO_BOUNDS['a, 'b: 'a]: &'a u16 = {
+    const LT_TWO_BOUNDS<'a, 'b: 'a>: &'a u16 = {
         let x: &'b u16 = &8007;
         x
     };
@@ -61,11 +61,16 @@ fn test_lifetime() {
 
 
 core_extensions::quasiconst!{
-    const FIRST_BOUND[T: 'static + GetSize<u8> + Sized + Clone]: usize = <T as GetSize<u8>>::SIZE;
-    const LAST_BOUND[T: 'static + Sized + Clone + GetSize<u16>]: usize = <T as GetSize<u16>>::SIZE;
-    const PAREN_BOUND[T: 'static + (Sized) + (Clone) + GetSize<u32>]: usize = <T as GetSize<u32>>::SIZE;
+    const FIRST_BOUND<T: 'static + GetSize<u8> + Sized + Clone>: usize =
+        <T as GetSize<u8>>::SIZE;
+
+    const LAST_BOUND[T: 'static + Sized + Clone + GetSize<u16>]: usize =
+        <T as GetSize<u16>>::SIZE;
+
+    const PAREN_BOUND[T: 'static + (Sized) + (Clone) + GetSize<u32>]: usize =
+        <T as GetSize<u32>>::SIZE;
     
-    const WITH_LIFETIME['a, T: 'static + Sized, U = u16, V = u32]: () = ();
+    const WITH_LIFETIME<'a, T: 'static + Sized, U = u16, V = u32>: () = ();
 
 }
 
@@ -106,7 +111,7 @@ fn privacy_test() {
 
    
 core_extensions::quasiconst!{
-    const NO_BOUND_DEF[T = u8]: (PhantomData<T>, usize) =
+    const NO_BOUND_DEF<T = u8>: (PhantomData<T>, usize) =
         (PhantomData, std::mem::size_of::<T>());
     
     const BOUND_DEF[T: Copy + std::fmt::Debug = u8]: (PhantomData<T>, usize) = {
@@ -152,13 +157,16 @@ fn defaulted_test() {
 
 
 core_extensions::quasiconst!{
-    const WITH_WHERE[T]: usize 
-    where[T: GetSize<u32>, T: GetSize<u64>]
+    const WITH_WHERE<T>: usize 
+    where
+        T: GetSize<u32>, T: GetSize<u64>
     = <T as GetSize<u32>>::SIZE;
 
     const WITH_TRIVIAL_WHERE: u32 
-    where[u32: Copy, u64: Clone,]
-    = 100;
+    where [
+        u32: Copy,
+        u64: Clone,
+    ] = 100;
 }
 
 

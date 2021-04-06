@@ -377,7 +377,7 @@ macro_rules! __declare_const_angle_inner {
         }
 
         $($(
-            quasiconst!{
+            $crate::quasiconst!{
                 $($more)*
             }
         )?)?

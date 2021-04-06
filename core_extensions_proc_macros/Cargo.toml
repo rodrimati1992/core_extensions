@@ -15,8 +15,9 @@ include = [
     "../MIT_license",
 ]
 
+[dev-dependencies.proc-macro2]
+version = "1.0.19"
 
-[dependencies]
 
 [lib]
 proc-macro = true
