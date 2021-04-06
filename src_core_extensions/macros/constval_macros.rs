@@ -278,7 +278,7 @@ macro_rules! quasiconst {
         $vis:vis const $ident:ident
         $($rem:tt)*
     ) => {
-        $crate::parse_generics_and_where_clause!{
+        $crate::parse_generics_and_where!{
             $crate::__declare_const_angle_inner!{
                 (
                     $(#[$attr])*,

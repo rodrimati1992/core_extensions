@@ -2,12 +2,46 @@
 /// 
 /// # Examples
 /// 
+/// ### Basic
+/// 
+/// ```rust
+/// use core_extensions::split_generics_and_where;
+/// 
+/// split_generics_and_where! {
+///     crate::foo!{ 
+///         // The first tokens passed to the `crate::foo` macro
+///         hello world foo bar 
+///     }
+///     
+///     // The parsed tokens
+///     (
+///         <'a, T: Foo, const N: usize> (param: Type) -> u32 
+///         where
+///             T: Bar,
+///         { println }
+///     )
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! foo {
+///     (
+///         hello world foo bar
+///         ('a, T: Foo, const N: usize) // the generic parameters
+///         ((param: Type) -> u32 )      // before the where clause
+///         (T: Bar,)                    // inside the where clause
+///         ( { println } )              // after the where clause
+///     ) => {};
+/// }
+/// 
+/// # fn main(){}
+/// ```
+/// 
 /// ### Parsing a function
 /// 
 /// This demonstrates how you can parse a function.
 /// 
 /// ```rust
-/// use core_extensions::split_generics;
+/// use core_extensions::split_generics_and_where;
 /// 
 /// use std::ops::Mul;
 /// 
@@ -42,7 +76,7 @@
 ///         $(unsafe $(@$unsafe:tt@)?)?
 ///         fn $name:ident $($rem:tt)*
 ///     ) => {
-///         split_generics!{
+///         split_generics_and_where!{
 ///             $crate::__priv_inject_increment! {
 ///                 $(#[$attr])*
 ///                 $vis,
@@ -94,57 +128,35 @@
 /// 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
 #[macro_export]
-macro_rules! split_generics {
+macro_rules! split_generics_and_where {
     (
-        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* !{$($prefix:tt)*}
-        (<$($generics:tt)*)
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! $prefix:tt
+        ($($generics:tt)*)
     ) => {
         $crate::__::__priv_split_generics!{
             ($($generics)*)
 
-            $(:: $(@$leading@)? )? $first $(:: $trailing)* ! {$($prefix)*}
-        }
-    };
-    (
-        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* !{$($prefix:tt)*}
-        ($($generics:tt)*)
-    ) => {
-        $crate::__::__priv_split_generics!{
-            (> $($generics)*)
-
-            $(:: $(@$leading@)? )? $first $(:: $trailing)* ! {$($prefix)*}
+            $(:: $(@$leading@)? )? $first $(:: $trailing)* ! $prefix
         }
     };
 }
 
 
-/// 
+/// Like [`split_generics_and_where`](./macro.split_generics_and_where.html),
+/// but also transforms the generic parameters into a format usable in all places.
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
 #[macro_export]
-macro_rules! parse_generics_and_where_clause {
+macro_rules! parse_generics_and_where {
     (
-        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* !{$($prefix:tt)*}
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! $prefix:tt
 
-        (<$($generics:tt)*)
+        ($($generics:tt)*)
     ) => {
         $crate::__::__priv_split_generics!{
             ($($generics)*)
 
             $crate::__psg_unparsed_generics!{
-                ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! {$($prefix)*}
-            }
-        }
-    };
-    (
-        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* !{$($prefix:tt)*}
-
-        ($($tokens:tt)*)
-    ) => {
-        $crate::__::__priv_split_generics!{
-            (> $($tokens)*)
-
-            $crate::__psg_unparsed_generics!{
-                ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! {$($prefix)*}
+                ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
             }
         }
     };

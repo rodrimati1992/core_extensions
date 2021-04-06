@@ -1,7 +1,9 @@
 // Leaving this until I switch to edition = 2018
 extern crate core;
 extern crate alloc;
-extern crate core_extensions;
+
+// Renamed it to krate to test that macros work through reexports
+extern crate core_extensions as krate;
 
 
 mod misc_tests {

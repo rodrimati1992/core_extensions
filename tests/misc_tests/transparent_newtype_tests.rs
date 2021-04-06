@@ -1,7 +1,7 @@
-use core_extensions::transparent_newtype::{TransparentNewtype, TransparentNewtypeExt};
+use krate::transparent_newtype::{TransparentNewtype, TransparentNewtypeExt};
 
 #[cfg(feature = "alloc")]
-use core_extensions::transparent_newtype::{from_inner_vec, into_inner_vec};
+use krate::transparent_newtype::{from_inner_vec, into_inner_vec};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[repr(transparent)]
@@ -10,7 +10,7 @@ struct Trans<T: ?Sized>(T);
 unsafe impl<T: ?Sized> TransparentNewtype for Trans<T>{
     type Inner = T;
 
-    core_extensions::impl_transparent_newtype!{Self}
+    krate::impl_transparent_newtype!{Self}
 }
 
 

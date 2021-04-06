@@ -1,4 +1,4 @@
-use core_extensions::getconst;
+use krate::getconst;
 
 use std::marker::PhantomData;
 
@@ -15,7 +15,7 @@ impl<T> GetSize<T> for Func {
 }
 
 
-core_extensions::quasiconst!{
+krate::quasiconst!{
     const LT<'a>: &'a u16 = &1337;
     const LT_COMMA['a,]: &'a u16 = &8337;
     
@@ -60,7 +60,7 @@ fn test_lifetime() {
 
 
 
-core_extensions::quasiconst!{
+krate::quasiconst!{
     const FIRST_BOUND<T: 'static + GetSize<u8> + Sized + Clone>: usize =
         <T as GetSize<u8>>::SIZE;
 
@@ -87,12 +87,12 @@ fn bounds_test() {
 
 mod module {
     pub mod submod {
-        core_extensions::quasiconst!{
+        krate::quasiconst!{
             pub const PRIVACY: usize = 3;
             pub(in super::super) const PUBSUPER: usize = 8;
         }
     }
-    core_extensions::quasiconst!{
+    krate::quasiconst!{
         const PRIVACY: usize = 5;
         pub(self) const PUBSUPER: usize = 13;
     }
@@ -110,7 +110,7 @@ fn privacy_test() {
 
 
    
-core_extensions::quasiconst!{
+krate::quasiconst!{
     const NO_BOUND_DEF<T = u8>: (PhantomData<T>, usize) =
         (PhantomData, std::mem::size_of::<T>());
     
@@ -156,7 +156,7 @@ fn defaulted_test() {
 }
 
 
-core_extensions::quasiconst!{
+krate::quasiconst!{
     const WITH_WHERE<T>: usize 
     where
         T: GetSize<u32>, T: GetSize<u64>
@@ -177,7 +177,7 @@ fn with_where_clause() {
 }
 
 
-core_extensions::quasiconst!{
+krate::quasiconst!{
     #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]    
     const WITH_DERIVE: u32 = 2000;
 }

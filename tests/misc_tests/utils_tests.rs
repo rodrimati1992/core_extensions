@@ -1,7 +1,7 @@
-use core_extensions::utils::transmute_ignore_size;
+use krate::utils::transmute_ignore_size;
 
 #[cfg(feature = "alloc")]
-use core_extensions::utils::transmute_vec;
+use krate::utils::transmute_vec;
 
 
 

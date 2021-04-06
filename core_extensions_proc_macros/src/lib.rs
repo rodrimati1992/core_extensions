@@ -13,6 +13,8 @@ extern crate std;
 
 use used_proc_macro::{Delimiter, Group, Spacing, TokenStream, TokenTree};
 
+use used_proc_macro::token_stream::IntoIter;
+
 use core::iter::once;
 
 use alloc::string::ToString;
@@ -38,27 +40,9 @@ pub fn __priv_remove_non_delimiter(
         x => panic!("Expected a none-delimited group, found:\n{}", x)
     };
 
-
-    let mut out = TokenStream::new();
-
-    loop{
-        match iter.next().expect("__priv_remove_non_delimiter expected more tokens") {
-            TokenTree::Group(group) if group.delimiter() != Delimiter::None => {
-                let mut args = group.stream();
-
-                args.extend(once(TokenTree::Group(Group::new(Delimiter::Parenthesis, ty))));
-
-                out.extend(once(TokenTree::Group(Group::new(group.delimiter(), args))));
-
-                break;
-            }
-            x => {
-                out.extend(once(x));
-            }
-        }
-    }
-
-    out.into()
+    parse_path_and_args("__priv_remove_non_delimiter", &mut iter, |args| {
+        args.extend(once(TokenTree::Group(Group::new(Delimiter::Parenthesis, ty))));
+    }).into()
 }
 
 
@@ -88,7 +72,7 @@ fn split_generics(input_tokens: TokenStream) -> TokenStream {
     let mut where_clause = TokenStream::new();
     let mut after_where = TokenStream::new();
 
-    let mut input = input.into_iter();
+    let mut input = input.into_iter().peekable();
 
     macro_rules! match_tt {
         ($tt:ident, $($e:expr)? , $on_too_many_gt:expr ) => {
@@ -119,11 +103,15 @@ fn split_generics(input_tokens: TokenStream) -> TokenStream {
         };
     }
 
-    while let Some(tt) = input.next() {
-        match_tt!{ tt, , break }
+    if mmatches!(input.peek(), Some(TokenTree::Punct(punct)) if punct.as_char() == '<' ) {
+        drop(input.next());
+        while let Some(tt) = input.next() {
+            match_tt!{ tt, , break }
 
-        generics.extend(once(tt));
+            generics.extend(once(tt));
+        }
     }
+    
 
     if depth == 0 {
         let mut output = &mut after_generics;
@@ -156,35 +144,62 @@ fn split_generics(input_tokens: TokenStream) -> TokenStream {
 
     after_where.extend(input);
 
+    parse_path_and_args("__priv_split_generics", &mut iter, |args| {
+        args.extend(once(parenthesize_token_stream(generics)));
+        args.extend(once(parenthesize_token_stream(after_generics)));
+        args.extend(once(parenthesize_token_stream(where_clause)));
+        args.extend(once(parenthesize_token_stream(after_where)));
+    })
+}
+
+fn parenthesize_token_stream(ts: TokenStream) -> TokenTree {
+    TokenTree::Group(Group::new(Delimiter::Parenthesis, ts))
+}
+
+
+
+fn parse_path_and_args<F>(
+    macro_name: &str,
+    iter: &mut IntoIter,
+    f: F,
+) -> TokenStream 
+where
+    F: FnOnce(&mut TokenStream)
+{
     let mut out = TokenStream::new();
 
     loop {
         match iter
             .next()
-            .expect("__priv_remove_non_delimiter expected more tokens")
+            .unwrap_or_else(|| panic!("{} expected more tokens", macro_name) )
         {
-            TokenTree::Group(group) if group.delimiter() != Delimiter::None => {
+            TokenTree::Group(group) if group.delimiter() == Delimiter::None => {
+                out.extend(group.stream());
+            }
+            TokenTree::Group(group) => {
                 let mut args = group.stream();
 
-                args.extend(once(parenthesize_token_stream(generics)));
-                args.extend(once(parenthesize_token_stream(after_generics)));
-                args.extend(once(parenthesize_token_stream(where_clause)));
-                args.extend(once(parenthesize_token_stream(after_where)));
+                f(&mut args);
 
                 out.extend(once(TokenTree::Group(Group::new(group.delimiter(), args))));
 
-                break;
+                return out;
             }
             x => {
                 out.extend(once(x));
             }
         }
     }
-
-    // panic!("{}", out)
-    out
 }
 
-fn parenthesize_token_stream(ts: TokenStream) -> TokenTree {
-    TokenTree::Group(Group::new(Delimiter::Parenthesis, ts))
-}
+
+
+// MSRV is 1.41.0, matches was stabilized in 1.42.0
+macro_rules! mmatches {
+    ( $expr:expr, $pat:pat $(if $cond:expr)?)=>{
+        match $expr {
+            $pat  $(if $cond)? =>true,
+            _=>false
+        }
+    };
+} use mmatches;

@@ -1,4 +1,4 @@
-use core_extensions::option_result_ext::ResultLikeExt;
+use krate::option_result_ext::ResultLikeExt;
 
 use alloc::string::String;
 
