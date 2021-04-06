@@ -188,6 +188,7 @@ pub unsafe fn impossible() -> ! {
 ///
 /// After this function is called `slot` becomes uninitialized,
 /// and must not be used again.
+#[allow(dead_code)]
 pub(crate) unsafe fn take_manuallydrop<T>(slot: &mut ManuallyDrop<T>) -> T {
     #[cfg(feature = "rust_1_42")]
     {

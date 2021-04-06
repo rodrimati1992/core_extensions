@@ -1,3 +1,97 @@
+/// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
+#[macro_export]
+macro_rules! split_generics {
+    (
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* !{$($prefix:tt)*}
+        ($($generics:tt)*)
+    ) => {
+        $crate::__::__priv_split_generics!{
+            ($($generics)*)
+
+            $crate::parse_generics!{
+                $(:: $(@$leading@)? )? $first $(:: $trailing)*! {$($prefix)*}
+            }
+        }
+    };
+}
+
+
+/// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
+#[macro_export]
+macro_rules! parse_generics_and_where_clause {
+    (
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* !{$($prefix:tt)*}
+
+        ($($generics:tt)*)
+    ) => {
+        $crate::__::__priv_split_generics!{
+            ($($generics)*)
+
+            $crate::__psg_unparsed_generics!{
+                ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! {$($prefix)*}
+            }
+        }
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __psg_unparsed_generics {
+    (
+        $path:tt! $params:tt
+        ($($generics:tt)*)
+        $after_generics:tt
+        $where_clause:tt
+        $after_where:tt
+    ) => {
+        $crate::parse_generics!{
+            $crate::__psg_parsed_generics!{
+                $path ! $params
+                $after_generics
+                $where_clause
+                $after_where
+            }
+
+            ($($generics)*)
+        }
+    }
+}
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __psg_parsed_generics {
+    (
+        ($($path:tt)*)! {$($prefix:tt)*}
+        
+        $after_generics:tt
+        $where_clause:tt
+        $after_where:tt
+
+        $struct_params:tt
+        $impl_params:tt
+        $impl_args:tt
+        $phantoms:tt
+    ) => {
+        $($path)* ! {
+            $($prefix)*
+
+            $struct_params
+            $impl_params
+            $impl_args
+            $phantoms
+
+            $after_generics
+            $where_clause
+            $after_where
+        }
+    }
+}
+
+
+
 /// Parses a list of generic parameters, and passes them to a macro.
 #[macro_export]
 macro_rules! parse_generics {
@@ -5,13 +99,10 @@ macro_rules! parse_generics {
         $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! {$($prefix:tt)*}
 
         ($($generics:tt)*)
-
-        $($suffix:tt)*
     )=>{
         $crate::__pg_inner!{
             (
                 ($(:: $(@$leading@)? )? $first $(:: $trailing)*) {$($prefix)*}
-                $($suffix:tt)*
             )
             () () () ()
             ($($generics)* ,)
@@ -26,8 +117,6 @@ macro_rules! __pg_inner {
     (
         (
             ($path:path) {$($prefix:tt)*}
-            
-            $($suffix:tt)*
         )
         $struct_params:tt
         $impl_params:tt
@@ -42,8 +131,6 @@ macro_rules! __pg_inner {
             $impl_params
             $impl_args
             ($crate::__::PD<$phantoms>)
-
-            $($suffix)*
         }
     };
     (

@@ -1,3 +1,4 @@
+#[allow(unused_macros)]
 macro_rules! cfg_if {
     (($meta:meta) $then:block else $else:block) => {{
         #[cfg($meta)] 
@@ -10,7 +11,7 @@ macro_rules! cfg_if {
     }};
 }
 
-
+#[allow(unused_macros)]
 #[cfg(not(feature = "rust_1_46"))]
 macro_rules! rc_shared_docs {
     ($(#[$attr:meta])* => ($($before_1_46:tt)*)  ($($since_1_46:tt)*)  ) => {
@@ -19,6 +20,7 @@ macro_rules! rc_shared_docs {
     };
 }
 
+#[allow(unused_macros)]
 #[cfg(feature = "rust_1_46")]
 macro_rules! rc_shared_docs {
     ($(#[$attr:meta])* => ($($before_1_46:tt)*)  ($($since_1_46:tt)*)  ) => {

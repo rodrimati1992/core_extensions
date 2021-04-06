@@ -115,7 +115,7 @@ macro_rules! getconst {
 /// ```rust
 /// use core_extensions::{getconst, quasiconst};
 /// 
-/// quasiconst!{ const NONE[T]: Option<T> = None }
+/// quasiconst!{ const NONE<T>: Option<T> = None }
 /// 
 /// // `getconst` is the unambiguous way to get the constant
 /// assert_eq!([getconst!(NONE<String>); 4], [None, None, None, None]);
@@ -137,7 +137,7 @@ macro_rules! getconst {
 /// use core_extensions::{ConstDefault, ConstVal, quasiconst};
 /// 
 /// quasiconst!{
-///     pub const PAIR[T: ConstDefault]: (T, T) = ConstDefault::DEFAULT;
+///     pub const PAIR<T: ConstDefault>: (T, T) = ConstDefault::DEFAULT;
 /// }
 /// 
 /// fn constant<U: ConstVal>() -> U::Ty {
@@ -163,13 +163,54 @@ macro_rules! getconst {
 /// ```
 /// 
 /// <span id="allthesyntax"></span>
-/// ### All of the syntax
+/// ### Newer syntax
+/// 
+/// This is the newer syntax that looks closest to what generic constants would look like.
 /// 
 /// Note: This macro allows const parameters
 /// (and doesn't require enabling the "rust_1_51" feature to use them).
 /// 
-#[cfg_attr(not(feature = "rust_1_51"), doc = " ```ignore")]
-#[cfg_attr(feature = "rust_1_51", doc = " ```rust")]
+#[cfg_attr(not(all(feature = "const_default", feature = "rust_1_51")), doc = " ```ignore")]
+#[cfg_attr(all(feature = "const_default", feature = "rust_1_51"), doc = " ```rust")]
+/// use core_extensions::{ConstDefault, getconst, quasiconst};
+/// 
+/// assert_eq!(getconst!(REFD<'static>), "");
+/// assert_eq!(getconst!(REFD<'static, str>), "");
+/// assert_eq!(getconst!(REFD<'static, [u8]>), &[]);
+/// 
+/// assert_eq!(getconst!(CONST_GEN<2>), [1, 3]);
+/// assert_eq!(getconst!(CONST_GEN<4>), [1, 3, 6, 10]);
+/// assert_eq!(getconst!(CONST_GEN<6>), [1, 3, 6, 10, 15, 21]);
+/// 
+/// quasiconst!{
+///     /// You can document and use attributes on the generated `REFD` struct.
+///     pub(crate) const REFD<'a: 'a, T: 'a + ?Sized = str>: &'a T
+///     where
+///         &'a T: ConstDefault
+///     = <&'a T>::DEFAULT;
+/// }
+/// quasiconst!{
+///     // The macro parses defaulted const parameters, but they're not supported by Rust yet.
+///     pub const CONST_GEN<const N: usize>: [u128; N] = {
+///         let mut array = [1u128; N];
+///         let mut i = 1;
+///         while i < array.len() {
+///             array[i] += array[i - 1] + i as u128;
+///             i += 1;
+///         }
+///         array
+///     };
+/// }
+/// 
+/// ```
+/// 
+/// ### Older syntax
+/// 
+/// This is the older (but equally supported) syntax for generic parameters and
+/// where clauses, using `[]` for both of them.
+/// 
+#[cfg_attr(not(all(feature = "const_default", feature = "rust_1_51")), doc = " ```ignore")]
+#[cfg_attr(all(feature = "const_default", feature = "rust_1_51"), doc = " ```rust")]
 /// use core_extensions::{ConstDefault, getconst, quasiconst};
 /// 
 /// assert_eq!(getconst!(REFD<'static>), "");
@@ -206,34 +247,51 @@ macro_rules! getconst {
 #[macro_export]
 macro_rules! quasiconst {
     (
-        $(
-            $(#[$attr:meta])*
-            $vis:vis const $ident:ident
-            $( [$($generic_params:tt)*] )? 
-            : $ty: ty
-            $(where [$($constraints:tt)*] )?
-            = $value:expr
-        );*
-        $(;)?
+        $(#[$attr:meta])*
+        $vis:vis const $ident:ident
+        $( [$($generic_params:tt)*] )? 
+        : $ty: ty
+        $(where [$($constraints:tt)*] )?
+        = $value:expr
+        $(; $($rem:tt)* )?
     ) => {
-        $(
-            $crate::parse_generics!{
-                $crate::__declare_const_inner!{
-                    (
-                        $(#[$attr])*,
-                        $vis,
-                        $ident,
-                        $ty,
-                        [$($($constraints)*)?],
-                        $value,
-                        concat!("Cosntructs a `", stringify!($ident), "` (the type)"),
-                    )
-                }
-
-                ($($($generic_params)*)?)
+        $crate::parse_generics!{
+            $crate::__declare_const_inner!{
+                (
+                    $(#[$attr])*,
+                    $vis,
+                    $ident,
+                    $ty,
+                    [$($($constraints)*)?],
+                    $value,
+                    concat!("Cosntructs a `", stringify!($ident), "` (the type)"),
+                )
             }
-        )*
+
+            ($($($generic_params)*)?)
+        }
+
+        $($crate::quasiconst!{ $($rem)* })?
     };
+    (
+        $(#[$attr:meta])*
+        $vis:vis const $ident:ident<
+        $($rem:tt)*
+    ) => {
+        $crate::parse_generics_and_where_clause!{
+            $crate::__declare_const_angle_inner!{
+                (
+                    $(#[$attr])*,
+                    $vis,
+                    $ident,
+                    concat!("Cosntructs a `", stringify!($ident), "` (the type)"),
+                )
+            }
+            
+            ($($rem)*)
+        }
+    };
+    ($(;)?)=>{};
 }
 
 
@@ -281,3 +339,49 @@ macro_rules! __declare_const_inner {
         }
     };
 }
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __declare_const_angle_inner {
+    (
+        (
+            $(#[$attr:meta])*,
+            $vis:vis,
+            $ident:ident,
+            $new_doc:expr,
+        )
+        $struct_params:tt
+        $impl_params:tt
+        $impl_args:tt
+        $phantoms:tt
+        (: $ty: ty)
+        ($($where:tt)*)
+        (= $value:expr $(; $($($more:tt)+)? )? )
+    ) => {
+
+        $crate::__declare_const_inner!{
+            (
+                $(#[$attr])*,
+                $vis,
+                $ident,
+                $ty,
+                [$($where)*],
+                $value,
+                $new_doc,
+            )
+            $struct_params
+            $impl_params
+            $impl_args
+            $phantoms
+        }
+
+        $($(
+            quasiconst!{
+                $($more)*
+            }
+        )?)?
+    }
+}
+
+

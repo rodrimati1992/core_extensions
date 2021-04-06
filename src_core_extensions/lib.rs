@@ -445,9 +445,9 @@ pub use self::void::Void;
 #[doc(hidden)]
 pub mod __ {
     pub use std_::marker::PhantomData as PD;
+    pub use std_::compile_error;
     
     #[cfg(feature = "enable_proc_macro_crate")]
-    pub use core_extensions_proc_macros::__priv_remove_non_delimiter;
+    pub use core_extensions_proc_macros::{__priv_remove_non_delimiter, __priv_split_generics};
 }
-
 
