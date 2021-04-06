@@ -43,9 +43,7 @@ pub fn __priv_remove_non_delimiter(
 
     loop{
         match iter.next().expect("__priv_remove_non_delimiter expected more tokens") {
-            TokenTree::Group(group) => {
-                assert_ne!(group.delimiter(), Delimiter::None);
-
+            TokenTree::Group(group) if group.delimiter() != Delimiter::None => {
                 let mut args = group.stream();
 
                 args.extend(once(TokenTree::Group(Group::new(Delimiter::Parenthesis, ty))));
@@ -165,9 +163,7 @@ fn split_generics(input_tokens: TokenStream) -> TokenStream {
             .next()
             .expect("__priv_remove_non_delimiter expected more tokens")
         {
-            TokenTree::Group(group) => {
-                assert_ne!(group.delimiter(), Delimiter::None);
-
+            TokenTree::Group(group) if group.delimiter() != Delimiter::None => {
                 let mut args = group.stream();
 
                 args.extend(once(parenthesize_token_stream(generics)));

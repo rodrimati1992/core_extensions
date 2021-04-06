@@ -38,7 +38,7 @@
 //! 
 //! 
 //! quasiconst!{
-//!     pub const VTABLE[T: Debug]: &'static Vtable = &Vtable {
+//!     pub const VTABLE<T: Debug>: &'static Vtable = &Vtable {
 //!         size: std::mem::size_of::<T>(),
 //!         align: std::mem::align_of::<T>(),
 //!         drop: drop_erased::<T>,

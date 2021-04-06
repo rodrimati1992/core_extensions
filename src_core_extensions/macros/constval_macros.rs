@@ -275,7 +275,7 @@ macro_rules! quasiconst {
     };
     (
         $(#[$attr:meta])*
-        $vis:vis const $ident:ident<
+        $vis:vis const $ident:ident
         $($rem:tt)*
     ) => {
         $crate::parse_generics_and_where_clause!{

@@ -1,17 +1,118 @@
+/// For writing macros that parse item definitions, while treating generics opaquely.
+/// 
+/// # Examples
+/// 
+/// ### Parsing a function
+/// 
+/// This demonstrates how you can parse a function.
+/// 
+/// ```rust
+/// use core_extensions::split_generics;
+/// 
+/// use std::ops::Mul;
+/// 
+/// crate::inject_increment! {
+///     pub fn square(x: u32) -> u32 {
+///         x * x
+///     }
+/// }
+/// crate::inject_increment! {
+///     pub unsafe fn cube<T>(x: T) -> T 
+///     where
+///         T: Mul<Output = T> + Copy
+///     {
+///         x * x * x
+///     }
+/// }
+/// fn main() {
+///     assert_eq!(get_count(), 0);
+///
+///     assert_eq!(square(3), 9);
+///     assert_eq!(get_count(), 1);
+///
+///     assert_eq!(unsafe{ cube(5) }, 125);
+///     assert_eq!(get_count(), 2);
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! inject_increment {
+///     (
+///         $(#[$attr:meta])*
+///         $vis:vis 
+///         $(unsafe $(@$unsafe:tt@)?)?
+///         fn $name:ident $($rem:tt)*
+///     ) => {
+///         split_generics!{
+///             $crate::__priv_inject_increment! {
+///                 $(#[$attr])*
+///                 $vis,
+///                 ($(unsafe $(@$unsafe@)?)?)
+///                 fn $name
+///             }
+///             ($($rem)*)
+///         }
+///     }
+/// }
+/// 
+/// #[doc(hidden)]
+/// #[macro_export]
+/// macro_rules! __priv_inject_increment{
+///     (
+///         $(#[$attr:meta])*
+///         $vis:vis,
+///         ($($unsafe:tt)?)
+///         fn $name:ident 
+///         ( $($generics:tt)* )
+///         ( ($($fn_params:tt)*) $( -> $ret_ty:ty )? )
+///         ( $($where_preds:tt)* )
+///         ( { $($code:tt)* } )
+///     ) => {
+///         $(#[$attr])*
+///         $vis
+///         $($unsafe)?
+///         fn $name< $($generics)* > ( $($fn_params)* ) $( -> $ret_ty )? 
+///         where $($where_preds)*
+///         {
+///             $crate::increment_count();
+///             $($code)* 
+///         }
+///     }
+/// }
+/// 
+/// use std::sync::atomic::{AtomicU64, Ordering as AtomOrd};
+/// 
+/// pub static COUNT: AtomicU64 = AtomicU64::new(0);
+/// 
+/// fn increment_count() {
+///     COUNT.fetch_add(1, AtomOrd::Relaxed);
+/// }
+/// 
+/// fn get_count() -> u64 {
+///     COUNT.load(AtomOrd::Relaxed)
+/// }
+/// ```
 /// 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
 #[macro_export]
 macro_rules! split_generics {
     (
         $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* !{$($prefix:tt)*}
-        ($($generics:tt)*)
+        (<$($generics:tt)*)
     ) => {
         $crate::__::__priv_split_generics!{
             ($($generics)*)
 
-            $crate::parse_generics!{
-                $(:: $(@$leading@)? )? $first $(:: $trailing)*! {$($prefix)*}
-            }
+            $(:: $(@$leading@)? )? $first $(:: $trailing)* ! {$($prefix)*}
+        }
+    };
+    (
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* !{$($prefix:tt)*}
+        ($($generics:tt)*)
+    ) => {
+        $crate::__::__priv_split_generics!{
+            (> $($generics)*)
+
+            $(:: $(@$leading@)? )? $first $(:: $trailing)* ! {$($prefix)*}
         }
     };
 }
@@ -24,10 +125,23 @@ macro_rules! parse_generics_and_where_clause {
     (
         $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* !{$($prefix:tt)*}
 
-        ($($generics:tt)*)
+        (<$($generics:tt)*)
     ) => {
         $crate::__::__priv_split_generics!{
             ($($generics)*)
+
+            $crate::__psg_unparsed_generics!{
+                ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! {$($prefix)*}
+            }
+        }
+    };
+    (
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* !{$($prefix:tt)*}
+
+        ($($tokens:tt)*)
+    ) => {
+        $crate::__::__priv_split_generics!{
+            (> $($tokens)*)
 
             $crate::__psg_unparsed_generics!{
                 ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! {$($prefix)*}
