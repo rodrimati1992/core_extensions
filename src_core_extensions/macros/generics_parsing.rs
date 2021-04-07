@@ -4,17 +4,24 @@
 /// 
 /// ### Basic
 /// 
+/// Basic example of using this macro, and what it passes to a callback macro.
+/// 
 /// ```rust
 /// use core_extensions::split_generics_and_where;
 /// 
+/// fn main() {
+///     assert_eq!(hello(), "world")
+/// }
+/// 
+/// // `split_generics_and_where` calls `crate::foo` here
 /// split_generics_and_where! {
 ///     crate::foo!{ 
 ///         // The first tokens passed to the `crate::foo` macro
-///         hello world foo bar 
+///         hello "world" foo bar 
 ///     }
 ///     
-///     // The parsed tokens
 ///     (
+///         // The parsed tokens
 ///         <'a, T: Foo, const N: usize> (param: Type) -> u32 
 ///         where
 ///             T: Bar,
@@ -25,15 +32,17 @@
 /// #[macro_export]
 /// macro_rules! foo {
 ///     (
-///         hello world foo bar
+///         $fn_name:ident $string:literal foo bar
 ///         ('a, T: Foo, const N: usize) // the generic parameters
 ///         ((param: Type) -> u32 )      // before the where clause
 ///         (T: Bar,)                    // inside the where clause
 ///         ( { println } )              // after the where clause
-///     ) => {};
+///     ) => {
+///         fn $fn_name() -> &'static str {
+///             $string
+///         }
+///     };
 /// }
-/// 
-/// # fn main(){}
 /// ```
 /// 
 /// ### Parsing a function
@@ -51,7 +60,7 @@
 ///     }
 /// }
 /// crate::inject_increment! {
-///     pub unsafe fn cube<T>(x: T) -> T 
+///     pub(crate) unsafe fn cube<T>(x: T) -> T 
 ///     where
 ///         T: Mul<Output = T> + Copy
 ///     {
@@ -142,8 +151,157 @@ macro_rules! split_generics_and_where {
 }
 
 
-/// Like [`split_generics_and_where`](./macro.split_generics_and_where.html),
-/// but also transforms the generic parameters into a format usable in all places.
+/// For writing macros that parse item definitions.
+/// This also parses generics for using in all syntactic locations they're usable in.
+/// 
+/// # Examples
+/// 
+/// ### Basic
+/// 
+/// Basic example the syntax this macro expects and passes to a callback macro.
+/// 
+/// For a more realistic example you can look [at the one below](#realistic-example)
+/// 
+/// ```rust
+/// use core_extensions::parse_generics_and_where;
+/// 
+/// fn main() {
+///     assert_eq!(hello(), "world")
+/// }
+/// 
+/// // `parse_generics_and_where` calls `crate::foo` here
+/// parse_generics_and_where! {
+///     crate::foo!{ 
+///         // The first tokens passed to the `crate::foo` macro
+///         hello "world" foo bar 
+///     }
+///     
+///     (
+///         // The parsed tokens, in this case it's for a tuple struct.
+///         <'a, T: Foo = A, const N: usize>
+///         (Foo, Bar, Baz)
+///         where
+///             T: Bar;
+///     )
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! foo {
+///     (
+///         $fn_name:ident $string:literal foo bar
+///
+///         // generics for use in type/trait declarations
+///         ('a, T: Foo = $default_ty:ty, const N: $const_ty0:ty,)
+///
+///         // generics for use in `impl<...>`, and function`declarations
+///         ('a, T: Foo, const N: $const_ty1:ty,)
+///
+///         // generics for use in generic arguments
+///         ('a, T, N,)
+///
+///         // `PhantomData` type that uses all lifetimes and types
+///         ($phantom:ty)
+///
+///         ((Foo, Bar, Baz))            // before the where clause
+///         (T: Bar)                     // inside the where clause
+///         ( ; )                        // after the where clause
+///     ) => {
+///         fn $fn_name() -> &'static str {
+///             $string
+///         }
+///     };
+/// }
+/// ```
+/// 
+/// <div id = "realistic-example"> </div>
+///
+/// ### Struct constructor
+/// 
+/// This demonstrates how you can parse a generic struct, to make a constructor function for it.
+/// 
+/// ```rust
+/// use core_extensions::parse_generics_and_where;
+/// 
+/// with_constructor! {
+///     /// This is Foo
+///     #[derive(Debug, PartialEq)]
+///     pub struct Foo<T = u32> 
+///     where
+///         T: Copy,    
+///     {
+///         foo: T,
+///         bar: [T; 2],
+///     }
+/// }
+/// 
+/// 
+/// fn main() {
+///     let bar: Foo = Foo::new(3, [5, 8]);
+///     assert_eq!(bar, Foo{foo: 3, bar: [5, 8]});
+/// 
+///     let baz: Foo<&'static str> = Foo::new("13", ["21", "34"]);
+///     assert_eq!(baz, Foo{foo: "13", bar: ["21", "34"]});
+/// }
+/// 
+/// 
+/// #[macro_export]
+/// macro_rules! with_constructor {
+///     (
+///         $(#[$attr:meta])*
+///         $vis:vis
+///         struct $struct_name:ident $($remaining:tt)*
+///     ) => {
+///         parse_generics_and_where!{
+///             $crate::__priv_with_constructor! {
+///                 $(#[$attr])*
+///                 $vis,
+///                 $struct_name,
+///             }
+///             ($($remaining)*)
+///         }
+///     }
+/// }
+/// 
+/// #[doc(hidden)]
+/// #[macro_export]
+/// macro_rules! __priv_with_constructor {
+///     (
+///         $(#[$attr:meta])*
+///         $vis:vis,
+///         $struct_name:ident,
+///         
+///         ($($struct_generics:tt)*)
+///         ($($impl_gen:tt)*)
+///         ($($gen_args:tt)*)
+///         $phantom:tt
+///         (/* if this was a tuple struct, it'd get passed the fields here */)
+///         ($($where:tt)*)
+///         ({
+///             $(
+///                 $(#[$fattr:meta])* $fvis:vis $fname:ident : $fty:ty ,
+///             )*
+///         })
+///     ) => {
+///         $(#[$attr])*
+///         $vis struct $struct_name <$($struct_generics)*>
+///         where $($where)*
+///         {$(
+///             $(#[$fattr])* $fvis $fname : $fty ,
+///         )*}
+///         
+///         impl<$($impl_gen)*> $struct_name<$($gen_args)*>
+///         where
+///             $($where)*
+///         {
+///             $vis fn new($($fname: $fty),*) -> Self {
+///                 Self{ $($fname),* }
+///             }
+///         }
+///     }
+/// }
+/// 
+/// ```
+/// 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
 #[macro_export]
 macro_rules! parse_generics_and_where {

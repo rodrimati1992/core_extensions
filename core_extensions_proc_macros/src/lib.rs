@@ -11,7 +11,7 @@ extern crate alloc;
 #[cfg(test)]
 extern crate std;
 
-use used_proc_macro::{Delimiter, Group, Spacing, TokenStream, TokenTree};
+use used_proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 
 use used_proc_macro::token_stream::IntoIter;
 
@@ -66,16 +66,25 @@ fn split_generics(input_tokens: TokenStream) -> TokenStream {
     let mut curr_joint = false;
     let mut prev_joint;
     let mut depth = 0;
+    let mut last_span = Span::call_site();
 
     let mut generics = TokenStream::new();
+    let mut generics_span = Span::call_site();
+
     let mut after_generics = TokenStream::new();
+    let mut after_generics_span = Span::call_site();
+
     let mut where_clause = TokenStream::new();
+    let mut where_clause_span = Span::call_site();
+    
     let mut after_where = TokenStream::new();
+    let after_where_span;
 
     let mut input = input.into_iter().peekable();
 
     macro_rules! match_tt {
         ($tt:ident, $($e:expr)? , $on_too_many_gt:expr ) => {
+            last_span = $tt.span();
             prev_joint = curr_joint;
             curr_joint = false;
             if let TokenTree::Punct(punct) = &$tt {
@@ -110,6 +119,7 @@ fn split_generics(input_tokens: TokenStream) -> TokenStream {
 
             generics.extend(once(tt));
         }
+        generics_span = last_span;
     }
     
 
@@ -121,6 +131,7 @@ fn split_generics(input_tokens: TokenStream) -> TokenStream {
                 tt, match &tt {
                     TokenTree::Ident(ident) if ident.to_string() == "where" => {
                         output = &mut where_clause;
+                        after_generics_span = last_span;
                         continue;
                     }
                     TokenTree::Punct(punct) if {
@@ -140,20 +151,29 @@ fn split_generics(input_tokens: TokenStream) -> TokenStream {
             }
             output.extend(once(tt));
         }
+
+        where_clause_span = last_span;
     }
 
-    after_where.extend(input);
+    for tt in input {
+        last_span = tt.span();
+        after_where.extend(once(tt));
+    }
+    after_where_span = last_span;
+
 
     parse_path_and_args("__priv_split_generics", &mut iter, |args| {
-        args.extend(once(parenthesize_token_stream(generics)));
-        args.extend(once(parenthesize_token_stream(after_generics)));
-        args.extend(once(parenthesize_token_stream(where_clause)));
-        args.extend(once(parenthesize_token_stream(after_where)));
+        args.extend(once(parenthesize_ts(generics, generics_span)));
+        args.extend(once(parenthesize_ts(after_generics, after_generics_span)));
+        args.extend(once(parenthesize_ts(where_clause, where_clause_span)));
+        args.extend(once(parenthesize_ts(after_where, after_where_span)));
     })
 }
 
-fn parenthesize_token_stream(ts: TokenStream) -> TokenTree {
-    TokenTree::Group(Group::new(Delimiter::Parenthesis, ts))
+fn parenthesize_ts(ts: TokenStream, span: Span) -> TokenTree {
+    let mut group = Group::new(Delimiter::Parenthesis, ts);
+    group.set_span(span);
+    TokenTree::Group(group)
 }
 
 
@@ -181,7 +201,9 @@ where
 
                 f(&mut args);
 
-                out.extend(once(TokenTree::Group(Group::new(group.delimiter(), args))));
+                let mut args = TokenTree::Group(Group::new(group.delimiter(), args));
+                args.set_span(group.span());
+                out.extend(once(args));
 
                 return out;
             }
