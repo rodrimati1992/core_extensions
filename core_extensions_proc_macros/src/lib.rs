@@ -1,19 +1,24 @@
 #![no_std]
 
+extern crate proc_macro;
+
 #[cfg(not(test))]
-extern crate proc_macro as used_proc_macro;
+use proc_macro as used_proc_macro;
 
 #[cfg(test)]
-extern crate proc_macro2 as used_proc_macro;
+extern crate proc_macro2;
+
+#[cfg(test)]
+use proc_macro2 as used_proc_macro;
 
 extern crate alloc;
 
 #[cfg(test)]
 extern crate std;
 
-use used_proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
+use crate::used_proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
 
-use used_proc_macro::token_stream::IntoIter;
+use crate::used_proc_macro::token_stream::IntoIter;
 
 use core::iter::once;
 
