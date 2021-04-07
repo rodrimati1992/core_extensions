@@ -156,13 +156,13 @@ macro_rules! split_generics_and_where {
 
 
 /// For writing macros that parse item definitions.
-/// This also parses generics for using in all syntactic locations they're usable in.
+/// This also parses generics for using them in all syntactic locations they're usable in.
 /// 
 /// # Examples
 /// 
 /// ### Basic
 /// 
-/// Basic example the syntax this macro expects and passes to a callback macro.
+/// Basic example of the syntax this macro expects and passes to a callback macro.
 /// 
 /// For a more realistic example you can look [at the one below](#realistic-example)
 /// 
@@ -388,7 +388,7 @@ macro_rules! __psg_parsed_generics {
 /// 
 /// ### Basic
 /// 
-/// Basic example the syntax this macro expects and passes to a callback macro.
+/// Basic example of the syntax this macro expects and passes to a callback macro.
 /// 
 /// ```rust
 /// use core_extensions::parse_generics;
@@ -434,6 +434,7 @@ macro_rules! __psg_parsed_generics {
 /// }
 /// ```
 /// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
 #[macro_export]
 macro_rules! parse_generics {
     (

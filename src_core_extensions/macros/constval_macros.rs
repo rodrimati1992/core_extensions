@@ -117,6 +117,8 @@ macro_rules! getconst {
 /// 
 /// quasiconst!{ const NONE<T>: Option<T> = None }
 /// 
+/// # fn main() {
+/// 
 /// // `getconst` is the unambiguous way to get the constant
 /// assert_eq!([getconst!(NONE<String>); 4], [None, None, None, None]);
 ///
@@ -125,6 +127,8 @@ macro_rules! getconst {
 /// // I get worse compiler errors with `::VAL` than with `getconst`
 /// // when the bounds of the generic constant aren't satisfied.
 /// assert_eq!([NONE::<u8>::VAL; 4], [None, None, None, None]);
+/// 
+/// # }
 /// 
 /// ```
 /// 
