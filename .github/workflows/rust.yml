@@ -25,11 +25,16 @@ jobs:
       run: |
         rustup override set ${{ matrix.rust }}
         cargo -V
+        cd "${{github.workspace}}/core_extensions_proc_macros"
+        cargo test
+
+        cd "${{github.workspace}}/"
         cargo test --no-default-features --features "${{ env.rust146 }} std bools"
         cargo test --no-default-features --features "${{ env.rust146 }} std callable"
         cargo test --no-default-features --features "${{ env.rust146 }} std collections"
         cargo test --no-default-features --features "${{ env.rust146 }} std const_default"
         cargo test --no-default-features --features "${{ env.rust146 }} std const_val"
+        cargo test --no-default-features --features "${{ env.rust146 }} std generics_parsing"
         cargo test --no-default-features --features "${{ env.rust146 }} std integers"
         cargo test --no-default-features --features "${{ env.rust146 }} std iterators"
         cargo test --no-default-features --features "${{ env.rust146 }} std marker_type"

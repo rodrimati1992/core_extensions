@@ -42,7 +42,7 @@ use std::fmt::{self, Debug};
 
 
 quasiconst!{
-    pub const VTABLE[T: Debug]: &'static Vtable = &Vtable {
+    pub const VTABLE<T: Debug>: &'static Vtable = &Vtable {
         size: std::mem::size_of::<T>(),
         align: std::mem::align_of::<T>(),
         drop: drop_erased::<T>,
@@ -117,7 +117,12 @@ Enables the [`ConstDefault`] trait, and [`const_default`] macro, for a `const` e
 Enables the [`ConstVal`] trait (for types that represent constants), 
 [`getconst`] macro (for getting the [`ConstVal::VAL`] associated constant),
 and [`quasiconst`] macro (for declaring types that emulate generic constants).
+Enables the `"generics_parsing"` feature.
 
+- `"generics_parsing"`: 
+Enables the [`parse_generics`], [`parse_generics_and_where`], and 
+[`split_generics_and_where`] macros.
+These allow macros to parse items with generic parameters.
 
 - `"integers"`: Enables the [`integers`] module, with extension traits for integer types.
 
@@ -215,6 +220,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [`transparent_newtype`]: https://docs.rs/core_extensions/1.*/core_extensions/transparent_newtype/index.html
 [`type_asserts`]: https://docs.rs/core_extensions/1.*/core_extensions/type_asserts/index.html
 [`type_level_bool`]: https://docs.rs/core_extensions/1.*/core_extensions/type_level_bool/index.html
+
+[`parse_generics`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_generics.html
+[`parse_generics_and_where`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_generics_and_where.html
+[`split_generics_and_where`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.split_generics_and_where.html
 
 [`BoolExt`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.BoolExt.html
 [`ConstDefault`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.ConstDefault.html

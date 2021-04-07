@@ -38,7 +38,7 @@
 //! 
 //! 
 //! quasiconst!{
-//!     pub const VTABLE[T: Debug]: &'static Vtable = &Vtable {
+//!     pub const VTABLE<T: Debug>: &'static Vtable = &Vtable {
 //!         size: std::mem::size_of::<T>(),
 //!         align: std::mem::align_of::<T>(),
 //!         drop: drop_erased::<T>,
@@ -115,7 +115,12 @@
 //! Enables the [`ConstVal`] trait (for types that represent constants), 
 //! [`getconst`] macro (for getting the [`ConstVal::VAL`] associated constant),
 //! and [`quasiconst`] macro (for declaring types that emulate generic constants).
-//! 
+//! Enables the `"generics_parsing"` feature.
+//!
+//! - `"generics_parsing"`: 
+//! Enables the [`parse_generics`], [`parse_generics_and_where`], and 
+//! [`split_generics_and_where`] macros.
+//! These allow macros to parse items with generic parameters.
 //!
 //! - `"integers"`: Enables the [`integers`] module, with extension traits for integer types.
 //!
@@ -199,6 +204,10 @@
 //! [`transparent_newtype`]: ./transparent_newtype/index.html
 //! [`type_asserts`]: ./type_asserts/index.html
 //! [`type_level_bool`]: ./type_level_bool/index.html
+//!
+//! [`parse_generics`]: ./macro.parse_generics.html
+//! [`parse_generics_and_where`]: ./macro.parse_generics_and_where.html
+//! [`split_generics_and_where`]: ./macro.split_generics_and_where.html
 //!
 //! [`BoolExt`]: ./trait.BoolExt.html
 //! [`ConstDefault`]: ./trait.ConstDefault.html
@@ -445,9 +454,9 @@ pub use self::void::Void;
 #[doc(hidden)]
 pub mod __ {
     pub use std_::marker::PhantomData as PD;
+    pub use std_::compile_error;
     
     #[cfg(feature = "enable_proc_macro_crate")]
-    pub use core_extensions_proc_macros::__priv_remove_non_delimiter;
+    pub use core_extensions_proc_macros::{__priv_remove_non_delimiter, __priv_split_generics};
 }
-
 

@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "1.0.1"
+version = "1.1.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="Extensions for core/std library types, and other miscelaneous features."
 license="MIT/Apache-2.0"
@@ -28,6 +28,7 @@ all_items = [
     "collections",
     "const_default",
     "const_val",
+    "generics_parsing",
     "integers",
     "iterators",
     "marker_type",
@@ -53,7 +54,8 @@ bools=["type_identity"]
 callable=[]
 collections=[]
 const_default=[]
-const_val=["enable_proc_macro_crate"]
+const_val=["enable_proc_macro_crate", "generics_parsing"]
+generics_parsing=["enable_proc_macro_crate"]
 integers=[]
 iterators=[]
 marker_type=[]
@@ -89,7 +91,7 @@ default-features = false
 optional = true
 
 [dependencies.core_extensions_proc_macros]
-version = "=1.0.0"
+version = "=1.1.0"
 path = "./core_extensions_proc_macros"
 optional = true
 

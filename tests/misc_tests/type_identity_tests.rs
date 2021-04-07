@@ -1,4 +1,4 @@
-use core_extensions::TypeIdentity;
+use krate::TypeIdentity;
 
 #[test]
 fn test_core() {

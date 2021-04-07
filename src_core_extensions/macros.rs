@@ -18,6 +18,9 @@ mod matches_macro;
 #[cfg(feature = "phantom")]
 pub mod phantomdata;
 
+#[cfg(feature = "generics_parsing")]
+pub mod generics_parsing;
+
 #[macro_use]
 #[cfg(feature = "transparent_newtype")]
 pub mod transparent_newtype_macros;
