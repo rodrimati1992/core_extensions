@@ -6,6 +6,8 @@
 /// 
 /// Basic example of using this macro, and what it passes to a callback macro.
 /// 
+/// For a more realistic example you can look [at the one below](#realistic-example)
+/// 
 /// ```rust
 /// use core_extensions::split_generics_and_where;
 /// 
@@ -44,6 +46,8 @@
 ///     };
 /// }
 /// ```
+/// 
+/// <div id = "realistic-example"> </div>
 /// 
 /// ### Parsing a function
 /// 
@@ -377,6 +381,59 @@ macro_rules! __psg_parsed_generics {
 
 
 /// Parses a list of generic parameters, and passes them to a macro.
+/// 
+/// This would be used by macros when they take generic parameters inside `()`, `[]`, or`{}`.
+/// 
+/// # Examples
+/// 
+/// ### Basic
+/// 
+/// Basic example the syntax this macro expects and passes to a callback macro.
+/// 
+/// ```rust
+/// use core_extensions::parse_generics;
+/// 
+/// fn main() {
+///     assert_eq!(hello(), "world")
+/// }
+/// 
+/// // `parse_generics` calls `crate::foo` here
+/// parse_generics! {
+///     crate::foo!{ 
+///         // The first tokens passed to the `crate::foo` macro
+///         hello "world" foo bar 
+///     }
+///     
+///     (
+///         // The parsed tokens
+///         'a, T: Foo = A, const N: usize
+///     )
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! foo {
+///     (
+///         $fn_name:ident $string:literal foo bar
+///
+///         // generics for use in type/trait declarations
+///         ('a, T: Foo = $default_ty:ty, const N: $const_ty0:ty,)
+///
+///         // generics for use in `impl<...>`, and function`declarations
+///         ('a, T: Foo, const N: $const_ty1:ty,)
+///
+///         // generics for use in generic arguments
+///         ('a, T, N,)
+///
+///         // `PhantomData` type that uses all lifetimes and types
+///         ($phantom:ty)
+///     ) => {
+///         fn $fn_name() -> &'static str {
+///             $string
+///         }
+///     };
+/// }
+/// ```
+/// 
 #[macro_export]
 macro_rules! parse_generics {
     (
