@@ -4,6 +4,15 @@ This started being written for the 0.1.19 release, it doesn't cover versions pri
 
 # 1.0
 
+### 1.1.0
+
+Added `parse_generics`, `parse_generics_and_where`, and `split_generics_and_where` macros under the new `"generics_parsing"` feature.
+
+Added new syntax for `quasiconst`, which uses `<....>` for generic parameters (instead of `[....]`), and does not require `[....]` for where clauses. Looking like generic constants would look in Rust.
+
+
+### 1.0.0
+
 Rewrote `TransparentNewtype` to be more resilient to soundness issues, adding methods for casting raw pointers between the newtype and the wrapped type, moving all its previous methods to `TransparentNewtypeExt`.
 
 Added `TransparentNewtypeExt`, which now has all the methods for
