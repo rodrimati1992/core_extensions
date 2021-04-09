@@ -29,6 +29,8 @@ all_items = [
     "const_default",
     "const_val",
     "generics_parsing",
+    "item_parsing",
+    "macro_utils",
     "integers",
     "iterators",
     "marker_type",
@@ -55,7 +57,9 @@ callable=[]
 collections=[]
 const_default=[]
 const_val=["enable_proc_macro_crate", "generics_parsing"]
+macro_utils=["enable_proc_macro_crate", "core_extensions_proc_macros/macro_utils"]
 generics_parsing=["enable_proc_macro_crate"]
+item_parsing=["generics_parsing", "macro_utils", "core_extensions_proc_macros/item_parsing"]
 integers=[]
 iterators=[]
 marker_type=[]

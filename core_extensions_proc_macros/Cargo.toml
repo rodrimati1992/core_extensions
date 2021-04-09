@@ -17,6 +17,7 @@ include = [
 
 [features]
 item_parsing = []
+macro_utils = []
 
 [dev-dependencies.proc-macro2]
 version = "1.0.19"

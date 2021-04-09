@@ -1,13 +1,27 @@
 use crate::used_proc_macro::{
     token_stream::IntoIter,
-    Delimiter, Ident, Group, Spacing, Span, TokenStream, TokenTree
+    Delimiter, Ident, Group, Span, TokenStream, TokenTree
 };
 
 
 use core::iter::once;
 
-use alloc::string::ToString;
-
+// Parse the arguments that were passed in parenthesized arguments
+pub(crate) fn parse_paren_args(tt: &TokenTree) -> TokenStream {
+    match tt {
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
+            let stream = group.stream();
+            let mut iter = stream.clone().into_iter();
+            match (iter.next(), iter.next()) {
+                (Some(TokenTree::Group(group)), None) if group.delimiter() == Delimiter::None => {
+                    group.stream()
+                }
+                _ => stream,
+            }
+        }
+        x => panic!("Expected a parentheses-delimited group, found:\n{}", x),
+    }
+}
 
 pub(crate) fn parenthesize_ts(ts: TokenStream, span: Span) -> TokenTree {
     let mut group = Group::new(Delimiter::Parenthesis, ts);
@@ -19,6 +33,7 @@ pub(crate) fn out_parenthesized(ts: TokenStream, span: Span, out: &mut TokenStre
     out.extend(once(parenthesize_ts(ts, span)));
 }
 
+#[allow(dead_code)]
 pub(crate) fn out_ident(value: &str, span: Span, out: &mut TokenStream) {
     let ident = Ident::new(value, span);
     out.extend(once(TokenTree::Ident(ident)));

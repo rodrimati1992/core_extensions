@@ -16,16 +16,9 @@ extern crate alloc;
 #[cfg(test)]
 extern crate std;
 
-use crate::used_proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
+use crate::used_proc_macro::{Delimiter, Group, Span, TokenStream, TokenTree};
 
-use crate::used_proc_macro::token_stream::IntoIter;
-
-use core::{
-    iter::once,
-    mem,
-};
-
-use alloc::string::ToString;
+use core::iter::once;
 
 #[cfg(test)]
 mod tests;
@@ -33,6 +26,9 @@ mod tests;
 mod parsing_shared;
 
 mod splitting_generics;
+
+#[cfg(feature = "macro_utils")]
+mod macro_utils;
 
 #[cfg(feature = "item_parsing")]
 mod item_parsing;
@@ -61,12 +57,22 @@ pub fn __priv_remove_non_delimiter(
 }
 
 
+#[cfg(feature = "macro_utils")]
+#[doc(hidden)]
+#[proc_macro]
+pub fn __priv_rewrap_opaque(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let out = macro_utils::rewrap_opaque(input_tokens.into());
+    // panic!("{}", out);
+    out.into()
+}
+
+
+
 #[doc(hidden)]
 #[proc_macro]
 pub fn __priv_split_generics(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
     split_generics(input_tokens.into()).into()
 }
-
 
 fn split_generics(input: TokenStream) -> TokenStream {
     use crate::{

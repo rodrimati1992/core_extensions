@@ -1,9 +1,9 @@
 use crate::{
     used_proc_macro::{
         token_stream::IntoIter,
-        Delimiter, Group, Spacing, Span, TokenStream, TokenTree
+        Delimiter, Spacing, Span, TokenStream, TokenTree
     },
-    parsing_shared::{out_parenthesized, parse_path_and_args},
+    parsing_shared::{out_parenthesized, parse_paren_args, parse_path_and_args},
     mmatches,
 };
 
@@ -46,12 +46,7 @@ impl SplitGenerics {
 
         let parsed_tt = input_tokens.next().expect("skip_generics expected more tokens");
 
-        let parsing = match &parsed_tt {
-            TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
-                group.stream()
-            }
-            x => panic!("Expected a parentheses-delimited group, found:\n{}", x),
-        };
+        let parsing = parse_paren_args(&parsed_tt);
 
         Self {
             input_tokens,
@@ -70,18 +65,22 @@ impl SplitGenerics {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn curr_is_joint(&self) -> bool {
         self.curr_is_joint
     }
 
+    #[allow(dead_code)]
     pub(crate) fn prev_is_joint(&self) -> bool {
         self.prev_is_joint
     }
 
+    #[allow(dead_code)]
     pub(crate) fn depth(&self) -> u32 {
         self.depth
     }
 
+    #[allow(dead_code)]
     pub(crate) fn last_span(&self) -> Span {
         self.last_span
     }
