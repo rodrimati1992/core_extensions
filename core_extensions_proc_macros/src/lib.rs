@@ -34,6 +34,10 @@ mod parsing_shared;
 
 mod splitting_generics;
 
+#[cfg(feature = "item_parsing")]
+mod item_parsing;
+
+
 #[doc(hidden)]
 #[proc_macro]
 pub fn __priv_remove_non_delimiter(
@@ -70,7 +74,7 @@ fn split_generics(input: TokenStream) -> TokenStream {
         splitting_generics::{PostGenericsParser, SplitGenerics}
     };
 
-    pub(crate) struct UnparsedPostGenerics {
+    struct UnparsedPostGenerics {
         output: TokenStream,
         output_span: Span,
     }
@@ -90,6 +94,16 @@ fn split_generics(input: TokenStream) -> TokenStream {
         output_span: Span::call_site(),
     })
 }
+
+#[cfg(feature = "item_parsing")]
+#[doc(hidden)]
+#[proc_macro]
+pub fn __priv_split_impl(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    crate::item_parsing::split_impl(input_tokens.into()).into()
+}
+
+
+
 
 
 // MSRV is 1.41.0, matches was stabilized in 1.42.0

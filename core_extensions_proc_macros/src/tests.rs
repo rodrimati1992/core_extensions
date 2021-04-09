@@ -3,7 +3,7 @@ use crate::split_generics;
 use alloc::string::{String, ToString};
 
 
-const CASES: &[(&str, &str)] = &[
+const SPLIT_GENERICS_CASES: &[(&str, &str)] = &[
     (
         r#"(<'a, T: Foo<X=Y>, const X: u32> (x: u32) {}) foo!()"#,
         r#"foo!(('a, T: Foo<X=Y>, const X: u32) ((x: u32)) () ({}))"#,
@@ -78,8 +78,57 @@ const CASES: &[(&str, &str)] = &[
 
 #[test]
 fn split_generics_tests() {
-    for (input, expected) in CASES {
+    for (input, expected) in SPLIT_GENERICS_CASES {
         let string = remove_whitespaces(&split_generics(input.parse().unwrap()).to_string());
+        let expected = remove_whitespaces(expected);
+
+        assert_eq!(string, expected, "\ninput   : {}\nexpected: {}", input, expected);
+    }
+}
+
+
+#[cfg(feature = "item_parsing")]
+const SPLIT_IMPL_CASES: &[(&str, &str)] = &[
+    (
+        r#"(dyn for<'a> Trait<'a> {}) foo!()"#,
+        r#"foo!(() (dyn for<'a> Trait<'a>) () ({}) )"#,
+    ),
+    (
+        r#"(for<'a> dyn Trait<'a> {}) foo!()"#,
+        r#"foo!(() (for<'a> dyn Trait<'a>) () ({}) )"#,
+    ),
+    (
+        r#"(for<'a> fn(&'a ()) {}) foo!()"#,
+        r#"foo!(() (for<'a> fn(&'a ())) () ({}) )"#,
+    ),
+    (
+        r#"(Type<'a> {}) foo!()"#,
+        r#"foo!(() (Type<'a>) () ({}) )"#,
+    ),
+    (
+        r#"(Trait<'a> for Foo {}) foo!()"#,
+        r#"foo!(() trait(Trait<'a>) (Foo) () ({}) )"#,
+    ),
+    (
+        r#"(Trait<'a> for for<'a> Foo {}) foo!()"#,
+        r#"foo!(() trait(Trait<'a>) (for<'a> Foo) () ({}) )"#,
+    ),
+    (
+        r#"(for<'a> Trait<'a> for for<'a> Foo {}) foo!()"#,
+        r#"foo!(() trait(for<'a> Trait<'a>) (for<'a> Foo) () ({}) )"#,
+    ),
+    (
+        r#"(for<'a> Trait<'a> for Foo {}) foo!()"#,
+        r#"foo!(() trait(for<'a> Trait<'a>) (Foo) () ({}) )"#,
+    ),
+];
+
+#[cfg(feature = "item_parsing")]
+#[test]
+fn split_impl_tests() {
+    for (input, expected) in SPLIT_IMPL_CASES {
+        let x = crate::item_parsing::split_impl(input.parse().unwrap());
+        let string = remove_whitespaces(&x.to_string());
         let expected = remove_whitespaces(expected);
 
         assert_eq!(string, expected, "\ninput   : {}\nexpected: {}", input, expected);

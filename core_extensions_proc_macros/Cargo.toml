@@ -15,6 +15,9 @@ include = [
     "../MIT_license",
 ]
 
+[features]
+item_parsing = []
+
 [dev-dependencies.proc-macro2]
 version = "1.0.19"
 

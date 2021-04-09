@@ -1,6 +1,6 @@
 use crate::used_proc_macro::{
     token_stream::IntoIter,
-    Delimiter, Group, Spacing, Span, TokenStream, TokenTree
+    Delimiter, Ident, Group, Spacing, Span, TokenStream, TokenTree
 };
 
 
@@ -17,6 +17,11 @@ pub(crate) fn parenthesize_ts(ts: TokenStream, span: Span) -> TokenTree {
 
 pub(crate) fn out_parenthesized(ts: TokenStream, span: Span, out: &mut TokenStream) {
     out.extend(once(parenthesize_ts(ts, span)));
+}
+
+pub(crate) fn out_ident(value: &str, span: Span, out: &mut TokenStream) {
+    let ident = Ident::new(value, span);
+    out.extend(once(TokenTree::Ident(ident)));
 }
 
 
