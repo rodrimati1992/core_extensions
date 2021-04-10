@@ -48,9 +48,13 @@ impl SplitGenerics {
 
         let parsing = parse_paren_args(&parsed_tt);
 
+        Self::some_consumed(input_tokens, parsing)
+    }
+
+    pub(crate) fn some_consumed(input_tokens: IntoIter, parsing: Peekable<IntoIter>) -> Self {
         Self {
             input_tokens,
-            parsing: parsing.into_iter().peekable(),
+            parsing,
             curr_is_joint: false,
             prev_is_joint: false,
             depth: 0,
@@ -96,7 +100,7 @@ macro_rules! match_process_gen {
 }
 
 impl SplitGenerics {
-    pub(crate) fn split_generics<P>(mut self, mut parsing_pgen: P) -> TokenStream 
+    pub(crate) fn split_generics<P>(mut self, args: TokenStream,mut parsing_pgen: P) -> TokenStream
     where
         P: PostGenericsParser
     {
@@ -125,7 +129,8 @@ impl SplitGenerics {
             after_where, after_where_span,
             ..
         } = self;
-        parse_path_and_args("__priv_split_generics", &mut input_tokens, |args| {
+
+        parse_path_and_args("__priv_split_generics", &mut input_tokens, args, |args| {
 
             out_parenthesized(generics, generics_span, args);
             

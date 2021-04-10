@@ -3,7 +3,7 @@ use crate::{
         token_stream::IntoIter,
         Delimiter, Group, Spacing, Span, TokenStream, TokenTree
     },
-    parsing_shared::{out_ident, out_parenthesized, parse_path_and_args},
+    parsing_shared::{out_ident, out_parenthesized, parse_paren_args, parse_path_and_args},
     splitting_generics::{PostGenericsParser, SplitGenerics},
     mmatches,
 };
@@ -58,7 +58,40 @@ impl PostGenericsParser for ImplHeader {
 }
 
 pub(crate) fn split_impl(ts: TokenStream) -> TokenStream {
-    SplitGenerics::new(ts).split_generics(ImplHeader{
+    let mut ts = ts.into_iter();
+
+    let parsed_tt = ts.next().expect("skip_generics expected more tokens");
+
+    let mut parsing = parse_paren_args(&parsed_tt);
+
+    let mut out = TokenStream::new();
+
+    let mut attrs = TokenStream::new();
+    let mut attrs_span = Span::call_site();
+    let mut qualifiers = TokenStream::new();
+    let mut qualifiers_span = Span::call_site();
+    let mut which_one = &mut attrs;
+    let mut which_span = &mut attrs_span;
+
+    while let Some(tt) = parsing.peek() {
+        if let TokenTree::Ident(ident) = tt {
+            if ident.to_string() == "impl" {
+                parsing.next();
+                break
+            } else {
+                which_one = &mut qualifiers;
+                which_span = &mut qualifiers_span;
+            }
+        }
+
+        *which_span = tt.span();
+        which_one.extend(parsing.next());
+    }
+
+    out_parenthesized(attrs, attrs_span, &mut out);
+    out_parenthesized(qualifiers, qualifiers_span, &mut out);
+
+    SplitGenerics::some_consumed(ts, parsing).split_generics(out, ImplHeader{
         type_: TokenStream::new(),
         type_span: Span::call_site(),
         trait_: None,

@@ -460,7 +460,7 @@ pub mod __ {
     pub use core_extensions_proc_macros::__priv_rewrap_opaque;
     
     #[cfg(feature = "enable_proc_macro_crate")]
-    pub use core_extensions_proc_macros::{__priv_remove_non_delimiter, __priv_split_generics};
+    pub use core_extensions_proc_macros::{__priv_unwrap_bound, __priv_split_generics};
 
     #[cfg(feature = "item_parsing")]
     pub use core_extensions_proc_macros::__priv_split_impl;

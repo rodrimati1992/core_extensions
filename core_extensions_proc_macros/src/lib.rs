@@ -16,7 +16,7 @@ extern crate alloc;
 #[cfg(test)]
 extern crate std;
 
-use crate::used_proc_macro::{Delimiter, Group, Span, TokenStream, TokenTree};
+use crate::used_proc_macro::{Delimiter, Group, Punct, Spacing, Span, TokenStream, TokenTree};
 
 use core::iter::once;
 
@@ -36,22 +36,36 @@ mod item_parsing;
 
 #[doc(hidden)]
 #[proc_macro]
-pub fn __priv_remove_non_delimiter(
+pub fn __priv_unwrap_bound(
     input_tokens: proc_macro::TokenStream
 ) -> proc_macro::TokenStream {
     let input_tokens: TokenStream = input_tokens.into();
 
     let mut iter = input_tokens.into_iter();
 
-    let ty_tt = iter.next().expect("__priv_remove_non_delimiter expected more tokens");
+    let ty_tt = iter.next().expect("__priv_unwrap_bound expected more tokens");
     
-    let ty = match &ty_tt {
-        TokenTree::Group(group) if group.delimiter() == Delimiter::None => 
-            group.stream(),
+    let group = match &ty_tt {
+        TokenTree::Group(group) if group.delimiter() == Delimiter::None => group,
         x => panic!("Expected a none-delimited group, found:\n{}", x)
     };
 
-    parsing_shared::parse_path_and_args("__priv_remove_non_delimiter", &mut iter, |args| {
+    let mut last_is_plus = true;
+
+    let mut ty = group.stream()
+        .into_iter()
+        .inspect(|tt|{
+             last_is_plus = mmatches!(tt, TokenTree::Punct(punc) if punc.as_char() == '+');
+        })
+        .collect::<TokenStream>();
+
+    if !last_is_plus {
+        ty.extend(once(TokenTree::Punct(Punct::new('+', Spacing::Alone))))
+    }
+
+    let args = TokenStream::new();
+
+    parsing_shared::parse_path_and_args("__priv_unwrap_bound", &mut iter, args, |args| {
         args.extend(once(TokenTree::Group(Group::new(Delimiter::Parenthesis, ty))));
     }).into()
 }
@@ -95,7 +109,7 @@ fn split_generics(input: TokenStream) -> TokenStream {
         }
     }
 
-    SplitGenerics::new(input).split_generics(UnparsedPostGenerics{
+    SplitGenerics::new(input).split_generics(TokenStream::new(), UnparsedPostGenerics{
         output: TokenStream::new(),
         output_span: Span::call_site(),
     })

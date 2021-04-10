@@ -1,5 +1,5 @@
 
-/// For splitting an impl into generics, trait, type, where clause, and body.
+/// For splitting an impl into attributes, safety, generics, trait, type, where clause, and body.
 /// 
 /// # Example
 /// 
@@ -22,15 +22,24 @@
 ///         // The first tokens passed to the `bar` macro
 ///         hello "world" foo bar 
 ///     }
-///     (<T: Foo> Trait<X, Y> for Type where U: Bar { 
-///         fn hello(){} 
-///     })
+///     (
+///         #[foo]
+///         unsafe impl<T: Foo> Trait<X, Y> for Type
+///         where U: Bar 
+///         {
+///             fn hello(){} 
+///         }
+///     )
 /// }
 /// 
 /// #[macro_export]
 /// macro_rules! bar {
 ///     (
 ///         $fn_name:ident $returns:literal foo bar 
+///         // the attributes
+///         (#[foo])
+///         // the qualifiers (if `const impl` becomes a thing, i'll be included here)
+///         (unsafe)
 ///         // the generic parameters
 ///         (T: Foo)
 ///         // the imlpemented trait.
@@ -79,18 +88,10 @@
 /// 
 /// #[macro_export]
 /// macro_rules! constify_methods {
-///     (
-///         $(#[$impl_attr:meta])*
-///         $(unsafe $(@$unsafe:tt@)?)?
-///         impl $($rem:tt)*
-///     ) => {
+///     ($impl:item) => {
 ///         $crate::impl_split!{
-///             $crate::__priv_constify_methods!{
-///                 @parse_impl
-///                 $(#[$impl_attr])*
-///                 ($(unsafe $(@$unsafe:tt@)?)?)
-///             }
-///             ($($rem)*)
+///             $crate::__priv_constify_methods!{@parse_impl}
+///             ($impl)
 ///         }
 ///     }
 /// }
@@ -100,8 +101,8 @@
 /// macro_rules! __priv_constify_methods{
 ///     (
 ///         @parse_impl
-///         $(#[$impl_attr:meta])*
-///         ($($unsafe:tt)?)
+///         ($(#[$impl_attr:meta])*)
+///         ($($qualifiers:tt)*) // Can be `unsafe` (maybe `const` in the future)
 ///         ($($generics:tt)*)
 ///         $( trait($($trait:tt)*) )?
 ///         ($($type:tt)*)
@@ -109,7 +110,7 @@
 ///         ({ $($item:item)* })
 ///     ) => {
 ///         $(#[$impl_attr])*
-///         $($unsafe)? impl<$($generics)*> $($($trait)* for )? $($type)* 
+///         $($qualifiers)* impl<$($generics)*> $($($trait)* for )? $($type)* 
 ///         where
 ///             $($where)*
 ///         {

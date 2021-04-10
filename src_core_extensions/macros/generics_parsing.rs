@@ -195,10 +195,10 @@ macro_rules! split_generics_and_where {
 ///         $fn_name:ident $string:literal foo bar
 ///
 ///         // generics for use in type/trait declarations
-///         ('a, T: Foo = $default_ty:ty, const N: $const_ty0:ty,)
+///         ('a, T: Foo + = $default_ty:ty, const N: $const_ty0:ty,)
 ///
 ///         // generics for use in `impl<...>`, and function`declarations
-///         ('a, T: Foo, const N: $const_ty1:ty,)
+///         ('a, T: Foo + , const N: $const_ty1:ty,)
 ///
 ///         // generics for use in generic arguments
 ///         ('a, T, N,)
@@ -317,7 +317,7 @@ macro_rules! parse_generics_and_where {
         $crate::__::__priv_split_generics!{
             ($($generics)*)
 
-            $crate::__psg_unparsed_generics!{
+            $crate::__pgaw_unparsed_generics!{
                 ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
             }
         }
@@ -326,7 +326,7 @@ macro_rules! parse_generics_and_where {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! __psg_unparsed_generics {
+macro_rules! __pgaw_unparsed_generics {
     (
         $path:tt! $params:tt
         ($($generics:tt)*)
@@ -335,7 +335,7 @@ macro_rules! __psg_unparsed_generics {
         $after_where:tt
     ) => {
         $crate::parse_generics!{
-            $crate::__psg_parsed_generics!{
+            $crate::__pgaw_parsed_generics!{
                 $path ! $params
                 $after_generics
                 $where_clause
@@ -350,7 +350,7 @@ macro_rules! __psg_unparsed_generics {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! __psg_parsed_generics {
+macro_rules! __pgaw_parsed_generics {
     (
         ($($path:tt)*)! {$($prefix:tt)*}
         
@@ -380,7 +380,8 @@ macro_rules! __psg_parsed_generics {
 
 
 
-/// Parses a list of generic parameters, and passes them to a macro.
+/// Transforms generic parameters to be usable in different places,
+/// and passes them to a macro.
 /// 
 /// This would be used by macros when they take generic parameters inside `()`, `[]`, or`{}`.
 /// 
@@ -416,10 +417,10 @@ macro_rules! __psg_parsed_generics {
 ///         $fn_name:ident $string:literal foo bar
 ///
 ///         // generics for use in type/trait declarations
-///         ('a, T: Foo = $default_ty:ty, const N: $const_ty0:ty,)
+///         ('a, T: Foo + = $default_ty:ty, const N: $const_ty0:ty,)
 ///
 ///         // generics for use in `impl<...>`, and function`declarations
-///         ('a, T: Foo, const N: $const_ty1:ty,)
+///         ('a, T: Foo +, const N: $const_ty1:ty,)
 ///
 ///         // generics for use in generic arguments
 ///         ('a, T, N,)
@@ -614,7 +615,7 @@ macro_rules! __pg_type_param_bounds {
         $prev_bounds:tt
         ( + $rem_bounds:ty $(= $default:ty)? , $($rem:tt)* )
     ) => {
-        $crate::__::__priv_remove_non_delimiter!{
+        $crate::__::__priv_unwrap_bound!{
             $rem_bounds
 
             $crate::__pg_type_param_finish!{
@@ -662,6 +663,294 @@ macro_rules! __pg_type_param_finish {
             ($($impl_params)* $type : $($bounds)* $($rem_bounds)*,)
             ($($impl_args)* $type,)
             ($($phantoms)* $crate::__::PD<$type>,)
+            ($($rem)*)
+        }
+    };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+/// Parses the generic parameters to a form easily parsable by the passed callback macro.
+/// 
+/// This would be used by macros when they take generic parameters inside `()`, `[]`, or`{}`.
+/// 
+/// # Examples
+/// 
+/// ### Basic
+/// 
+/// Basic example of the syntax this macro expects and passes to a callback macro.
+/// 
+/// ```
+/// use core_extensions::parse_split_generics;
+/// 
+/// parse_split_generics!{
+///     // The first tokens passed to the `crate::foo` macro
+///     foo!{ hello "world" }
+///     // The parsed tokens
+///     ('a: 'b, 'b, T: 'a + Foo = Bar, const X: u32 = 10, U = Baz, V)
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! foo {
+///     (
+///         $fn_name:ident $value:literal
+///         // The generic paremeters in the order they came in
+///         // Bounds always have a trailing `+``
+///         (
+///             ('a:('b +))
+///             ('b:()) 
+///             (type T:('a + Foo +) = $def_t:ty)
+///             (const X: $ty_x:ty = $def_x:expr)
+///             (type U:() = $def_u:ty)
+///             (type V:())
+///         )
+///         // The generic parameters are classified by kind
+///         // Bounds always have a trailing `+``
+///         // Generic parameters always have a trailing `,`
+///         (
+///             ('a:('b +), 'b:(),)                                      // lifetimes
+///             (T:('a + Foo +) = $defb_t:ty, U:() = $defb_u:ty, V:(),)  // types
+///             (X: $tyb_x:ty = $defb_x:expr,)                           // constants
+///         )
+///     ) => {
+///
+///     };
+/// }
+/// ```
+/// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
+#[macro_export]
+macro_rules! parse_split_generics {
+    (
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! {$($prefix:tt)*}
+
+        ($($generics:tt)*)
+    )=>{
+        $crate::__psg_inner!{
+            (
+                ($(:: $(@$leading@)? )? $first $(:: $trailing)*) {$($prefix)*}
+            )
+            ()
+            (()()())
+            ($($generics)* ,)
+        }
+    }
+}
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __psg_inner {
+    (
+        (
+            ($path:path) {$($prefix:tt)*}
+        )
+        $in_order:tt
+        $by_kind:tt
+        ($(,)*)
+    ) => {
+        $path! {$($prefix)* $in_order $by_kind}
+    };
+    (
+        $other:tt
+        ($($in_order:tt)*)
+        (($($lt:tt)*) $types:tt $consts:tt)
+        ($lifetime:lifetime $(: $($bound:lifetime $(+)? )*)? , $($rem:tt)*)
+    ) => {
+        $crate::__psg_inner!{
+            $other
+            ($($in_order)* ( $lifetime :( $( $($bound +)* )? ) ) )
+            (($($lt)* $lifetime:( $( $($bound +)*)? ), ) $types $consts)
+            ($($rem)*)
+        }
+    };
+    (
+        $other:tt
+        ($($in_order:tt)*)
+        ($lifetimes:tt ($($types:tt)*) $consts:tt)
+        ( $type:ident $(= $default:ty)? , $($rem:tt)* )
+    ) => {
+        $crate::__psg_inner!{
+            $other
+            ($($in_order)* (type $type :() $(= $default)?) )
+            ($lifetimes ($($types)* $type :() $(= $default)? , ) $consts)
+            ($($rem)*)
+        }
+    };
+    (
+        $other:tt
+        $in_order:tt
+        $by_kind:tt
+        ( $type:ident : $($rem:tt)* )
+    ) => {
+        $crate::__psg_type_param_bounds!{
+            (
+                $other
+                $type
+                $in_order
+                $by_kind
+            )
+            ()
+            ( + $($rem)*)
+        }
+    };
+    (
+        $other:tt
+        ($($in_order:tt)*  )
+        ($lifetimes:tt $types:tt ($($consts:tt)*))
+        ( const $constp:ident : $constty:ty $(= $default:expr)? , $($rem:tt)* )
+    ) => {
+        $crate::__psg_inner!{
+            $other
+            ($($in_order)* (const $constp: $constty $(= $default)?) )
+            ($lifetimes $types ($($consts)* $constp: $constty $(= $default)? , ) )
+            ($($rem)*)
+        }
+    };
+    (
+        $other:tt
+        $in_order:tt
+        $by_kind:tt
+        ( $($rem:tt)* )
+    ) => {
+        compile_error!{concat!(
+            "Cannot parse these generics:\n\t",
+            $(stringify!($rem),)*
+        )}
+    };
+}
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __psg_type_param_bounds {
+    (
+        (
+            $other:tt
+            $type:ident
+            ($($in_order:tt)*)
+            ($lifetimes:tt ($($types:tt)*) $consts:tt)
+        )
+        ($($bounds:tt)*)
+        ( $(= $default:ty)? , $($rem:tt)*)
+    ) => {
+        $crate::__psg_inner!{
+            $other
+            ($($in_order)* (type $type :( $($bounds)* ) $(= $default)?) )
+            ($lifetimes ($($types)* $type :( $($bounds)* ) $(= $default)?,) $consts)
+            ($($rem)*)
+        }
+    };
+    (
+        $fixed:tt
+        ($($boundts:tt)*)
+        ( + $lt:lifetime $($rem:tt)* )
+    ) => {
+        $crate::__psg_type_param_bounds!{
+            $fixed
+            ($($boundts)* $lt + )
+            ($($rem)*)
+        }
+    };
+    (
+        $fixed:tt
+        ($($boundts:tt)*)
+        ( + ($($parenthesized:tt)*) $($rem:tt)* )
+    ) => {
+        $crate::__psg_type_param_bounds!{
+            $fixed
+            ($($boundts)* ($($parenthesized)*) + )
+            ($($rem)*)
+        }
+    };
+    (
+        $fixed:tt
+        $prev_bounds:tt
+        ( + $rem_bounds:ty $(= $default:ty)? , $($rem:tt)* )
+    ) => {
+        $crate::__::__priv_unwrap_bound!{
+            $rem_bounds
+
+            $crate::__psg_type_param_finish!{
+                $fixed
+                $prev_bounds
+                ( ($($default)?) $($rem)* )
+            }
+        }
+    };
+    (
+        $fixed:tt
+        ($($boundts:tt)*)
+        ( $($rem:tt)* )
+    ) => {
+        compile_error!{concat!(
+            "Cannot parse bounds at the start of these tokens,\n\
+             you need to wrap them in parentheses:\n\t",
+            $(stringify!($rem),)*
+        )}
+    };
+}
+
+
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __psg_type_param_finish {
+    (
+        (
+            $other:tt
+            $type:ident
+            ($($in_order:tt)*)
+            ($lifetimes:tt ($($types:tt)*) $consts:tt)
+        )
+        ($($bounds:tt)*)
+        ( ($($($default:tt)+)?) $($rem:tt)* )
+        ($($rem_bounds:tt)*)
+    ) => {
+        $crate::__psg_inner!{
+            $other
+            ($($in_order)* (type $type :( $($bounds)* $($rem_bounds)* ) $(= $($default)+ )?) )
+            (
+                $lifetimes
+                ($($types)* $type :( $($bounds)* $($rem_bounds)* ) $(= $($default)+ )? ,)
+                $consts
+            )
             ($($rem)*)
         }
     };

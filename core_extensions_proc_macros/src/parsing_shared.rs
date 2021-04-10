@@ -4,10 +4,10 @@ use crate::used_proc_macro::{
 };
 
 
-use core::iter::once;
+use core::iter::{Peekable, once};
 
 // Parse the arguments that were passed in parenthesized arguments
-pub(crate) fn parse_paren_args(tt: &TokenTree) -> TokenStream {
+pub(crate) fn parse_paren_args(tt: &TokenTree) -> Peekable<IntoIter> {
     match tt {
         TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
             let stream = group.stream();
@@ -20,7 +20,7 @@ pub(crate) fn parse_paren_args(tt: &TokenTree) -> TokenStream {
             }
         }
         x => panic!("Expected a parentheses-delimited group, found:\n{}", x),
-    }
+    }.into_iter().peekable()
 }
 
 pub(crate) fn parenthesize_ts(ts: TokenStream, span: Span) -> TokenTree {
@@ -43,13 +43,13 @@ pub(crate) fn out_ident(value: &str, span: Span, out: &mut TokenStream) {
 pub(crate) fn parse_path_and_args<F>(
     macro_name: &str,
     iter: &mut IntoIter,
+    mut args: TokenStream,
     f: F,
-) -> TokenStream 
+) -> TokenStream
 where
     F: FnOnce(&mut TokenStream)
 {
     let mut out = TokenStream::new();
-
     loop {
         match iter
             .next()
@@ -59,7 +59,9 @@ where
                 out.extend(group.stream());
             }
             TokenTree::Group(group) => {
-                let mut args = group.stream();
+                let mut pre = group.stream();
+                pre.extend(args);
+                args = pre;
 
                 f(&mut args);
 
