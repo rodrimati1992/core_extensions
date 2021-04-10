@@ -227,7 +227,6 @@ macro_rules! impl_split {
 ///             $returns
 ///         }
 ///     };
-///     ($($token:tt)*) => { compile_error!{stringify!($($token)*)} }
 /// }
 /// 
 /// ```
@@ -235,19 +234,166 @@ macro_rules! impl_split {
 /// 
 /// ### More Realistic Example
 /// 
+/// This example demonstrates a macro to avoid having to repeat generic parameters and bounds.
+/// 
+/// 
+/// ```rust
+/// use std::ops::Index;
+/// 
+/// fn main() {
+///     let foo = Foo([3, 5], vec![8, 13, 21]);
+///     
+///     assert_eq!(foo.get(), [3, 5]);
+///     assert_eq!(foo[0], 8);
+///     assert_eq!(foo[1], 13);
+///     assert_eq!(foo[2], 21);
+/// }
+/// 
+/// struct Foo<T, U>(T, U);
+/// 
+/// repeat_generics!{
+///     impl<T: Clone, U> Foo<T, U>
+///     where 
+///         U: IntoIterator<Item = u32>;
+///     
+///     impl Self {
+///         fn get(&self) -> T {
+///             self.0.clone()
+///         }
+///     }
+///     
+///     impl<V> Index<V> for Self 
+///     where
+///         U: Index<V>
+///     {
+///         type Output = U::Output;
+///         
+///         fn index(&self, index: V) -> &U::Output {
+///             &self.1[index]
+///         }
+///     }
+/// }
+/// 
+/// 
+/// 
+/// #[macro_export]
+/// macro_rules! repeat_generics {
+///     ($($tokens:tt)*)=>{
+///         $crate::__::impl_parse_generics!{
+///             $crate::__priv_inner_repeat_generics!{@process}
+///             ($($tokens)*)
+///         }
+///     }
+/// }
+/// 
+/// #[doc(hidden)]
+/// #[macro_export]
+/// macro_rules! __priv_inner_repeat_generics {
+///     (
+///         @process
+///         $attrs:tt
+///         ()
+///         (
+///             ($($lt:lifetime :($($lt_bound:tt)*),)*)
+///             ($($ty:ident :($($ty_bound:tt)*),)*)
+///             ($($const:ident: $const_ty:ty,)*)
+///         )
+///         $(trait $trait:tt)?
+///         type $Self:tt
+///         $where_preds:tt
+///         ( ; $($items:tt)* )
+///     ) => {
+///         $(
+///             $crate::__::compile_error!{concat!(
+///                 "cannot implement a trait in the impl without a body: ",
+///                 stringify!($trait),
+///             )}
+///         )?
+/// 
+///         $crate::__priv_inner_repeat_generics!{
+///             @iterate
+///             (
+///                 $attrs
+///                 (
+///                     ($($lt: $($lt_bound)*,)*) 
+///                     ($($ty: $($ty_bound)*,)*)
+///                     ($(const $const: $const_ty,)*)
+///                 )
+///                 $Self
+///                 $where_preds
+///             )
+///             $($items)*
+///         }
+///     };
+///     ( @iterate $params:tt $($item:item)* )=>{
+///         $(
+///             $crate::__::impl_parse_generics!{
+///                 $crate::__priv_inner_repeat_generics!{@inner $params}
+///                 ($item)
+///             }
+///         )*
+///     };
+///     (
+///         @inner
+///         (
+///             ($($out_attrs:tt)*)
+///             ( ($($out_lt:tt)*) ($($out_ty:tt)*) ($($out_const:tt)*) )
+///             ($Self:ty)
+///             ($($outer_where:tt)*)
+///         )
+/// 
+///         ($($in_attrs:tt)*)
+///         ($($qualifiers:tt)*)
+///         (
+///             ($($lt:lifetime :($($lt_bound:tt)*),)*)
+///             ($($ty:ident :($($ty_bound:tt)*),)*)
+///             ($($const:ident: $const_ty:ty,)*)
+///         )
+///         $(trait($trait:ty))?
+///         type(Self)
+///         ($($inner_where:tt)*)
+///         ({ $($items:tt)* })
+///     ) => {
+///         $($out_attrs)*
+///         $($in_attrs)*
+///         $($qualifiers)* 
+///         impl<
+///             $($out_lt)* $($lt: $($lt_bound)*,)*
+///             $($out_ty)* $($ty: $($ty_bound)*,)*
+///             $($out_const)* $(const $const: $const_ty,)*
+///         > $( $trait for )? $Self
+///         where
+///             $($outer_where)*
+///             $($inner_where)*
+///         {
+///             $($items)*
+///         }
+///     }
+/// }
+/// 
+/// 
+/// #[doc(hidden)]
+/// pub mod __ {
+///     pub use std::compile_error;
+/// 
+///     pub use core_extensions::impl_parse_generics;
+/// }
+/// 
+/// 
+/// ```
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
 #[macro_export]
 macro_rules! impl_parse_generics {
     (
         $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! $prefix:tt
 
-        ($item:item)
+        ($($tt:tt)*)
     ) => {
         $crate::impl_split!{
             $crate::__ipg_unparsed_generics!{
                 ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
             }
-            ($item)
+            ($($tt)*)
         }
     };
 }

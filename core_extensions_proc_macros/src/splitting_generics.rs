@@ -198,22 +198,20 @@ impl SplitGenerics {
                 let c = punct.as_char();
                 c == ';' || c == '=' && punct.spacing() == Spacing::Alone
             } => {
-                // Have to put it here, before self.location is mutated.
-                let token = self.get_trailing_comma();
+                self.where_clause.extend(self.get_trailing_comma());
                 
                 self.after_where.extend(once(tt));
                 self.location = ParseLocation::AfterWhere;
                 
-                token
+                None
             }
             TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                // Have to put it here, before self.location is mutated.
-                let token = self.get_trailing_comma();
+                self.where_clause.extend(self.get_trailing_comma());
                 
                 self.after_where.extend(once(tt));
                 self.location = ParseLocation::AfterWhere;
                 
-                token
+                None
             }
             _ => Some(tt),
         }
