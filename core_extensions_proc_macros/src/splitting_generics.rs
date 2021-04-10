@@ -1,7 +1,7 @@
 use crate::{
     used_proc_macro::{
         token_stream::IntoIter,
-        Delimiter, Spacing, Span, TokenStream, TokenTree
+        Delimiter, Punct, Spacing, Span, TokenStream, TokenTree
     },
     parsing_shared::{out_parenthesized, parse_paren_args, parse_path_and_args},
     mmatches,
@@ -28,6 +28,8 @@ pub(crate) struct SplitGenerics {
     parsing: Peekable<IntoIter>,
     curr_is_joint: bool,
     prev_is_joint: bool,
+    curr_token_kind: TokenKind,
+    prev_token_kind: TokenKind,
     location: ParseLocation,
     depth: u32,
     last_span: Span,
@@ -57,6 +59,8 @@ impl SplitGenerics {
             parsing,
             curr_is_joint: false,
             prev_is_joint: false,
+            curr_token_kind: TokenKind::Other,
+            prev_token_kind: TokenKind::Other,
             depth: 0,
             location: ParseLocation::InGenerics,
             last_span: Span::call_site(),
@@ -186,6 +190,7 @@ impl SplitGenerics {
                 mmatches!(self.location, ParseLocation::AfterGenerics) &&
                 ident.to_string() == "where" 
             => {
+                self.curr_token_kind = TokenKind::Where;
                 self.location = ParseLocation::InWhere;
                 None
             }
@@ -193,16 +198,34 @@ impl SplitGenerics {
                 let c = punct.as_char();
                 c == ';' || c == '=' && punct.spacing() == Spacing::Alone
             } => {
+                // Have to put it here, before self.location is mutated.
+                let token = self.get_trailing_comma();
+                
                 self.after_where.extend(once(tt));
                 self.location = ParseLocation::AfterWhere;
-                None
+                
+                token
             }
             TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+                // Have to put it here, before self.location is mutated.
+                let token = self.get_trailing_comma();
+                
                 self.after_where.extend(once(tt));
                 self.location = ParseLocation::AfterWhere;
-                None
+                
+                token
             }
             _ => Some(tt),
+        }
+    }
+
+    fn get_trailing_comma(&self) -> Option<TokenTree> {
+        if let (ParseLocation::InWhere, TokenKind::Other) = (self.location, self.prev_token_kind) {
+            let mut p = Punct::new(',', Spacing::Alone);
+            p.set_span(self.last_span);
+            Some(TokenTree::Punct(p))
+        } else {
+            None
         }
     }
 
@@ -211,10 +234,18 @@ impl SplitGenerics {
         self.last_span = tt.span();
         self.prev_is_joint = self.curr_is_joint;
         self.curr_is_joint = false;
+
+        self.prev_token_kind = self.curr_token_kind;
+        self.curr_token_kind = TokenKind::Other;
+
         if let TokenTree::Punct(punct) = &tt {
             let char = punct.as_char();
             self.curr_is_joint = char == '-' ||
                 punct.spacing() == Spacing::Joint && char != '>' && char != '<';
+
+            if char == ',' {
+                self.curr_token_kind = TokenKind::Comma;
+            }
 
             if char == '<' {
                 self.depth += 1;
@@ -241,5 +272,14 @@ enum ParseLocation {
     InWhere,
     AfterWhere,
 }
+
+
+#[derive(Copy, Clone)]
+enum TokenKind{
+    Where,
+    Comma,
+    Other,
+}
+
 
 

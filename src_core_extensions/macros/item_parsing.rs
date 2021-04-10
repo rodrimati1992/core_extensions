@@ -48,7 +48,7 @@
 ///         // the type that this is an impl for
 ///         (Type)
 ///         // inside the where clause
-///         (U: Bar)
+///         (U: Bar,)
 ///         // the body of the impl
 ///         ({ fn hello() {} })
 ///     ) => {

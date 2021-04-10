@@ -13,7 +13,7 @@ use proc_macro2 as used_proc_macro;
 
 extern crate alloc;
 
-#[cfg(test)]
+// #[cfg(test)]
 extern crate std;
 
 use crate::used_proc_macro::{Delimiter, Group, Punct, Spacing, Span, TokenStream, TokenTree};

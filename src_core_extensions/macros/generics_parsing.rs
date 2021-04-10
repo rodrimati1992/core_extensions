@@ -206,9 +206,14 @@ macro_rules! split_generics_and_where {
 ///         // `PhantomData` type that uses all lifetimes and types
 ///         ($phantom:ty)
 ///
-///         ((Foo, Bar, Baz))            // before the where clause
-///         (T: Bar)                     // inside the where clause
-///         ( ; )                        // after the where clause
+///         // before the where clause
+///         ((Foo, Bar, Baz))
+///
+///         // inside the where clause, this always has a trailing comma
+///         (T: Bar,)
+///
+///         // after the where clause
+///         ( ; )
 ///     ) => {
 ///         fn $fn_name() -> &'static str {
 ///             $string
