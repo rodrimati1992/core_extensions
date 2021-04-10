@@ -53,6 +53,7 @@ impl PostGenericsParser for ImplHeader {
             out_ident("trait", self.trait_span, ts);
             out_parenthesized(trait_, self.trait_span, ts);
         }
+        out_ident("type", self.type_span, ts);
         out_parenthesized(self.type_, self.type_span, ts);
     }
 }

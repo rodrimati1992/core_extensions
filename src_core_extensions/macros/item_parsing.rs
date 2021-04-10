@@ -46,8 +46,8 @@
 ///         // If this not a trait impl, then `trait(....)` is not passed
 ///         trait(Trait<X, Y>)
 ///         // the type that this is an impl for
-///         (Type)
-///         // inside the where clause
+///         type(Type)
+///         // inside the where clause, this always has a trailing comma
 ///         (U: Bar,)
 ///         // the body of the impl
 ///         ({ fn hello() {} })
@@ -105,7 +105,7 @@
 ///         ($($qualifiers:tt)*) // Can be `unsafe` (maybe `const` in the future)
 ///         ($($generics:tt)*)
 ///         $( trait($($trait:tt)*) )?
-///         ($($type:tt)*)
+///         type ($($type:tt)*)
 ///         ($($where:tt)*)
 ///         ({ $($item:item)* })
 ///     ) => {
@@ -160,3 +160,155 @@ macro_rules! impl_split {
 }
 
 
+
+/// For splitting an impl into attributes, safety, parsed generics, trait, type,
+/// where clause, and body.
+/// 
+/// The generic parameters are transformed to be easily parsed by `macro_rules!` macros.
+/// 
+/// # Example
+/// 
+/// ### Basic
+/// 
+/// Basic examples of using this macro, and what it passes to a callback macro.
+/// 
+/// For a more realistic example you can look [at the one below](#realistic-example)
+/// 
+/// ```rust
+/// use core_extensions::impl_parse_generics;
+/// 
+/// fn main(){
+///     assert_eq!(hello(), "world");
+/// }
+/// 
+/// // impl_parse_generics invokes `bar` here
+/// impl_parse_generics!{
+///     crate::bar!{
+///         // The first tokens passed to the `bar` macro
+///         hello "world" foo bar 
+///     }
+///     (
+///         #[foo]
+///         unsafe impl<'a: 'b, T: Foo, U, const X: usize> Trait<X, Y> for Type
+///         where U: Bar 
+///         {
+///             fn hello(){} 
+///         }
+///     )
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! bar {
+///     (
+///         $fn_name:ident $returns:literal foo bar 
+///         // the attributes
+///         (#[foo])
+///         // the qualifiers (if `const impl` becomes a thing, i'll be included here)
+///         (unsafe)
+///         // The generic parameters are classified by kind
+///         // Bounds always have a trailing `+``
+///         // Generic parameters always have a trailing `,`
+///         (
+///             ('a:('b +),)          // lifetimes
+///             (T:(Foo +), U:(),)  // types
+///             (X: $const_ty:ty,) // constants
+///         )
+///         // the imlpemented trait.
+///         // If this not a trait impl, then `trait(....)` is not passed
+///         trait(Trait<X, Y>)
+///         // the type that this is an impl for
+///         type(Type)
+///         // inside the where clause, this always has a trailing comma
+///         (U: Bar,)
+///         // the body of the impl
+///         ({ fn hello() {} })
+///     ) => {
+///         fn $fn_name() -> &'static str {
+///             $returns
+///         }
+///     };
+///     ($($token:tt)*) => { compile_error!{stringify!($($token)*)} }
+/// }
+/// 
+/// ```
+/// <div id = "realistic-example"> </div>
+/// 
+/// ### More Realistic Example
+/// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
+#[macro_export]
+macro_rules! impl_parse_generics {
+    (
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! $prefix:tt
+
+        ($item:item)
+    ) => {
+        $crate::impl_split!{
+            $crate::__ipg_unparsed_generics!{
+                ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
+            }
+            ($item)
+        }
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __ipg_unparsed_generics {
+    (
+        $path:tt! $params:tt
+
+        $attrs:tt
+        $qualifiers:tt
+        ($($generics:tt)*)
+        $(trait $trait:tt)?
+        type $type:tt
+        $where_clause:tt
+        $after_where:tt
+    ) => {
+        $crate::parse_split_generics!{
+            $crate::__ipg_parsed_generics!{
+                $path ! $params
+                $attrs
+                $qualifiers
+                $(trait $trait)?
+                type $type
+                $where_clause
+                $after_where
+            }
+
+            ($($generics)*)
+        }
+    }
+}
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __ipg_parsed_generics {
+    (
+        ($($path:tt)*)! {$($prefix:tt)*}
+        
+        $attrs:tt
+        $qualifiers:tt
+        $(trait $trait:tt)?
+        type $type:tt
+        $where_clause:tt
+        $after_where:tt
+
+        $gen_in_order:tt
+        $gen_by_kind:tt
+    ) => {
+        $($path)* ! {
+            $($prefix)*
+
+            $attrs
+            $qualifiers
+            $gen_by_kind
+            $(trait $trait)?
+            type $type
+            $where_clause
+            $after_where
+        }
+    }
+}
