@@ -4,6 +4,23 @@ This started being written for the 0.1.19 release, it doesn't cover versions pri
 
 # 1.0
 
+### 1.2.0
+
+Added `"macro_utils"` feature.
+
+Added `"item_parsing"` feature, which enables both `"macro_utils"` and `"generics_parsing"`.
+
+Added these `rewrap_opaque` macros under the `"macro_utils"` feature
+
+Added `"impl_split"`, and `"impl_parse_generics"` macros, under the `"item_parsing"` feature.
+
+Added `"parse_split_generics"`, and `parse_split_generics_and_where`, under the `"generics_parsing"` feature.
+
+Changed bounds output by macros to always have a trailing `+`.
+
+Changed where predicates output by core_extensions macros to always have a trailing `,`.
+
+
 ### 1.1.0
 
 Added `parse_generics`, `parse_generics_and_where`, and `split_generics_and_where` macros under the new `"generics_parsing"` feature.

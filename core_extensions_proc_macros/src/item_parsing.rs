@@ -1,9 +1,8 @@
 use crate::{
     used_proc_macro::{
-        token_stream::IntoIter,
-        Delimiter, Group, Spacing, Span, TokenStream, TokenTree
+        Span, TokenStream, TokenTree
     },
-    parsing_shared::{out_ident, out_parenthesized, parse_paren_args, parse_path_and_args},
+    parsing_shared::{out_ident, out_parenthesized, parse_paren_args},
     splitting_generics::{PostGenericsParser, SplitGenerics},
     mmatches,
 };

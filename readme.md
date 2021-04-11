@@ -119,10 +119,18 @@ Enables the [`ConstVal`] trait (for types that represent constants),
 and [`quasiconst`] macro (for declaring types that emulate generic constants).
 Enables the `"generics_parsing"` feature.
 
+- `"macro_utils`: Enables the [`rewrap_opaque`] macro.
+
 - `"generics_parsing"`: 
-Enables the [`parse_generics`], [`parse_generics_and_where`], and 
-[`split_generics_and_where`] macros.
+Enables the [`parse_generics`], [`parse_generics_and_where`],
+[`split_generics_and_where`], 
+[`parse_split_generics`], and [`parse_split_generics_and_where`] macros.
 These allow macros to parse items with generic parameters.
+
+- `"item_parsing"`: 
+Enables the `"macro_utils` and `"generics_parsing"` features.
+Enables the [`impl_parse_generics`] and [`impl_split`] macros.
+
 
 - `"integers"`: Enables the [`integers`] module, with extension traits for integer types.
 
@@ -221,9 +229,16 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [`type_asserts`]: https://docs.rs/core_extensions/1.*/core_extensions/type_asserts/index.html
 [`type_level_bool`]: https://docs.rs/core_extensions/1.*/core_extensions/type_level_bool/index.html
 
+[`rewrap_opaque`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.rewrap_opaque.html
 [`parse_generics`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_generics.html
 [`parse_generics_and_where`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_generics_and_where.html
 [`split_generics_and_where`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.split_generics_and_where.html
+[`parse_split_generics`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_split_generics.html
+[`parse_split_generics_and_where`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_split_generics_and_where.html
+
+[`impl_parse_generics`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.impl_parse_generics.html
+[`impl_split`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.impl_split.html
+
 
 [`BoolExt`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.BoolExt.html
 [`ConstDefault`]: https://docs.rs/core_extensions/1.*/core_extensions/trait.ConstDefault.html

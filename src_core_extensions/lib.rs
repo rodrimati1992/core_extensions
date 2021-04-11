@@ -117,10 +117,19 @@
 //! and [`quasiconst`] macro (for declaring types that emulate generic constants).
 //! Enables the `"generics_parsing"` feature.
 //!
+//! - `"macro_utils`: Enables the [`rewrap_opaque`] macro.
+//!
 //! - `"generics_parsing"`: 
-//! Enables the [`parse_generics`], [`parse_generics_and_where`], and 
-//! [`split_generics_and_where`] macros.
+//! Enables the [`parse_generics`], [`parse_generics_and_where`],
+//! [`split_generics_and_where`], 
+//! [`parse_split_generics`], and [`parse_split_generics_and_where`] macros.
 //! These allow macros to parse items with generic parameters.
+//!
+//! - `"item_parsing"`: 
+//! Enables the `"macro_utils` and `"generics_parsing"` features.
+//! Enables the [`impl_parse_generics`] and [`impl_split`] macros.
+//!
+//!
 //!
 //! - `"integers"`: Enables the [`integers`] module, with extension traits for integer types.
 //!
@@ -205,9 +214,15 @@
 //! [`type_asserts`]: ./type_asserts/index.html
 //! [`type_level_bool`]: ./type_level_bool/index.html
 //!
+//! [`rewrap_opaque`]: ./macro.rewrap_opaque.html
 //! [`parse_generics`]: ./macro.parse_generics.html
 //! [`parse_generics_and_where`]: ./macro.parse_generics_and_where.html
 //! [`split_generics_and_where`]: ./macro.split_generics_and_where.html
+//! [`parse_split_generics`]: ./macro.parse_split_generics.html
+//! [`parse_split_generics_and_where`]: ./macro.parse_split_generics_and_where.html
+//!
+//! [`impl_parse_generics`]: ./macro.impl_parse_generics.html
+//! [`impl_split`]: ./macro.impl_split.html
 //!
 //! [`BoolExt`]: ./trait.BoolExt.html
 //! [`ConstDefault`]: ./trait.ConstDefault.html
