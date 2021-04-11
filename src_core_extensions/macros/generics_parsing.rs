@@ -156,7 +156,7 @@ macro_rules! split_generics_and_where {
 
 
 /// For writing macros that parse item definitions.
-/// This also parses generics for using them in all syntactic locations they're usable in.
+/// This also parses generics for using them in all valid syntactic locations.
 /// 
 /// # Examples
 /// 
@@ -707,6 +707,274 @@ macro_rules! __pg_type_param_finish {
 
 
 
+/// For writing macros that parse item definitions,
+/// parsing generics to a `macro_rules!`friendly format.
+/// 
+/// # Examples
+/// 
+/// ### Basic
+/// 
+/// Basic example of using this macro, and what it passes to a callback macro.
+/// 
+/// For a more realistic example you can look [at the one below](#realistic-example)
+/// 
+/// ```rust
+/// use core_extensions::parse_split_generics_and_where;
+/// 
+/// fn main() {
+///     assert_eq!(hello(), "world")
+/// }
+/// 
+/// // `parse_split_generics_and_where` calls `crate::foo` here
+/// parse_split_generics_and_where! {
+///     crate::foo!{ 
+///         // The first tokens passed to the `crate::foo` macro
+///         hello "world" foo bar 
+///     }
+///     
+///     (
+///         // The parsed tokens
+///         <'a: 'b, 'b, T: 'a + Foo = Bar, const X: u32 = 10, U = Baz, V> (param: Type) -> u32 
+///         where
+///             T: Bar
+///         { println }
+///     )
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! foo {
+///     (
+///         $fn_name:ident $string:literal foo bar
+///
+///         // The generic paremeters in the order they came in
+///         // Bounds always have a trailing `+``
+///         (
+///             ('a:('b +))
+///             ('b:()) 
+///             (type T:('a + Foo +) = $def_t:ty,)
+///             (const X: $ty_x:ty = $def_x:expr,)
+///             (type U:() = $def_u:ty,)
+///             (type V:(),)
+///         )
+///         // The generic parameters are classified by kind
+///         // Bounds always have a trailing `+``
+///         // Generic parameters always have a trailing `,`
+///         (
+///             ('a:('b +), 'b:(),)                                      // lifetimes
+///             (T:('a + Foo +) = $defb_t:ty, U:() = $defb_u:ty, V:(),)  // types
+///             (X: $tyb_x:ty = $defb_x:expr,)                           // constants
+///         )
+///
+///         // before the where clause
+///         ((param: Type) -> u32 )
+///
+///         // inside the where clause
+///         (T: Bar,)
+///
+///         // after the where clause
+///         ( { println } )
+///     ) => {
+///         fn $fn_name() -> &'static str {
+///             $string
+///         }
+///     };
+///     ($($tt:tt)*) => { compile_error!{ stringify!($($tt)*) } }
+/// }
+/// ```
+/// 
+/// <div id = "realistic-example"> </div>
+/// 
+/// ### Derive macro
+/// 
+/// This demonstrates how you can implement a derive through a `macro_rules!` macro.
+/// 
+/// ```rust
+/// use core_extensions::parse_split_generics_and_where;
+/// 
+/// fn main() {
+///     assert_eq!(Foo{bar: "hi", baz: vec![0]}.add_up(), 2);
+///     assert_eq!(Foo{bar: "hello", baz: vec![0]}.add_up(), 5);
+///     assert_eq!(Foo{bar: "hello", baz: vec![3]}.add_up(), 8);
+///     assert_eq!(Foo{bar: "hello", baz: vec![3, 5]}.add_up(), 13);
+/// }
+/// 
+/// crate::derives!{
+///     #[derive(crate::derive_AddUp)]
+///     
+///     struct Foo<T> {
+///         bar: &'static str,
+///         baz: T,
+///     }
+/// }
+/// 
+/// pub trait AddUp {
+///     fn add_up(&self) -> u128;
+/// }
+/// 
+/// impl AddUp for u8 {
+///     fn add_up(&self) -> u128 {
+///         *self as u128
+///     }
+/// }
+/// 
+/// impl AddUp for &str {
+///     fn add_up(&self) -> u128 {
+///         self.len() as u128
+///     }
+/// }
+/// 
+/// impl<T: AddUp> AddUp for &[T] {
+///     fn add_up(&self) -> u128 {
+///         self.iter().map(AddUp::add_up).sum()
+///     }
+/// }
+///
+/// impl<T: AddUp> AddUp for Vec<T> {
+///     fn add_up(&self) -> u128 {
+///         self.iter().map(AddUp::add_up).sum()
+///     }
+/// }
+/// 
+/// 
+/// 
+/// #[macro_export]
+/// macro_rules! derives {
+///     (#[derive $derives:tt]  $($type:tt)*) => {
+///         $($type)*
+///         
+///         $crate::derives!{@inner $derives {$($type)*} }
+///     };
+///     (@inner ($($derive:path),*) $type:tt ) => {
+///         $( $derive! $type )*
+///     }
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! derive_AddUp {
+///     (
+///         $(#[$attr:meta])*
+///         $vis:vis 
+///         struct $name:ident $($generics:tt)*
+///     ) => {
+///         parse_split_generics_and_where!{
+///             $crate::__priv_derive_AddUp! {
+///                 $name,
+///             }
+///             ($($generics)*)
+///         }
+///     }
+/// }
+/// 
+/// #[doc(hidden)]
+/// #[macro_export]
+/// macro_rules! __priv_derive_AddUp{
+///     (
+///         $name:ident,
+///         (
+///             $( ($lt:lifetime :( $($lt_bounds:tt)* )) )*
+///             $((
+///                 $( type $typ:ident :($($ty_bound:tt)*) $(= $ty_default:ty )? , )?
+///                 $( const $const:ident :($($const_bound:tt)*) $(= $const_default:expr )? , )?
+///             ))*
+///         )
+///         $generic_in_order:tt
+///         $__between_generics_and_where:tt
+///         ( $($where_preds:tt)* )
+///         ({
+///             $(
+///                 $(#[$fattr:meta])* $fvis:vis $fname:ident : $fty:ty 
+///             ),* $(,)?
+///         })
+///     ) => {
+///         impl<
+///             $($lt: $($lt_bounds)* ,)*
+///             $(
+///                 $($typ: $($ty_bound)* $crate::AddUp + )?
+///                 $(const $const: $($const_bound)* )?,
+///             )*
+///         > $name<$($lt,)* $($($typ)? $($const)? ,)*>
+///         where
+///             $($where_preds)*
+///         {
+///             fn add_up(&self) -> u128 {
+///                 0
+///                 $( + self.$fname.add_up() )*
+///             }
+///         }
+///     };
+/// }
+/// 
+/// ```
+/// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
+#[macro_export]
+macro_rules! parse_split_generics_and_where {
+    (
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! $prefix:tt
+        ($($generics:tt)*)
+    ) => {
+        $crate::__::__priv_split_generics!{
+            ($($generics)*)
+
+            $crate::__psgw_unparsed_generics!{
+                ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
+            }
+        }
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __psgw_unparsed_generics {
+    (
+        $path:tt! $params:tt
+
+        $generics:tt
+        $post_generics:tt
+        $where_clause:tt
+        $after_where:tt
+    ) => {
+        $crate::parse_split_generics!{
+            $crate::__psgw_parsed_generics!{
+                $path ! $params
+                $post_generics
+                $where_clause
+                $after_where
+            }
+
+            $generics
+        }
+    }
+}
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __psgw_parsed_generics {
+    (
+        ($($path:tt)*)! {$($prefix:tt)*}
+        
+        $post_generics:tt
+        $where_clause:tt
+        $after_where:tt
+
+        $gen_in_order:tt
+        $gen_by_kind:tt
+    ) => {
+        $($path)* ! {
+            $($prefix)*
+
+            $gen_in_order
+            $gen_by_kind
+            $post_generics
+            $where_clause
+            $after_where
+        }
+    }
+}
+
+
+
 
 
 
@@ -739,10 +1007,10 @@ macro_rules! __pg_type_param_finish {
 ///         (
 ///             ('a:('b +))
 ///             ('b:()) 
-///             (type T:('a + Foo +) = $def_t:ty)
-///             (const X: $ty_x:ty = $def_x:expr)
-///             (type U:() = $def_u:ty)
-///             (type V:())
+///             (type T:('a + Foo +) = $def_t:ty,)
+///             (const X: $ty_x:ty = $def_x:expr,)
+///             (type U:() = $def_u:ty,)
+///             (type V:(),)
 ///         )
 ///         // The generic parameters are classified by kind
 ///         // Bounds always have a trailing `+``
@@ -812,7 +1080,7 @@ macro_rules! __psg_inner {
     ) => {
         $crate::__psg_inner!{
             $other
-            ($($in_order)* (type $type :() $(= $default)?) )
+            ($($in_order)* (type $type :() $(= $default)? ,) )
             ($lifetimes ($($types)* $type :() $(= $default)? , ) $consts)
             ($($rem)*)
         }
@@ -842,7 +1110,7 @@ macro_rules! __psg_inner {
     ) => {
         $crate::__psg_inner!{
             $other
-            ($($in_order)* (const $constp: $constty $(= $default)?) )
+            ($($in_order)* (const $constp: $constty $(= $default)?, ) )
             ($lifetimes $types ($($consts)* $constp: $constty $(= $default)? , ) )
             ($($rem)*)
         }
@@ -876,7 +1144,7 @@ macro_rules! __psg_type_param_bounds {
     ) => {
         $crate::__psg_inner!{
             $other
-            ($($in_order)* (type $type :( $($bounds)* ) $(= $default)?) )
+            ($($in_order)* (type $type :( $($bounds)* ) $(= $default)? ,) )
             ($lifetimes ($($types)* $type :( $($bounds)* ) $(= $default)?,) $consts)
             ($($rem)*)
         }
@@ -950,7 +1218,7 @@ macro_rules! __psg_type_param_finish {
     ) => {
         $crate::__psg_inner!{
             $other
-            ($($in_order)* (type $type :( $($bounds)* $($rem_bounds)* ) $(= $($default)+ )?) )
+            ($($in_order)* (type $type :( $($bounds)* $($rem_bounds)* ) $(= $($default)+ )? ,) )
             (
                 $lifetimes
                 ($($types)* $type :( $($bounds)* $($rem_bounds)* ) $(= $($default)+ )? ,)
