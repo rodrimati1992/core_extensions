@@ -2,29 +2,34 @@ use crate::misc_tests::utils_tests::remove_whitespace;
 
 macro_rules! stringify_no_whitespace {
     ($($tokens:tt)*) => {
-        remove_whitespace(stringify!($($tokens)*))
+        pub const S: &str = stringify!($($tokens)*);
     };
 }
 
 macro_rules! psg {
-    ($prefix:tt $suffix:tt) => {
-        krate::parse_split_generics!(
-            stringify_no_whitespace!$prefix
-            $suffix
-        )
-    };
+    ($prefix:tt $suffix:tt) => {{
+        mod fooo {
+            krate::parse_split_generics!{
+                stringify_no_whitespace!$prefix
+                $suffix
+            }
+        }
+        remove_whitespace(fooo::S)
+    }};
 }
 
 macro_rules! assert_pg {
     ($prefix:tt $suffix:tt $output:tt) => {{
-        macro_rules! assertions {
-            $output => {()};
-        }
+        mod fooo {
+            macro_rules! assertions {
+                $output => {};
+            }
 
-        krate::parse_generics!(
-            assertions!$prefix
-            $suffix
-        )
+            krate::parse_generics!{
+                assertions!$prefix
+                $suffix
+            }
+        }
     }};
 }
 

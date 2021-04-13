@@ -63,7 +63,10 @@
 /// 
 /// ### More Realistic Example
 /// 
-/// ```
+/// This only works in Rust 1.45.0 onwards.
+/// 
+#[cfg_attr(not(feature = "rust_1_46"), doc = " ```ignore")]
+#[cfg_attr(feature = "rust_1_46", doc = " ```rust")]
 /// pub use core_extensions::{impl_split, rewrap_opaque};
 /// 
 /// struct Wrapper<T>(T, [u32; 3]);

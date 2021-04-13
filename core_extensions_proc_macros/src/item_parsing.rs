@@ -36,7 +36,7 @@ impl PostGenericsParser for ImplHeader {
             ParseLocation::Started => {
                 if mmatches!(&tt, TokenTree::Ident(i) if i.to_string() == "for" ) {
                     self.trait_span = self.type_span;
-                    self.trait_ = Some(mem::take(&mut self.type_));
+                    self.trait_ = Some(mem::replace(&mut self.type_, TokenStream::new()));
                     self.location = ParseLocation::IgnoreFor;
                     return;
                 }

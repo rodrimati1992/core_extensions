@@ -1024,6 +1024,8 @@ macro_rules! __psgw_parsed_generics {
 ///
 ///     };
 /// }
+///
+/// # fn main() {}
 /// ```
 /// 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
