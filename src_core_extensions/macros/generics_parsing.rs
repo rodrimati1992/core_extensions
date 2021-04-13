@@ -464,7 +464,7 @@ macro_rules! parse_generics {
 macro_rules! __pg_inner {
     (
         (
-            ($path:path) {$($prefix:tt)*}
+            ($($path:tt)*) {$($prefix:tt)*}
         )
         $struct_params:tt
         $impl_params:tt
@@ -472,7 +472,7 @@ macro_rules! __pg_inner {
         $phantoms:tt
         ($(,)*)
     ) => {
-        $path! {
+        $($path)* ! {
             $($prefix)*
 
             $struct_params
@@ -1051,13 +1051,13 @@ macro_rules! parse_split_generics {
 macro_rules! __psg_inner {
     (
         (
-            ($path:path) {$($prefix:tt)*}
+            ($($path:tt)*) {$($prefix:tt)*}
         )
         $in_order:tt
         $by_kind:tt
         ($(,)*)
     ) => {
-        $path! {$($prefix)* $in_order $by_kind}
+        $($path)* !{$($prefix)* $in_order $by_kind}
     };
     (
         $other:tt
