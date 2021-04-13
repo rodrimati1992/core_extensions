@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "1.2.0"
+version = "1.2.1"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="Extensions for core/std library types, and other miscelaneous features."
 license="MIT/Apache-2.0"

@@ -155,6 +155,7 @@
 /// 
 /// ```
 /// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "item_parsing")))]
 #[macro_export]
 macro_rules! impl_split {
     (
@@ -395,7 +396,7 @@ macro_rules! impl_split {
 /// 
 /// 
 /// ```
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "item_parsing")))]
 #[macro_export]
 macro_rules! impl_parse_generics {
     (
