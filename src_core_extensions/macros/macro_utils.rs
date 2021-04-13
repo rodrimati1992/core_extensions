@@ -1,5 +1,5 @@
 /// Rewraps the tokens inside macro parameters into parentheses.
-/// 
+///
 /// # Syntax
 /// 
 /// This macro transforms `~` immediately followed by a macro parameter 

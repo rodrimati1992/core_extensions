@@ -2,6 +2,12 @@
 /// For parsing impl blocks, 
 /// passing the generic parameters unchanged to a callback macro.
 /// 
+/// 
+/// # Version compatibility
+/// 
+/// This macro can only be used inside of functions since Rust 1.45.0,
+/// before that version it can only be used outside of functions.
+/// 
 /// # Example
 /// 
 /// ### Basic
@@ -167,6 +173,12 @@ macro_rules! impl_split {
 
 /// For parsing impl blocks, 
 /// transforming the generic parameters to a form easily parsable by the callback macro.
+/// 
+/// 
+/// # Version compatibility
+/// 
+/// This macro can only be used inside of functions since Rust 1.45.0,
+/// before that version it can only be used outside of functions.
 /// 
 /// # Example
 /// 

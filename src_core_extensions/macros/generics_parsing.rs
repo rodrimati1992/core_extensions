@@ -1,6 +1,11 @@
 /// For parsing item definitions,
 /// passing the generic parameters unchanged to a callback macro.
 /// 
+/// # Version compatibility
+/// 
+/// This macro can only be used inside of functions since Rust 1.45.0,
+/// before that version it can only be used outside of functions.
+/// 
 /// # Examples
 /// 
 /// ### Basic
@@ -159,6 +164,12 @@ macro_rules! split_generics_and_where {
 /// For writing macros that parse item definitions,
 /// with the generic parameters transformed for use in type definitions,
 /// impl blocks and generic arguments.
+/// 
+/// 
+/// # Version compatibility
+/// 
+/// This macro can only be used inside of functions since Rust 1.45.0,
+/// before that version it can only be used outside of functions.
 /// 
 /// # Examples
 /// 
@@ -387,6 +398,12 @@ macro_rules! __pgaw_parsed_generics {
 
 /// Transforms generic parameters for use in type definitions,
 /// impl blocks and generic arguments, passing them to a callback macro.
+/// 
+/// 
+/// # Version compatibility
+/// 
+/// This macro can only be used inside of functions since Rust 1.45.0,
+/// before that version it can only be used outside of functions.
 /// 
 /// # Examples
 /// 
@@ -708,6 +725,12 @@ macro_rules! __pg_type_param_finish {
 /// For parsing item definitions,
 /// transforming generics to a form easily parsable by a callback macro.
 /// 
+/// 
+/// # Version compatibility
+/// 
+/// This macro can only be used inside of functions since Rust 1.45.0,
+/// before that version it can only be used outside of functions.
+/// 
 /// # Examples
 /// 
 /// ### Basic
@@ -977,6 +1000,12 @@ macro_rules! __psgw_parsed_generics {
 
 
 /// Transforms generic parameters to a form easily parsable by a callback macro.
+/// 
+/// 
+/// # Version compatibility
+/// 
+/// This macro can only be used inside of functions since Rust 1.45.0,
+/// before that version it can only be used outside of functions.
 /// 
 /// # Examples
 /// 
