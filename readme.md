@@ -119,7 +119,7 @@ Enables the [`ConstVal`] trait (for types that represent constants),
 and [`quasiconst`] macro (for declaring types that emulate generic constants).
 Enables the `"generics_parsing"` feature.
 
-- `"macro_utils`: Enables the [`rewrap_opaque`] macro.
+- `"macro_utils`: Enables the [`rewrap_macro_parameters`] macro.
 
 - `"generics_parsing"`: 
 Enables the [`parse_generics`], [`parse_generics_and_where`],
@@ -229,7 +229,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [`type_asserts`]: https://docs.rs/core_extensions/1.*/core_extensions/type_asserts/index.html
 [`type_level_bool`]: https://docs.rs/core_extensions/1.*/core_extensions/type_level_bool/index.html
 
-[`rewrap_opaque`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.rewrap_opaque.html
+[`rewrap_macro_parameters`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.rewrap_macro_parameters.html
 [`parse_generics`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_generics.html
 [`parse_generics_and_where`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_generics_and_where.html
 [`split_generics_and_where`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.split_generics_and_where.html

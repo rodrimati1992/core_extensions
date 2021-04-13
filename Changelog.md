@@ -10,7 +10,7 @@ Added `"macro_utils"` feature.
 
 Added `"item_parsing"` feature, which enables both `"macro_utils"` and `"generics_parsing"`.
 
-Added these `rewrap_opaque` macros under the `"macro_utils"` feature
+Added these `rewrap_macro_parameters` macros under the `"macro_utils"` feature
 
 Added `"impl_split"`, and `"impl_parse_generics"` macros, under the `"item_parsing"` feature.
 

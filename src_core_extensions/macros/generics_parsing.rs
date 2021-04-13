@@ -1,4 +1,5 @@
-/// For writing macros that parse item definitions, while treating generics opaquely.
+/// For parsing item definitions,
+/// passing the generic parameters unchanged to a callback macro.
 /// 
 /// # Examples
 /// 
@@ -155,8 +156,9 @@ macro_rules! split_generics_and_where {
 }
 
 
-/// For writing macros that parse item definitions.
-/// This also parses generics for using them in all valid syntactic locations.
+/// For writing macros that parse item definitions,
+/// with the generic parameters transformed for use in type definitions,
+/// impl blocks and generic arguments.
 /// 
 /// # Examples
 /// 
@@ -383,12 +385,8 @@ macro_rules! __pgaw_parsed_generics {
     }
 }
 
-
-
-/// Transforms generic parameters to be usable in different places,
-/// and passes them to a macro.
-/// 
-/// This would be used by macros when they take generic parameters inside `()`, `[]`, or`{}`.
+/// Transforms generic parameters for use in type definitions,
+/// impl blocks and generic arguments, passing them to a callback macro.
 /// 
 /// # Examples
 /// 
@@ -707,8 +705,8 @@ macro_rules! __pg_type_param_finish {
 
 
 
-/// For writing macros that parse item definitions,
-/// parsing generics to a `macro_rules!`friendly format.
+/// For parsing item definitions,
+/// transforming generics to a form easily parsable by a callback macro.
 /// 
 /// # Examples
 /// 
@@ -978,9 +976,7 @@ macro_rules! __psgw_parsed_generics {
 
 
 
-/// Parses the generic parameters to a form easily parsable by the passed callback macro.
-/// 
-/// This would be used by macros when they take generic parameters inside `()`, `[]`, or`{}`.
+/// Transforms generic parameters to a form easily parsable by a callback macro.
 /// 
 /// # Examples
 /// 

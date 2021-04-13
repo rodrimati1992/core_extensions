@@ -74,9 +74,11 @@ pub fn __priv_unwrap_bound(
 #[cfg(feature = "macro_utils")]
 #[doc(hidden)]
 #[proc_macro]
-pub fn __priv_rewrap_opaque(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let out = macro_utils::rewrap_opaque(input_tokens.into());
-    // panic!("{}", out);
+pub fn __priv_rewrap_macro_parameters(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input_tokens: TokenStream = input_tokens.into();
+    //std::println!("\n----------------------------\n\n{:?}", input_tokens);
+    let out = macro_utils::rewrap_macro_parameters(input_tokens);
+    //std::println!("\n\n{:?}", out);
     out.into()
 }
 

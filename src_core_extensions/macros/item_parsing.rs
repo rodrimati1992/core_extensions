@@ -1,5 +1,6 @@
 
-/// For splitting an impl into attributes, safety, generics, trait, type, where clause, and body.
+/// For parsing impl blocks, 
+/// passing the generic parameters unchanged to a callback macro.
 /// 
 /// # Example
 /// 
@@ -67,7 +68,7 @@
 /// 
 #[cfg_attr(not(feature = "rust_1_46"), doc = " ```ignore")]
 #[cfg_attr(feature = "rust_1_46", doc = " ```rust")]
-/// pub use core_extensions::{impl_split, rewrap_opaque};
+/// pub use core_extensions::{impl_split, rewrap_macro_parameters};
 /// 
 /// struct Wrapper<T>(T, [u32; 3]);
 /// 
@@ -117,7 +118,7 @@
 ///         where
 ///             $($where)*
 ///         {
-///             $crate::rewrap_opaque!{$(
+///             $crate::rewrap_macro_parameters!{$(
 ///                 $crate::__priv_constify_methods!{
 ///                     @method
 ///                     $item
@@ -164,10 +165,8 @@ macro_rules! impl_split {
 
 
 
-/// For splitting an impl into attributes, safety, parsed generics, trait, type,
-/// where clause, and body.
-/// 
-/// The generic parameters are transformed to be easily parsed by `macro_rules!` macros.
+/// For parsing impl blocks, 
+/// transforming the generic parameters to a form easily parsable by the callback macro.
 /// 
 /// # Example
 /// 

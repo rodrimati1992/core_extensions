@@ -5,7 +5,7 @@ use core::{
     mem,
 };
 
-pub fn rewrap_opaque(tokens: TokenStream) -> TokenStream {
+pub fn rewrap_macro_parameters(tokens: TokenStream) -> TokenStream {
     let mut prev_tilde;
     let mut curr_tilde = false;
     let mut out = TokenStream::new();
@@ -15,7 +15,7 @@ pub fn rewrap_opaque(tokens: TokenStream) -> TokenStream {
 
         let tt_out = match tt {
             TokenTree::Group(group) => {
-                let out = rewrap_opaque(group.stream());
+                let out = rewrap_macro_parameters(group.stream());
                 let span = group.span();
 
                 let delim = if prev_tilde && group.delimiter() == Delimiter::None {
