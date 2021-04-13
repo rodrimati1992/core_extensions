@@ -22,11 +22,11 @@ const SPLIT_GENERICS_CASES: &[(&str, &str)] = &[
     ),
     (
         r#"(<> (x: u32) where T: Foo<{x <  y}> {}) foo!()"#,
-        r#"foo!(() ((x: u32)) (T: Foo<{x <  y}>) ({}))"#,
+        r#"foo!(() ((x: u32)) (T: Foo<{x <  y}>,) ({}))"#,
     ),
     (
         r#"(<> (x: u32) where T: FnOnce() -> u32, U: FnOnce() -> u32 {}) foo!()"#,
-        r#"foo!(() ((x: u32)) (T: FnOnce() -> u32, U: FnOnce() -> u32) ({}))"#,
+        r#"foo!(() ((x: u32)) (T: FnOnce() -> u32, U: FnOnce() -> u32,) ({}))"#,
     ),
     (
         r#"(<> (x: u32) -> impl I<J = u32> {}) foo!()"#,
@@ -38,31 +38,31 @@ const SPLIT_GENERICS_CASES: &[(&str, &str)] = &[
     ),
     (
         r#"(<> (x: u32) where u32: {}) foo!()"#,
-        r#"foo!(() ((x: u32)) (u32:) ({}))"#,
+        r#"foo!(() ((x: u32)) (u32:,) ({}))"#,
     ),
     (
         r#"(<> (x: u32) -> X<<>> where u32: {}) foo!()"#,
-        r#"foo!(() ((x: u32) -> X<<>>) (u32:) ({}))"#,
+        r#"foo!(() ((x: u32) -> X<<>>) (u32:,) ({}))"#,
     ),
     (
         r#"(<> (x: u32) -> X<Y<>> where u32: {}) foo!()"#,
-        r#"foo!(() ((x: u32) -> X<Y<>>) (u32:) ({}))"#,
+        r#"foo!(() ((x: u32) -> X<Y<>>) (u32:,) ({}))"#,
     ),
     (
         r#"(<> (x: u32) -> X<Y<Z<>>> where u32<>: {}) foo!()"#,
-        r#"foo!(() ((x: u32) -> X<Y<Z<>>>) (u32<>:) ({}))"#,
+        r#"foo!(() ((x: u32) -> X<Y<Z<>>>) (u32<>:,) ({}))"#,
     ),
     (
         r#"(<> (x: u32) where u32: Foo<Bar = u32> {}) foo!()"#,
-        r#"foo!(() ((x: u32)) (u32: Foo<Bar = u32>) ({}))"#,
+        r#"foo!(() ((x: u32)) (u32: Foo<Bar = u32>,) ({}))"#,
     ),
     (
         r#"(<> (x: u32) where u32: Foo<Bar = u32>; a) foo!()"#,
-        r#"foo!(() ((x: u32)) (u32: Foo<Bar = u32>) (; a))"#,
+        r#"foo!(() ((x: u32)) (u32: Foo<Bar = u32>,) (; a))"#,
     ),
     (
         r#"(<> (x: u32) where u32: Foo<Bar = u32> = 0) foo!()"#,
-        r#"foo!(() ((x: u32)) (u32: Foo<Bar = u32>) (= 0))"#,
+        r#"foo!(() ((x: u32)) (u32: Foo<Bar = u32>,) (= 0))"#,
     ),
 
     // Making sure that unclosed `<` cause the entire string to be contained in the generics
