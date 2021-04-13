@@ -117,10 +117,19 @@
 //! and [`quasiconst`] macro (for declaring types that emulate generic constants).
 //! Enables the `"generics_parsing"` feature.
 //!
+//! - `"macro_utils`: Enables the [`rewrap_macro_parameters`] macro.
+//!
 //! - `"generics_parsing"`: 
-//! Enables the [`parse_generics`], [`parse_generics_and_where`], and 
-//! [`split_generics_and_where`] macros.
+//! Enables the [`parse_generics`], [`parse_generics_and_where`],
+//! [`split_generics_and_where`], 
+//! [`parse_split_generics`], and [`parse_split_generics_and_where`] macros.
 //! These allow macros to parse items with generic parameters.
+//!
+//! - `"item_parsing"`: 
+//! Enables the `"macro_utils` and `"generics_parsing"` features.
+//! Enables the [`impl_parse_generics`] and [`impl_split`] macros.
+//!
+//!
 //!
 //! - `"integers"`: Enables the [`integers`] module, with extension traits for integer types.
 //!
@@ -205,9 +214,15 @@
 //! [`type_asserts`]: ./type_asserts/index.html
 //! [`type_level_bool`]: ./type_level_bool/index.html
 //!
+//! [`rewrap_macro_parameters`]: ./macro.rewrap_macro_parameters.html
 //! [`parse_generics`]: ./macro.parse_generics.html
 //! [`parse_generics_and_where`]: ./macro.parse_generics_and_where.html
 //! [`split_generics_and_where`]: ./macro.split_generics_and_where.html
+//! [`parse_split_generics`]: ./macro.parse_split_generics.html
+//! [`parse_split_generics_and_where`]: ./macro.parse_split_generics_and_where.html
+//!
+//! [`impl_parse_generics`]: ./macro.impl_parse_generics.html
+//! [`impl_split`]: ./macro.impl_split.html
 //!
 //! [`BoolExt`]: ./trait.BoolExt.html
 //! [`ConstDefault`]: ./trait.ConstDefault.html
@@ -456,7 +471,13 @@ pub mod __ {
     pub use std_::marker::PhantomData as PD;
     pub use std_::compile_error;
     
+    #[cfg(feature = "macro_utils")]
+    pub use core_extensions_proc_macros::__priv_rewrap_macro_parameters;
+    
     #[cfg(feature = "enable_proc_macro_crate")]
-    pub use core_extensions_proc_macros::{__priv_remove_non_delimiter, __priv_split_generics};
+    pub use core_extensions_proc_macros::{__priv_unwrap_bound, __priv_split_generics};
+
+    #[cfg(feature = "item_parsing")]
+    pub use core_extensions_proc_macros::__priv_split_impl;
 }
 

@@ -21,6 +21,12 @@ pub mod phantomdata;
 #[cfg(feature = "generics_parsing")]
 pub mod generics_parsing;
 
+#[cfg(feature = "item_parsing")]
+pub mod item_parsing;
+
+#[cfg(feature = "macro_utils")]
+pub mod macro_utils;
+
 #[macro_use]
 #[cfg(feature = "transparent_newtype")]
 pub mod transparent_newtype_macros;

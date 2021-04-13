@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions_proc_macros"
-version = "1.1.1"
+version = "1.2.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license="MIT/Apache-2.0"
@@ -14,6 +14,10 @@ include = [
     "../APACHE_license", 
     "../MIT_license",
 ]
+
+[features]
+item_parsing = []
+macro_utils = []
 
 [dev-dependencies.proc-macro2]
 version = "1.0.19"

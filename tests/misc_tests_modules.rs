@@ -13,6 +13,15 @@ mod misc_tests {
     #[cfg(feature = "type_identity")]
     mod type_identity_tests;
 
+    #[cfg(feature = "generics_parsing")]
+    mod generics_parsing_tests;
+
+    #[cfg(feature = "item_parsing")]
+    mod item_parsing_tests;
+
+    #[cfg(feature = "macro_utils")]
+    mod macro_utils_tests;
+
     #[cfg(feature = "transparent_newtype")]
     mod transparent_newtype_tests;
     

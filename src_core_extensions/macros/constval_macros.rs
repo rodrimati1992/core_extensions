@@ -106,8 +106,6 @@ macro_rules! getconst {
 /// This macro can only be used inside of functions since Rust 1.45.0,
 /// before that version it can only be used outside of functions.
 /// 
-/// This is because it uses a dependency-free procedural macro to do some token munging.
-/// 
 /// # Examples
 /// 
 /// ### Basic
