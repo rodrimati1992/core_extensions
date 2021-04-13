@@ -67,6 +67,7 @@
 /// 
 /// ```
 /// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "macro_utils")))]
 #[macro_export]
 macro_rules! rewrap_macro_parameters {
     (
