@@ -100,6 +100,14 @@ pub fn count_tts(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStre
     out.into()
 }
 
+#[cfg(feature = "macro_utils")]
+#[proc_macro]
+pub fn gen_idents(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input_tokens: TokenStream = input_tokens.into();
+    let out = macro_utils::gen_idents(input_tokens).unwrap_or_else(Error::into_compile_error); 
+    out.into()
+}
+
 
 
 #[doc(hidden)]

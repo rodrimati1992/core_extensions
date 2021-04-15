@@ -137,6 +137,134 @@ macro_rules! rewrap_macro_parameters {
 pub use core_extensions_proc_macros::count_tts;
 
 
+/// Generates identifiers. passing them to a callback macro.
+/// 
+/// # Repetition Syntax
+/// 
+/// The syntax for describing the generated identifiers:
+/// 
+/// `for <ident> * in <range>`
+/// 
+/// Where `<ident>` is any valid identifier.
+/// 
+/// Where `<range>` can be either `<number> .. <number>` or `<number> ..= <number>`.
+/// 
+/// Where `<number>` can be any of:
+/// 
+/// - An integer literal
+/// 
+/// - `count(....)`: Which counts the amount of token trees in `(....)`,
+/// the same way that [`count_tts`] does.
+/// 
+/// 
+/// [`count_tts`]: ./macro.count_tts.html
+/// 
+/// # Example
+/// 
+/// ### Basic
+/// 
+/// Basic examples of using this macro, and what it passes to a callback macro.
+/// 
+/// For a more realistic example you can look [at the one below](#realistic-example)
+/// 
+/// ```rust
+/// use core_extensions::gen_idents;
+/// 
+/// fn main() {
+///     assert_eq!(hello(), "world");
+///     assert_eq!(foo(), "bar");
+/// }
+/// 
+/// // Calls the `expected_0_to_2` macro.
+/// gen_idents!{
+///     crate::expected_0_to_2!{hello "world"}
+///     for stuff_* in 0..3
+/// }
+/// 
+/// // Calls the `expected_1_to_4` macro.
+/// gen_idents!{
+///     crate::expected_1_to_4!{foo "bar" baz}
+///     // `count(....)` here counts 4 token trees
+///     for pre_* in 1..=count(a (b c) [d e f] {g h i j})
+/// }
+///
+/// #[macro_export]
+/// macro_rules! expected_0_to_2{
+///     ($func:ident $lit:literal  (stuff_0 stuff_1 stuff_2)) => {
+///         fn $func() -> &'static str {
+///             $lit
+///         }
+///     }
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! expected_1_to_4{
+///     ($func:ident $lit:literal baz  (pre_1 pre_2 pre_3 pre_4)) => {
+///         fn $func() -> &'static str {
+///             $lit
+///         }
+///     }
+/// }
+/// ```
+/// 
+/// ### More Realistic Example
+/// 
+/// ```rust
+/// use core_extensions::gen_idents;
+/// 
+/// fn main() {
+///     assert_eq!(add_unsigned(3, 5, 8), 16);
+///     assert_eq!(add_signed(-3, 8), 5);
+/// 
+/// }
+/// 
+/// adder_fn!{ pub fn add_unsigned(u16, u32, u64) -> u64 }
+/// adder_fn!{ fn add_signed(i8, i16) -> i64 }
+/// 
+/// 
+/// 
+/// #[macro_export]
+/// macro_rules! adder_fn {
+///     ($vis:vis fn $func:ident ($($arg_ty:ty),* $(,)?) -> $ret_ty:ty) => {
+///         gen_idents!{
+///             $crate::__priv_adder_fn!{
+///                 ($vis fn $func ($($arg_ty,)*) -> $ret_ty)
+///             }
+///             for arg_* in 0..count($($arg_ty)*)
+///         }
+///     }
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! __priv_adder_fn {
+///     (
+///         ($vis:vis fn $func:ident ($($arg_ty:ty,)*) -> $ret_ty:ty)
+///         ($($arg:ident)*)
+///     ) => {
+///         $vis fn $func($($arg: $arg_ty,)*) -> $ret_ty {
+///             // assuming that Default::default is zero or empty
+///             <$ret_ty as $crate::__::Default>::default()
+///             $(
+///                 + <$ret_ty as $crate::__::From<_>>::from($arg)
+///             )*
+///         }
+///     }
+/// }
+/// 
+/// 
+/// #[doc(hidden)]
+/// pub mod __ {
+///     pub use core_extensions::gen_idents;
+///     
+///     pub use std::convert::From;
+///     pub use std::default::Default;
+/// }
+/// 
+/// ```
+/// 
+pub use core_extensions_proc_macros::gen_idents;
+
+
 
 
 
