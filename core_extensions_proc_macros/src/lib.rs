@@ -30,8 +30,18 @@ mod splitting_generics;
 #[cfg(feature = "macro_utils")]
 mod macro_utils;
 
+#[cfg(feature = "macro_utils")]
+mod macro_utils_shared;
+
 #[cfg(feature = "item_parsing")]
 mod item_parsing;
+
+
+#[cfg(feature = "macro_utils")]
+use crate::macro_utils_shared::Error;
+
+#[cfg(feature = "macro_utils")]
+type Result<T> = core::result::Result<T, Error>;
 
 
 #[doc(hidden)]
@@ -79,6 +89,14 @@ pub fn __priv_rewrap_macro_parameters(input_tokens: proc_macro::TokenStream) -> 
     //std::println!("\n----------------------------\n\n{:?}", input_tokens);
     let out = macro_utils::rewrap_macro_parameters(input_tokens);
     //std::println!("\n\n{:?}", out);
+    out.into()
+}
+
+#[cfg(feature = "macro_utils")]
+#[proc_macro]
+pub fn count_tts(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input_tokens: TokenStream = input_tokens.into();
+    let out = macro_utils::count_tts(input_tokens).unwrap_or_else(Error::into_compile_error); 
     out.into()
 }
 

@@ -1,4 +1,8 @@
-use crate::used_proc_macro::{Delimiter, Group, TokenStream, TokenTree};
+use crate::{
+    used_proc_macro::{Delimiter, Group, Literal, TokenStream, TokenTree},
+    macro_utils_shared::{parse_parentheses, parse_macro_invocation},
+    mmatches,
+};
 
 use core::{
     iter::once,
@@ -44,4 +48,34 @@ pub fn rewrap_macro_parameters(tokens: TokenStream) -> TokenStream {
     }
     out
 }
+
+
+pub(crate) fn count_tts(tokens: TokenStream) -> crate::Result<TokenStream> {
+    let mut iter = tokens.into_iter().peekable();
+
+    fn output_counted(counted: Group, out: &mut TokenStream) {
+        let mut lit = Literal::u32_unsuffixed(counted.stream().into_iter().count() as u32);
+        lit.set_span(counted.span());
+        out.extend(once(TokenTree::Literal(lit)));
+    }
+
+    // If no callback macro was passed
+    if mmatches!{
+        iter.peek(), Some(TokenTree::Group(group))
+        if mmatches!(group.delimiter(), Delimiter::Parenthesis)
+    } {
+        let mut out = TokenStream::new();
+
+        output_counted(parse_parentheses(&mut iter)?, &mut out);
+
+        Ok(out)
+    } else {
+        let mut macro_ = parse_macro_invocation(&mut iter)?;
+
+        output_counted(parse_parentheses(&mut iter)?, &mut macro_.args);
+
+        Ok(macro_.into_token_stream())
+    }
+}
+
 

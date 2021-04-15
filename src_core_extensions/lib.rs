@@ -345,6 +345,11 @@ pub mod iterators;
 pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
 
 
+#[doc(inline)]
+pub use crate::macros::macro_utils::*;
+
+
+
 #[cfg(feature = "marker_type")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "marker_type")))]
 mod marker_type;
