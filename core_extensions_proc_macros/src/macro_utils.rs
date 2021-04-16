@@ -58,12 +58,20 @@ pub fn rewrap_macro_parameters(tokens: TokenStream) -> TokenStream {
     out
 }
 
+enum ExpandedInto{
+    Macro,
+    Expr,
+}
 
 pub(crate) fn count_tts(tokens: TokenStream) -> crate::Result<TokenStream> {
     let mut iter = tokens.into_iter().peekable();
 
-    fn output_counted(counted: Group, out: &mut TokenStream) {
-        let mut lit = Literal::u32_unsuffixed(counted.stream().into_iter().count() as u32);
+    fn output_counted(counted: Group, ei: ExpandedInto, out: &mut TokenStream) {
+        let count = counted.stream().into_iter().count();
+        let mut lit = match ei {
+            ExpandedInto::Macro => Literal::usize_unsuffixed(count),
+            ExpandedInto::Expr => Literal::usize_suffixed(count),
+        };
         lit.set_span(counted.span());
         out.extend(once(TokenTree::Literal(lit)));
     }
@@ -75,13 +83,13 @@ pub(crate) fn count_tts(tokens: TokenStream) -> crate::Result<TokenStream> {
     } {
         let mut out = TokenStream::new();
 
-        output_counted(parse_parentheses(&mut iter)?, &mut out);
+        output_counted(parse_parentheses(&mut iter)?, ExpandedInto::Expr, &mut out);
 
         Ok(out)
     } else {
         let mut macro_ = parse_macro_invocation(&mut iter)?;
 
-        output_counted(parse_parentheses(&mut iter)?, &mut macro_.args);
+        output_counted(parse_parentheses(&mut iter)?, ExpandedInto::Macro, &mut macro_.args);
 
         Ok(macro_.into_token_stream())
     }

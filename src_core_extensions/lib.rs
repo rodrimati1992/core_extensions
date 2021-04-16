@@ -479,6 +479,11 @@ pub use self::void::Void;
 pub mod __ {
     pub use std_::marker::PhantomData as PD;
     pub use std_::compile_error;
+    pub use self::foo::Usize as usize;
+
+    mod foo {
+        pub type Usize = usize;
+    }
     
     #[cfg(feature = "macro_utils")]
     pub use core_extensions_proc_macros::{__priv_rewrap_macro_parameters, count_tts};

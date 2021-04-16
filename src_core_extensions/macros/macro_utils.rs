@@ -84,7 +84,7 @@ macro_rules! rewrap_macro_parameters {
 #[macro_export]
 macro_rules! __priv_usize_const {
     ($value:literal) => {
-        pub const __USIZE_CONST: usize = $value;
+        pub const __USIZE_CONST: $crate::__::usize = $value;
     };
 }
 
@@ -104,6 +104,11 @@ if_rust_1_46!{
     /// 
     /// If you only need the count for an expression(ie: the length of an array),
     /// then no callback macro is necessary.
+    /// 
+    /// # Version compatibility
+    /// 
+    /// This macro requires Rust 1.45.0 to be invoked with a callback parameter,
+    /// inside an expression.
     /// 
     /// # Example
     /// 
@@ -187,6 +192,10 @@ if_rust_1_46!{
 /// 
 /// 
 /// [`count_tts`]: ./macro.count_tts.html
+/// 
+/// # Version compatibility
+/// 
+/// This macro requires Rust 1.45.0 to be invoked inside of a function.
 /// 
 /// # Example
 /// 

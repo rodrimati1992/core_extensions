@@ -116,6 +116,15 @@ fn count_tts_test() {
         ),
         7 (_1 _2 _3 _4 _5 _6 _7),
     }
+
+    // Making sure that the constant is a usize
+    fn type_name_of<T>(_: T) -> &'static str {
+        std::any::type_name::<T>()
+    }
+
+    assert!(type_name_of(count_tts!(())).contains("usize"));
+    assert!(type_name_of(count_tts!((_))).contains("usize"));
+
 }
 
 
