@@ -53,6 +53,16 @@ pub(crate) fn parse_count_param(input: &mut Peekable<IntoIter>) -> crate::Result
                 }
             }
         }
+        Some(TokenTree::Group(group)) if mmatches!(group.delimiter(), Delimiter::None) => {
+            let mut iter = group.stream().into_iter().peekable();
+            let res = parse_count_param(&mut iter);
+
+            if let Some(tt) = iter.next() {
+                return Err(Error::one_tt(tt.span(), "Expected no more tokens after integer"));
+            }
+
+            res
+        }
         Some(TokenTree::Literal(lit)) => {
             const IL_MSG: &str = "could not parse integer literal";
 
