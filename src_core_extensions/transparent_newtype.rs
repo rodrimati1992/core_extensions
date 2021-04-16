@@ -184,7 +184,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         unsafe { Box::from_raw(Self::as_inner_raw_mut(Box::into_raw(self))) }
     }
 
-    rc_shared_docs!{
+    if_rust_1_46!{
         /// Converts `self` to a `Arc<Self::Inner>`.
         /// 
         /// # Self parameter
@@ -209,7 +209,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         )
     }
 
-    rc_shared_docs!{
+    if_rust_1_46!{
         /// Converts `self` to a `Rc<Self::Inner>`.
         /// 
         /// # Self parameter

@@ -137,7 +137,7 @@ pub trait TypeIdentity {
         unsafe { utils::transmute_ignore_size(self) }
     }
 
-    rc_shared_docs!{
+    if_rust_1_46!{
         /// Converts an Arc back to the original type.
         /// 
         /// # Self parameter
@@ -162,7 +162,7 @@ pub trait TypeIdentity {
         )
     }
 
-    rc_shared_docs!{
+    if_rust_1_46!{
         /// Converts an Rc back to the original type.
         /// 
         /// # Self parameter

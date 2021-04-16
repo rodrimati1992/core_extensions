@@ -481,8 +481,8 @@ pub mod __ {
     pub use std_::compile_error;
     
     #[cfg(feature = "macro_utils")]
-    pub use core_extensions_proc_macros::__priv_rewrap_macro_parameters;
-    
+    pub use core_extensions_proc_macros::{__priv_rewrap_macro_parameters, count_tts};
+
     #[cfg(feature = "enable_proc_macro_crate")]
     pub use core_extensions_proc_macros::{__priv_unwrap_bound, __priv_split_generics};
 
