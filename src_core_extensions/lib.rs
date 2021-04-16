@@ -348,6 +348,7 @@ pub mod iterators;
 pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
 
 
+#[cfg(feature = "macro_utils")]
 #[doc(inline)]
 pub use crate::macros::macro_utils::*;
 
