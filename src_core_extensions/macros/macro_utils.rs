@@ -246,6 +246,8 @@ if_rust_1_46!{
 /// }
 /// ```
 /// 
+/// <div id = "realistic-example"></div>
+///
 /// ### More Realistic Example
 /// 
 /// ```rust
