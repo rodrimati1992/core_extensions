@@ -147,6 +147,7 @@ if_rust_1_46!{
     /// }
     /// ```
     /// 
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "macro_utils")))]
     =>
     (
         #[macro_export]
@@ -300,6 +301,7 @@ if_rust_1_46!{
 /// 
 /// ```
 /// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "macro_utils")))]
 pub use core_extensions_proc_macros::gen_ident_range;
 
 
