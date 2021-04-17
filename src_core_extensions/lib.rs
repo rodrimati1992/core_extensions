@@ -117,7 +117,8 @@
 //! and [`quasiconst`] macro (for declaring types that emulate generic constants).
 //! Enables the `"generics_parsing"` feature.
 //!
-//! - `"macro_utils`: Enables the [`rewrap_macro_parameters`] macro.
+//! - `"macro_utils`:
+//! Enables the [`rewrap_macro_parameters`], [`count_tts`], and [`gen_ident_range`] macro.
 //!
 //! - `"generics_parsing"`: 
 //! Enables the [`parse_generics`], [`parse_generics_and_where`],
@@ -214,6 +215,8 @@
 //! [`type_asserts`]: ./type_asserts/index.html
 //! [`type_level_bool`]: ./type_level_bool/index.html
 //!
+//! [`count_tts`]: ./macro.count_tts.html
+//! [`gen_ident_range`]: ./macro.gen_ident_range.html
 //! [`rewrap_macro_parameters`]: ./macro.rewrap_macro_parameters.html
 //! [`parse_generics`]: ./macro.parse_generics.html
 //! [`parse_generics_and_where`]: ./macro.parse_generics_and_where.html
@@ -345,6 +348,12 @@ pub mod iterators;
 pub use self::iterators::{IterCloner, IterConstructor, IteratorExt, LazyOnce};
 
 
+#[cfg(feature = "macro_utils")]
+#[doc(inline)]
+pub use crate::macros::macro_utils::*;
+
+
+
 #[cfg(feature = "marker_type")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "marker_type")))]
 mod marker_type;
@@ -470,10 +479,15 @@ pub use self::void::Void;
 pub mod __ {
     pub use std_::marker::PhantomData as PD;
     pub use std_::compile_error;
+    pub use self::foo::Usize as usize;
+
+    mod foo {
+        pub type Usize = usize;
+    }
     
     #[cfg(feature = "macro_utils")]
-    pub use core_extensions_proc_macros::__priv_rewrap_macro_parameters;
-    
+    pub use core_extensions_proc_macros::{__priv_rewrap_macro_parameters, count_tts};
+
     #[cfg(feature = "enable_proc_macro_crate")]
     pub use core_extensions_proc_macros::{__priv_unwrap_bound, __priv_split_generics};
 
