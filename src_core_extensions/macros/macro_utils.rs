@@ -206,7 +206,7 @@ if_rust_1_46!{
 /// For a more realistic example you can look [at the one below](#realistic-example)
 /// 
 /// ```rust
-/// use core_extensions::gen_idents;
+/// use core_extensions::gen_ident_range;
 /// 
 /// fn main() {
 ///     assert_eq!(hello(), "world");
@@ -214,13 +214,13 @@ if_rust_1_46!{
 /// }
 /// 
 /// // Calls the `expected_0_to_2` macro.
-/// gen_idents!{
+/// gen_ident_range!{
 ///     crate::expected_0_to_2!{hello "world"}
 ///     for stuff_* in 0..3
 /// }
 /// 
 /// // Calls the `expected_1_to_4` macro.
-/// gen_idents!{
+/// gen_ident_range!{
 ///     crate::expected_1_to_4!{foo "bar" baz}
 ///     // `count(....)` here counts 4 token trees
 ///     for pre_* in 1..=count(a (b c) [d e f] {g h i j})
@@ -248,7 +248,7 @@ if_rust_1_46!{
 /// ### More Realistic Example
 /// 
 /// ```rust
-/// use core_extensions::gen_idents;
+/// use core_extensions::gen_ident_range;
 /// 
 /// fn main() {
 ///     assert_eq!(add_unsigned(3, 5, 8), 16);
@@ -264,7 +264,7 @@ if_rust_1_46!{
 /// #[macro_export]
 /// macro_rules! adder_fn {
 ///     ($vis:vis fn $func:ident ($($arg_ty:ty),* $(,)?) -> $ret_ty:ty) => {
-///         gen_idents!{
+///         gen_ident_range!{
 ///             $crate::__priv_adder_fn!{
 ///                 ($vis fn $func ($($arg_ty,)*) -> $ret_ty)
 ///             }
@@ -292,7 +292,7 @@ if_rust_1_46!{
 /// 
 /// #[doc(hidden)]
 /// pub mod __ {
-///     pub use core_extensions::gen_idents;
+///     pub use core_extensions::gen_ident_range;
 ///     
 ///     pub use std::convert::From;
 ///     pub use std::default::Default;
@@ -300,6 +300,6 @@ if_rust_1_46!{
 /// 
 /// ```
 /// 
-pub use core_extensions_proc_macros::gen_idents;
+pub use core_extensions_proc_macros::gen_ident_range;
 
 

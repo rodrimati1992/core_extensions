@@ -1,4 +1,4 @@
-use krate::{count_tts, gen_idents, rewrap_macro_parameters};
+use krate::{count_tts, gen_ident_range, rewrap_macro_parameters};
 
 
 #[test]
@@ -151,20 +151,20 @@ mod gen_idents_test {
             $count_item:tt $expected_item:tt ($($t_item:item)*),
             $count_tt:tt $expected_tt:tt ($($t_tt:tt)*),
         ) => {
-            gen_idents!{assert_idents!{$expected_expr} for f* in 0..$count_expr}
-            gen_idents!{assert_idents!{$expected_expr} for f* in 0..count($($t_expr)*)}
+            gen_ident_range!{assert_idents!{$expected_expr} for f* in 0..$count_expr}
+            gen_ident_range!{assert_idents!{$expected_expr} for f* in 0..count($($t_expr)*)}
             
-            gen_idents!{assert_idents!{$expected_ty} for f* in 0..$count_ty}
-            gen_idents!{assert_idents!{$expected_ty} for f* in 0..count($($t_ty)*)}
+            gen_ident_range!{assert_idents!{$expected_ty} for f* in 0..$count_ty}
+            gen_ident_range!{assert_idents!{$expected_ty} for f* in 0..count($($t_ty)*)}
             
-            gen_idents!{assert_idents!{$expected_path} for f* in 0..$count_path}
-            gen_idents!{assert_idents!{$expected_path} for f* in 0..count($($t_path)*)}
+            gen_ident_range!{assert_idents!{$expected_path} for f* in 0..$count_path}
+            gen_ident_range!{assert_idents!{$expected_path} for f* in 0..count($($t_path)*)}
             
-            gen_idents!{assert_idents!{$expected_item} for f* in 0..$count_item}
-            gen_idents!{assert_idents!{$expected_item} for f* in 0..count($($t_item)*)}
+            gen_ident_range!{assert_idents!{$expected_item} for f* in 0..$count_item}
+            gen_ident_range!{assert_idents!{$expected_item} for f* in 0..count($($t_item)*)}
             
-            gen_idents!{assert_idents!{$expected_tt} for f* in 0..$count_tt}
-            gen_idents!{assert_idents!{$expected_tt} for f* in 0..count($($t_tt)*)}
+            gen_ident_range!{assert_idents!{$expected_tt} for f* in 0..$count_tt}
+            gen_ident_range!{assert_idents!{$expected_tt} for f* in 0..count($($t_tt)*)}
         };
     }
 
@@ -182,8 +182,8 @@ mod gen_idents_test {
         ),
         7 (f0 f1 f2 f3 f4 f5 f6) (_1 _2 _3 _4 _5 _6 _7),
     }
-    gen_idents!{assert_idents!{(a0 a1 a2 a3)} for a* in 0..=3}
-    gen_idents!{assert_idents!{(b2 b3 b4)} for b* in 2..=count(_ _ _ _)}
-    gen_idents!{assert_idents!{(c2 c3 c4)} for c* in count(_ _)..=4}
-    gen_idents!{assert_idents!{(d2 d3 d4)} for d* in count(_ _)..=count(_ _ _ _)}
+    gen_ident_range!{assert_idents!{(a0 a1 a2 a3)} for a* in 0..=3}
+    gen_ident_range!{assert_idents!{(b2 b3 b4)} for b* in 2..=count(_ _ _ _)}
+    gen_ident_range!{assert_idents!{(c2 c3 c4)} for c* in count(_ _)..=4}
+    gen_ident_range!{assert_idents!{(d2 d3 d4)} for d* in count(_ _)..=count(_ _ _ _)}
 }

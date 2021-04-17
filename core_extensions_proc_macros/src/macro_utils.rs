@@ -96,7 +96,7 @@ pub(crate) fn count_tts(tokens: TokenStream) -> crate::Result<TokenStream> {
 }
 
 
-pub(crate) fn gen_idents(tokens: TokenStream) -> crate::Result<TokenStream> {
+pub(crate) fn gen_ident_range(tokens: TokenStream) -> crate::Result<TokenStream> {
     let mut iter = tokens.into_iter().peekable();
     
     let mut macro_ = parse_macro_invocation(&mut iter)?;

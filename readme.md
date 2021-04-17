@@ -120,7 +120,7 @@ and [`quasiconst`] macro (for declaring types that emulate generic constants).
 Enables the `"generics_parsing"` feature.
 
 - `"macro_utils`:
-Enables the [`rewrap_macro_parameters`], [`count_tts`], and [`gen_idents`] macro.
+Enables the [`rewrap_macro_parameters`], [`count_tts`], and [`gen_ident_range`] macro.
 
 - `"generics_parsing"`: 
 Enables the [`parse_generics`], [`parse_generics_and_where`],
@@ -231,7 +231,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [`type_level_bool`]: https://docs.rs/core_extensions/1.*/core_extensions/type_level_bool/index.html
 
 [`count_tts`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.count_tts.html
-[`gen_idents`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.gen_idents.html
+[`gen_ident_range`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.gen_ident_range.html
 [`rewrap_macro_parameters`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.rewrap_macro_parameters.html
 [`parse_generics`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_generics.html
 [`parse_generics_and_where`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_generics_and_where.html

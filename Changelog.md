@@ -6,7 +6,7 @@ This started being written for the 0.1.19 release, it doesn't cover versions pri
 
 ### 1.3.0
 
-Added the `count_tts` and `gen_idents` macros, under the `"macro_utils"` feature.
+Added the `count_tts` and `gen_ident_range` macros, under the `"macro_utils"` feature.
 
 ### 1.2.0
 
