@@ -1,5 +1,7 @@
 use crate::{
-    used_proc_macro::{Delimiter, Ident, Group, Literal, TokenStream, TokenTree},
+    used_proc_macro::{
+        Delimiter, Ident, Group, Literal, Punct, Spacing, TokenStream, TokenTree,
+    },
     macro_utils_shared::{
         parse_ident, parse_keyword, parse_check_punct,
         parse_parentheses, parse_range_param, parse_macro_invocation,
@@ -126,3 +128,39 @@ pub(crate) fn gen_ident_range(tokens: TokenStream) -> crate::Result<TokenStream>
     Ok(macro_.into_token_stream())
 }
 
+
+pub(crate) fn macro_attr(attr: TokenStream, item: TokenStream) -> crate::Result<TokenStream> {
+    let mut attr = attr.into_iter();
+
+    let mut macro_ = crate::macro_utils_shared::parse_path_and_span(&mut attr)?;
+
+    let (bang, more_tokens) = match macro_.terminator {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '!' => 
+            (punct, true),
+        Some(tt) => 
+            return Err(crate::Error::one_tt(tt.span(), "expected a `!`")),
+        None => {
+            let mut bang = Punct::new('!', Spacing::Alone);
+            bang.set_span(macro_.start_span);
+            (bang, false)
+        }
+    };
+    
+    macro_.path.extend(once(TokenTree::Punct(bang)));
+
+    let (args, bspan) = if more_tokens {
+        let group = crate::macro_utils_shared::parse_group(&mut attr)?;
+        let mut args = group.stream();
+        args.extend(item);
+        
+        (args, group.span())
+    } else {
+        (item, macro_.end_span)
+    };
+
+    let mut args = Group::new(Delimiter::Brace, args);
+    args.set_span(bspan);
+    macro_.path.extend(once(TokenTree::Group(args)));
+    
+    Ok(macro_.path)
+}

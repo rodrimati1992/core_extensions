@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use crate::used_proc_macro::{
     token_stream::IntoIter,
-    Delimiter, Ident, Group, Punct, Span, TokenStream, TokenTree
+    Delimiter, Ident, Group, Punct, Spacing, Span, TokenStream, TokenTree
 };
 
 use core::iter::{Peekable, once};
@@ -38,6 +38,12 @@ pub(crate) fn out_parenthesized(ts: TokenStream, span: Span, out: &mut TokenStre
 pub(crate) fn out_ident(value: &str, span: Span, out: &mut TokenStream) {
     let ident = Ident::new(value, span);
     out.extend(once(TokenTree::Ident(ident)));
+}
+
+#[allow(dead_code)]
+pub(crate) fn out_colon2(span: Span, out: &mut TokenStream) {
+    out.extend(once(TokenTree::Punct(Punct::new(':', Spacing::Joint))));
+    out.extend(once(TokenTree::Punct(Punct::new(':', Spacing::Alone))));
 }
 
 

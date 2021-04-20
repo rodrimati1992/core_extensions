@@ -142,6 +142,17 @@ where
     }
 }
 
+pub(crate) fn parse_group<I>(mut input: I) -> crate::Result<Group>
+where
+    I: Iterator<Item = TokenTree>
+{
+    match_token!{"expected `(`, `{`, or `[`", input.next() => 
+        Some(TokenTree::Group(group)) if !mmatches!(group.delimiter(), Delimiter::None) => {
+            Ok(group)
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 pub(crate) fn parse_ident<I>(mut input: I) -> crate::Result<Ident>
@@ -202,12 +213,14 @@ impl MacroInvocation {
 
 
 pub(crate) fn parse_macro_invocation<I>(
-    mut iter: I
+    iter: I
 ) -> crate::Result<MacroInvocation> 
 where
-    I: Iterator<Item = TokenTree>
+    I: IntoIterator<Item = TokenTree>
 {
     let mut path_bang = TokenStream::new();
+
+    let mut iter = iter.into_iter();
 
     loop {
         match iter.next() {
@@ -231,6 +244,71 @@ where
             }
         }
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+pub(crate) struct PathAndSpan {
+    pub(crate) path: TokenStream,
+    pub(crate) start_span: Span,
+    pub(crate) end_span: Span,
+    pub(crate) terminator: Option<TokenTree>,
+}
+
+pub(crate) fn parse_path_and_span<I>(
+    iter: I
+) -> crate::Result<PathAndSpan> 
+where
+    I: IntoIterator<Item = TokenTree>
+{
+    let mut this = PathAndSpan{
+        path: TokenStream::new(),
+        start_span: Span::call_site(),
+        end_span: Span::call_site(),
+        terminator: None,
+    };
+
+    let mut start = true;
+
+    for tt in iter {
+        if start {
+            this.start_span = tt.span();
+            start = false;
+        } else {
+            this.end_span = tt.span();
+        };
+
+        macro_rules! return_ {
+            ($tt:expr) => ({
+                this.terminator = Some($tt);
+                return Ok(this);
+            });
+        }
+
+        match tt {
+            TokenTree::Group(group) => {
+                if mmatches!(group.delimiter(), Delimiter::None) {
+                    this.path.extend(group.stream());
+                } else {
+                    return_!(TokenTree::Group(group))
+                }
+            }
+            TokenTree::Punct(punct) => {
+                if punct.as_char() == ':' {
+                    this.path.extend(once(TokenTree::Punct(punct)));
+                } else {
+                    return_!(TokenTree::Punct(punct))
+                }
+            },
+            tt @ TokenTree::Literal(_) => return_!(tt),
+            x @ TokenTree::Ident(_) => {
+                this.path.extend(once(x));
+            }
+        }
+    }
+
+    Ok(this)
 }
 
 
@@ -297,7 +375,11 @@ impl Error {
     }
 }
 
-
+impl From<Error> for TokenStream {
+    fn from(err: Error) -> TokenStream {
+        err.into_compile_error()
+    }
+}
 
 
 

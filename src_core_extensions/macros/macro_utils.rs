@@ -307,3 +307,98 @@ if_rust_1_46!{
 pub use core_extensions_proc_macros::gen_ident_range;
 
 
+/// For using function-like macros as attributes.
+/// 
+/// # Examples
+/// 
+/// ### Module
+/// 
+/// ```rust
+/// use core_extensions::macro_attr;
+/// 
+/// fn main() {
+///     assert_eq!(hello::Hello(3, 5).sum(), 8);
+///     assert_eq!(hello::Hello(13, 21).sum(), 34);
+/// }
+/// 
+/// #[macro_attr(in_mod!(pub mod hello;))]
+/// #[derive(Debug, PartialEq)]
+/// pub struct Hello(pub u32, pub u32);
+/// 
+/// impl hello::Hello {
+///     const fn sum(&self) -> u64 {
+///         self.0 as u64 + self.1 as u64
+///     }
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! in_mod {
+///     (
+///         $(#[$attr:meta])*
+///         $vis:vis mod $module:ident;
+///         
+///         $($item:item)*
+///     ) => {
+///         $(#[$attr])*
+///         $vis mod $module {
+///             $($item)*
+///         }
+///     }
+/// }
+/// 
+/// ```
+/// 
+/// ### Item count
+/// 
+/// ```rust
+/// use core_extensions::macro_attr;
+/// 
+/// fn main() {
+///     assert_eq!(items::COUNT, 4);
+///
+///     assert_eq!(items::foo(), 3);
+///     assert_eq!(items::BAR, 5);
+/// }
+/// 
+/// #[macro_attr(crate::and_item_count)]
+/// pub mod items {
+///     pub fn foo() -> u32 {
+///         3
+///     }
+///
+///     pub const BAR: u32 = 5;
+///     
+///     pub struct Baz;
+///
+///     pub struct Qux {
+///         pub x: u64,
+///         pub y: u64,
+///     }
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! and_item_count {
+///     (
+///         $(#[$attr:meta])*
+///         $vis:vis mod $module:ident {
+///             $($item:item)*
+///         }
+///     ) => {
+///         $(#[$attr])*
+///         $vis mod $module {
+///             pub const COUNT: usize = $crate::__::count_tts!(($($item)*));
+///             
+///             $($item)*
+///         }
+///     }
+/// }
+/// 
+/// #[doc(hidden)]
+/// mod __ {
+///     pub use core_extensions::count_tts;
+/// }
+/// ```
+/// 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "macro_utils")))]
+pub use core_extensions_proc_macros::macro_attr;
+

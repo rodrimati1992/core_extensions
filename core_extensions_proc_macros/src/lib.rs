@@ -44,6 +44,13 @@ use crate::macro_utils_shared::Error;
 type Result<T> = core::result::Result<T, Error>;
 
 
+#[cfg(feature = "macro_utils")]
+#[proc_macro_attribute]
+pub fn macro_attr(attr: TokenStream, item: TokenStream) -> TokenStream {
+    crate::macro_utils::macro_attr(attr, item).unwrap_or_else(Error::into_compile_error)
+}
+
+
 #[doc(hidden)]
 #[proc_macro]
 pub fn __priv_unwrap_bound(
