@@ -1,4 +1,4 @@
-/// Slice-like operations on tokens
+/// Does slice-like operations on tokens, passing the result to a callback macro.
 /// 
 /// # Elements
 /// 
@@ -14,9 +14,6 @@
 /// 
 /// - Punctuation
 /// 
-/// 
-/// 
-/// 
 /// # Methods
 /// 
 /// These are the methods that this provides:
@@ -29,7 +26,7 @@
 /// - [`split_at`](#split_at): Gets the token trees before the nth one, and from it.
 /// - [`get`](#get): Gets the token(s) at an index or range.
 /// 
-/// The operations that take integer arguments use
+/// The methods that take integer arguments use
 /// [the `<number>` syntax](./macro.gen_ident_range.html#number-syntax) from [`gen_ident_range`]
 /// 
 /// # Version compatibility
@@ -37,6 +34,56 @@
 /// This macro requires Rust 1.45.0 to be invoked inside of a function.
 /// 
 /// # Examples
+/// 
+/// ### Macro parameters
+/// 
+/// This demonstrates how you can pass macro parameters to `tokens_method`.
+/// 
+/// Note that because this example uses this macro in an expression,
+/// it requires at least Rust 1.45.0.
+/// 
+#[cfg_attr(feature = "rust_1_46", doc = "```rust")]
+#[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
+/// 
+/// fn main() {
+///     {
+///         let arrays = split_array!(2 => 3, 5, 8, 5 + 8, 3 + 5 + 13, 34, 55);
+///         assert_eq!(arrays, ([3, 5], [8, 13, 21, 34, 55]));
+///     }
+///     {
+///         let arrays = split_array!(100 => 3, 5, 8, 5 + 8, 3 + 5 + 13, 34, 55);
+///         const EMPTY: [i32; 0] = [];
+///         assert_eq!(arrays, ([3, 5, 8, 13, 21, 34, 55], EMPTY));
+///     }
+/// }
+/// 
+/// 
+/// #[macro_export]
+/// macro_rules! split_array {
+///     ($split_at:literal => $($elem:expr),* $(,)?) => {
+///         // `tokens_method` calls `__priv_split_array` with `foo bar` as the first arguments,
+///         // passing the return value of `split_at` after them.
+///         $crate::__::tokens_method!{
+///             __priv_split_array!{foo bar}
+///             split_at($split_at)
+///             ($($elem)*) // Note the lack of `,`!
+///         }
+///     }
+/// }
+///
+/// #[doc(hidden)]
+/// #[macro_export]
+/// macro_rules! __priv_split_array {
+///     (foo bar ($($left:expr)*) ($($right:expr)*)) => {
+///         ([$($left,)*], [$($right,)*])
+///     }
+/// }
+/// 
+/// #[doc(hidden)]
+/// mod __ {
+///     pub use core_extensions::tokens_method;
+/// }
+/// ```
 /// 
 /// ### `first`
 ///
@@ -104,18 +151,17 @@
 /// }
 ///
 ///
-/// tokens_method!{
-///     expects_baaaz!{ baz "qux" }
-///     last
-///     (20 30 (40 50) (1 2 3))
-/// }
-///
 /// macro_rules! expects_baaaz {
 ///     ($func:ident $lit:literal  ((1 2 3)) ) => {
 ///         fn $func() -> &'static str {
 ///             $lit
 ///         }
 ///     }
+/// }
+/// tokens_method!{
+///     expects_baaaz!{ baz "qux" }
+///     last
+///     (20 30 (40 50) (1 2 3))
 /// }
 ///
 /// ```
