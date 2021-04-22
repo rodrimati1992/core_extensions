@@ -184,13 +184,15 @@ if_rust_1_46!{
 /// 
 /// Where `<range>` can be either `<number> .. <number>` or `<number> ..= <number>`.
 /// 
+/// <span id = "number-syntax"></span>
 /// Where `<number>` can be any of:
 /// 
 /// - An integer literal
 /// 
-/// - `count(....)`: Which counts the amount of token trees in `(....)`,
-/// the same way that [`count_tts`] does.
-/// 
+/// - `count(....)`: Which counts the amount of token trees in `(....)`.
+/// Macro parameters (eg: `$foo`) are one token tree,
+/// and matched pairs of `[]`/`()`/`{}` count as one token tree regardless of 
+/// the tokens inside.
 /// 
 /// [`count_tts`]: ./macro.count_tts.html
 /// 
@@ -401,4 +403,23 @@ pub use core_extensions_proc_macros::gen_ident_range;
 /// 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "macro_utils")))]
 pub use core_extensions_proc_macros::macro_attr;
+
+
+
+/// Stringifies the input tokens, and errors with `compile_error`.
+/// 
+/// Ỳou can use this to show the tokens passed to a macro.
+#[macro_export]
+macro_rules! compile_error_stringify {
+    ($($tt:tt)*) => {
+        $crate::__::compile_error!{
+            $crate::__::stringify!($($tt)*)
+        }
+    };
+}
+
+
+include!{"./macro_utils/tokens_method.rs"}
+
+
 

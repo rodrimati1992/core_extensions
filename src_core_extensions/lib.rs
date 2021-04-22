@@ -478,7 +478,7 @@ pub use self::void::Void;
 #[doc(hidden)]
 pub mod __ {
     pub use std_::marker::PhantomData as PD;
-    pub use std_::{concat, compile_error};
+    pub use std_::{concat, compile_error, stringify};
     pub use self::foo::Usize as usize;
 
     mod foo {
@@ -494,3 +494,4 @@ pub mod __ {
     #[cfg(feature = "item_parsing")]
     pub use core_extensions_proc_macros::__priv_split_impl;
 }
+
