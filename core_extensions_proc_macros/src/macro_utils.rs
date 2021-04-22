@@ -3,9 +3,11 @@ use crate::{
         Delimiter, Ident, Group, Literal, Punct, Spacing, TokenStream, TokenTree,
     },
     macro_utils_shared::{
-        parse_ident, parse_keyword, parse_check_punct,
+        parse_count_param, parse_ident, parse_int_or_range_param,
+        parse_keyword, parse_check_punct,
         parse_parentheses, parse_range_param, parse_macro_invocation,
     },
+    parsing_shared::out_parenthesized,
     mmatches,
 };
 
@@ -16,6 +18,7 @@ use core::{
 
 use alloc::{
     string::ToString,
+    vec::Vec,
     format,
 };
 
@@ -164,3 +167,143 @@ pub(crate) fn macro_attr(attr: TokenStream, item: TokenStream) -> crate::Result<
     
     Ok(macro_.path)
 }
+
+
+pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
+    let mut iter = tokens.into_iter();
+
+    let mut macro_ = parse_macro_invocation(&mut iter)?;
+    let args = &mut macro_.args;
+
+    macro_rules! declare_methods {
+        (
+            $fname:literal => $fblock:block
+            $( $name:literal => $block:block )* 
+        ) => {
+            const ERR_MSG: &str = concat!(
+                "expected one of ",
+                "`", $fname, "`",
+                $(", `", $name, "`",)*
+                "."
+            );
+
+            match_token!{ERR_MSG, iter.next() => 
+                Some(TokenTree::Ident(ident)) => {
+                    let keyword = ident.to_string();
+
+                    match &keyword[..] {
+                        $fname => $fblock
+                        $($name => $block)*
+                        other => {
+                            let err = format!("{}\nFound {}", ERR_MSG, other);
+                            return Err(crate::Error::one_tt(ident.span(), &err));
+                        }
+                    }
+                },
+            }
+        };
+    }
+
+    declare_methods!{
+        "first" => {
+            let group = parse_parentheses(iter)?;
+            
+            let last_token: TokenStream = group.stream().into_iter().take(1).collect();
+
+            out_parenthesized(last_token, group.span(), args);
+        }
+        "last" => {
+            let group = parse_parentheses(iter)?;
+            
+            let last_token: TokenStream = 
+                group.stream().into_iter().last().into_iter().collect();
+
+            out_parenthesized(last_token, group.span(), args);
+        }
+        "split_first" => {
+            let group = parse_parentheses(iter)?;
+            
+            let mut iter = group.stream().into_iter();
+            let first: TokenStream = (&mut iter).take(1).collect();
+            let rest: TokenStream = iter.collect();
+
+            out_parenthesized(first, group.span(), args);
+            out_parenthesized(rest, group.span(), args);
+        }
+        "split_last" => {
+            let group = parse_parentheses(iter)?;
+            
+            let mut iter = group.stream().into_iter();
+            
+            let mut first = TokenStream::new();
+            let mut last = iter.next();
+            for tt in iter {
+                first.extend(last);
+                last = Some(tt);
+            }
+            let last = last.into_iter().collect::<TokenStream>();
+
+            out_parenthesized(first, group.span(), args);
+            out_parenthesized(last, group.span(), args);
+        }
+        "split_last_n" => {
+            let mut params = parse_parentheses(&mut iter)?.stream().into_iter();
+            let last_count = parse_count_param(&mut params)? as usize;
+            crate::macro_utils_shared::expect_no_tokens(params)?;
+
+            let group = parse_parentheses(iter)?;
+            
+            let elems = group.stream().into_iter().collect::<Vec<TokenTree>>();
+            
+            let taken = elems.len().saturating_sub(last_count);
+            let mut iter = elems.into_iter();
+            let first = (&mut iter).take(taken).collect::<TokenStream>();
+            let last = iter.collect::<TokenStream>();
+
+            out_parenthesized(first, group.span(), args);
+            out_parenthesized(last, group.span(), args);
+        }
+        "split_at" => {
+            let mut params = parse_parentheses(&mut iter)?.stream().into_iter();
+            let split_at = parse_count_param(&mut params)? as usize;
+            crate::macro_utils_shared::expect_no_tokens(params)?;
+
+            let group = parse_parentheses(&mut iter)?;
+            
+            let mut iter = group.stream().into_iter();
+
+            let start: TokenStream = (&mut iter).take(split_at).collect();
+            let rest: TokenStream = iter.collect();
+
+            out_parenthesized(start, group.span(), args);
+            out_parenthesized(rest, group.span(), args);
+        }
+        "get" => {
+            let params = parse_parentheses(&mut iter)?;
+            let mut params = params.stream().into_iter().peekable();
+            let range = parse_int_or_range_param(&mut params)?;
+            crate::macro_utils_shared::expect_no_tokens(params)?;
+
+            let group = parse_parentheses(&mut iter)?;
+
+            let middle: TokenStream = group.stream()
+                .into_iter()
+                .take(range.end as usize)
+                .skip(range.start as usize)
+                .collect();
+
+            out_parenthesized(middle, group.span(), args);
+        }
+    }
+
+    Ok(macro_.into_token_stream())
+}
+
+
+
+
+
+
+
+
+

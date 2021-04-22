@@ -35,12 +35,17 @@ macro_rules! match_token {
 
 
 
-pub(crate) fn parse_count_param(input: &mut Peekable<IntoIter>) -> crate::Result<u32> {
+pub(crate) fn parse_count_param<I>(input: I) -> crate::Result<u32> 
+where
+    I: IntoIterator<Item = TokenTree>,
+{
     const MSG: &str = "\
         expected either `count(....)` or an integer literal\
     ";
 
     let sident;
+
+    let mut input = input.into_iter();
 
     match_token!{MSG, input.next() =>
         Some(TokenTree::Ident(ident)) if {
@@ -54,7 +59,7 @@ pub(crate) fn parse_count_param(input: &mut Peekable<IntoIter>) -> crate::Result
             }
         }
         Some(TokenTree::Group(group)) if mmatches!(group.delimiter(), Delimiter::None) => {
-            let mut iter = group.stream().into_iter().peekable();
+            let mut iter = group.stream().into_iter();
             let res = parse_count_param(&mut iter);
 
             if let Some(tt) = iter.next() {
@@ -71,17 +76,27 @@ pub(crate) fn parse_count_param(input: &mut Peekable<IntoIter>) -> crate::Result
         }
     }
 }
+pub(crate) fn parse_start_bound(input: &mut Peekable<IntoIter>) -> crate::Result<u32> {
+    if mmatches!(input.peek(), Some(TokenTree::Punct(p)) if p.as_char() == '.') {
+        Ok(0)
+    } else {
+        parse_count_param(&mut *input)
+    }
+}
 
 pub(crate) fn parse_range_param(input: &mut Peekable<IntoIter>) -> crate::Result<Range<u32>> {
-    let first_int = parse_count_param(input)?;
-    
+    let first_int = parse_start_bound(&mut *input)?;
+
     let range_ty = parse_range_operator(&mut *input)?;
     
-    let second_int = parse_count_param(input)?;
+    let second_int = match range_ty {
+        RangeType::Inclusive | RangeType::Exclusive => parse_count_param(input)?,
+        RangeType::RangeStart => !0,
+    };
 
     match range_ty {
         RangeType::Inclusive=>Ok(first_int..second_int.saturating_add(1)),
-        RangeType::Exclusive=>Ok(first_int..second_int),
+        RangeType::Exclusive | RangeType::RangeStart=>Ok(first_int..second_int),
     }
 }
 
@@ -97,34 +112,66 @@ where
     }
 }
 
+pub(crate) fn parse_int_or_range_param(
+    input: &mut Peekable<IntoIter>,
+) -> crate::Result<Range<u32>> {
+    let first_int = parse_start_bound(&mut *input)?;
+    
+    let (second_int, range_ty) = match parse_range_operator_opt(&mut *input)? {
+        Some(x@RangeType::RangeStart) => (!0, x),
+        Some(x) => (parse_count_param(input)?, x),
+        None => (first_int, RangeType::Inclusive),
+    };
+
+    match range_ty {
+        RangeType::Inclusive=>Ok(first_int..second_int.saturating_add(1)),
+        RangeType::Exclusive=>Ok(first_int..second_int),
+        RangeType::RangeStart=>Ok(first_int..!0),
+    }
+}
+
+
 
 pub(crate)  enum RangeType {
     Inclusive,
     Exclusive,
+    RangeStart,
+}
+
+fn parse_range_operator_inner(input: &mut Peekable<IntoIter>) -> crate::Result<RangeType> { 
+    match_token!{"expected a range", input.next() =>
+        Some(TokenTree::Punct(_)) => {}
+    }
+
+    match input.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => {
+            input.next();
+            Ok(RangeType::Inclusive)
+        },
+        Some(_) => Ok(RangeType::Exclusive),
+        None=> Ok(RangeType::RangeStart),
+    }
 }
 
 fn parse_range_operator(input: &mut Peekable<IntoIter>) -> crate::Result<RangeType> {
-    const S: &str = "expected a range";
-
-    match_token!{S, input.next() => 
+    match_token!{"expected a range", input.next() => 
         Some(TokenTree::Punct(punct)) if
             punct.as_char() == '.' && mmatches!(punct.spacing(), Spacing::Joint) 
         => {
-            match_token!{"expected a range", input.next() =>
-                Some(TokenTree::Punct(_)) => {}
-            }
-
-            match input.peek() {
-                Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => {
-                    input.next();
-                    Ok(RangeType::Inclusive)
-                }
-                Some(_) => {
-                    Ok(RangeType::Exclusive)
-                }
-                None=> Err(crate::Error::end("expected end of range")),
-            }
+            parse_range_operator_inner(input)
         }
+    }
+}
+
+fn parse_range_operator_opt(input: &mut Peekable<IntoIter>) -> crate::Result<Option<RangeType>> {
+    match input.next() {
+        Some(TokenTree::Punct(punct)) if
+            punct.as_char() == '.' && mmatches!(punct.spacing(), Spacing::Joint) 
+        => {
+            parse_range_operator_inner(input).map(Some)
+        }
+        Some(tt) => Err(crate::Error::one_tt(tt.span(), "expected a range")),
+        None => Ok(None)
     }
 }
 
@@ -309,6 +356,22 @@ where
     }
 
     Ok(this)
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+pub(crate) fn expect_no_tokens<I>(iter: I) -> Result<(), crate::Error>
+where
+    I: IntoIterator<Item = TokenTree>
+{
+    if let Some(tt) = iter.into_iter().next() {
+        let msg = "expected no more tokens, starting from this one";
+        Err(crate::Error::one_tt(tt.span(), msg))
+    } else {
+        Ok(())
+    }
 }
 
 

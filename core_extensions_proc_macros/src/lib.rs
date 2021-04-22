@@ -28,10 +28,11 @@ mod parsing_shared;
 mod splitting_generics;
 
 #[cfg(feature = "macro_utils")]
-mod macro_utils;
+#[macro_use]
+mod macro_utils_shared;
 
 #[cfg(feature = "macro_utils")]
-mod macro_utils_shared;
+mod macro_utils;
 
 #[cfg(feature = "item_parsing")]
 mod item_parsing;
@@ -112,6 +113,15 @@ pub fn count_tts(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStre
 pub fn gen_ident_range(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input_tokens: TokenStream = input_tokens.into();
     let out = macro_utils::gen_ident_range(input_tokens).unwrap_or_else(Error::into_compile_error); 
+    out.into()
+}
+
+
+#[cfg(feature = "macro_utils")]
+#[proc_macro]
+pub fn tokens_method(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input_tokens: TokenStream = input_tokens.into();
+    let out = macro_utils::tokens_method(input_tokens).unwrap_or_else(Error::into_compile_error); 
     out.into()
 }
 
