@@ -25,6 +25,7 @@
 /// - [`split_last_n`](#split_last_n): Gets the last n token trees, and the remaining ones.
 /// - [`split_at`](#split_at): Gets the token trees before the nth one, and from it.
 /// - [`get`](#get): Gets the token(s) at an index or range.
+/// - [`split`](#split): Splits the tokens with some needle tokens.
 /// 
 /// The methods that take integer arguments use
 /// [the `<number>` syntax](./macro.gen_ident_range.html#number-syntax) from [`gen_ident_range`]
@@ -365,6 +366,57 @@
 /// tokens_method!{expects_four!{ baz qux }  get(1..)  (2 3 (4 5) 6 7)}
 /// tokens_method!{expects_four!{ baz qux }  get(1..)  (2 3 (4 5) 6 7)}
 ///
+/// ```
+/// 
+/// ### `split`
+/// 
+/// Splits the tokens with some needle tokens.
+///
+/// If the needle is at the end of the tokens, this outputs a final `()`.
+/// Eg: `X` splits `foo x bar x` into `(foo) (bar) ()`.
+/// 
+/// Note that because this example uses this macro in an expression,
+/// it requires at least Rust 1.45.0.
+/// 
+/// ```rust
+/// fn main() {
+///     assert_eq!(
+///         piped!(100 |> |x:u32| x + 1 |> |x:u32| x.to_string() ),
+///         "101",
+///     );
+///     assert_eq!(piped!("foo" |> String::from |> repeat), "foofoofoofoo");
+/// }
+/// 
+/// fn repeat<S: AsRef<str>>(s: S) -> String {
+///     s.as_ref().repeat(4)
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! piped {
+///     ( $($tt:tt)* ) => {
+///         $crate::__::tokens_method!(
+///             $crate::__priv_piped!(hello)
+///             split(|>)
+///             ($($tt)*) 
+///         )
+///     }
+/// }
+/// 
+/// #[doc(hidden)]
+/// #[macro_export]
+/// macro_rules! __priv_piped {
+///     (hello ($value:expr) $(($f:expr))* ) => ({
+///         match $value {x => {
+///             $( let x = $f(x); )*
+///             x
+///         }}
+///     })
+/// }
+/// 
+/// #[doc(hidden)]
+/// pub mod __ {
+///     pub use core_extensions::tokens_method;
+/// }
 /// ```
 /// 
 /// [`gen_ident_range`]: ./macro.gen_ident_range.html

@@ -1,8 +1,10 @@
 use crate::{
     used_proc_macro::{
+        token_stream::IntoIter,
         Delimiter, Ident, Group, Literal, Punct, Spacing, TokenStream, TokenTree,
     },
     macro_utils_shared::{
+        cmp_ts::{self, ComparableTT},
         parse_count_param, parse_ident, parse_int_or_range_param,
         parse_keyword, parse_check_punct,
         parse_parentheses, parse_range_param, parse_macro_invocation,
@@ -294,14 +296,29 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
 
             out_parenthesized(middle, group.span(), args);
         }
+        "split" => {
+            let (needle, group, mut iter) = split_shared(&mut iter)?;
+            loop {
+                let (tokens, found) = cmp_ts::skip_until_match(&mut iter, &needle);
+                out_parenthesized(tokens, group.span(), args);
+                if let cmp_ts::Found::No = found { break }
+            }
+        }
     }
 
     Ok(macro_.into_token_stream())
 }
 
 
+fn split_shared(iter: &mut IntoIter) -> crate::Result<(Vec<ComparableTT>, Group, IntoIter)> {
+    let params = parse_parentheses(&mut *iter)?;
+    let needle = ComparableTT::many(params.stream().into_iter());
 
-
+    let group = parse_parentheses(&mut *iter)?;
+    let iter = group.stream().into_iter();
+    
+    Ok((needle, group, iter))
+}
 
 
 
