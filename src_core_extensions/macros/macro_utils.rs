@@ -422,4 +422,42 @@ macro_rules! compile_error_stringify {
 include!{"./macro_utils/tokens_method.rs"}
 
 
+/// Adaptor macro which passes arguments to a callback macro, wrapping them in parentheses.
+/// 
+/// # Example
+/// 
+/// ```rust
+/// use core_extensions::{count_tts, parenthesize_args};
+/// 
+/// 
+/// fn main() {
+///     assert_eq!(foo(), 5);
+/// }
+/// 
+/// macro_rules! the_macro {
+///     ($func:ident $count:literal) => {
+///         pub fn $func() -> u32 { $count }
+///     }
+/// }
+///
+/// parenthesize_args!{
+///     count_tts!{
+///         the_macro!{foo}
+///     }
+///     a b c d e
+/// }
+/// 
+/// ```
+#[macro_export]
+macro_rules! parenthesize_args {
+    (
+        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! { $($prefix:tt)* }
 
+        $($extra:tt)*
+    ) => {
+        $(:: $(@$leading@)? )? $first $(:: $trailing)* ! {
+            $($prefix)*
+            ($($extra)*)
+        }
+    };
+}
