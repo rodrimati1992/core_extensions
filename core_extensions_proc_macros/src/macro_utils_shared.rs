@@ -3,7 +3,7 @@ use crate::{
         token_stream::IntoIter,
         Delimiter, Group, Ident, Punct, Literal, TokenStream, TokenTree, Spacing, Span,
     },
-    parsing_shared::out_ident,
+    parsing_shared::{parenthesize_ts, out_ident},
     mmatches,
 };
 
@@ -22,6 +22,16 @@ use alloc::{
 pub(crate) mod cmp_ts;
 
 
+
+pub(crate) fn macro_span() -> Span {
+    #[cfg(not(feature = "rust_1_45"))]
+    let span = Span::call_site();
+
+    #[cfg(feature = "rust_1_45")]
+    let span = Span::mixed_site();
+
+    span
+}
 
 
 macro_rules! match_token {
@@ -381,6 +391,13 @@ where
     }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+pub(crate) fn out_parenthesized_tt(tt: TokenTree, out: &mut TokenStream) {
+    let span = tt.span();
+    out.extend(once(parenthesize_ts(tt.into(), span)));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

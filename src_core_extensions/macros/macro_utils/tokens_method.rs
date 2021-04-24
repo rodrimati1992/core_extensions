@@ -19,13 +19,24 @@
 /// These are the methods that this provides:
 /// 
 /// - [`first`](#first): Gets the first token tree.
+///
 /// - [`last`](#last): Gets the last token tree.
+///
 /// - [`split_first`](#split_first): Gets the first token tree, and the remaining ones.
+///
 /// - [`split_last`](#split_last): Gets the last token tree, and the remaining ones.
+///
 /// - [`split_last_n`](#split_last_n): Gets the last n token trees, and the remaining ones.
+///
 /// - [`split_at`](#split_at): Gets the token trees before the nth one, and from it.
+///
 /// - [`get`](#get): Gets the token(s) at an index or range.
-/// - [`split`](#split): Splits the tokens with some needle tokens.
+///
+/// - [`split`](#split)/[`split_terminator`](#split_terminator)/
+/// [`split_starter`](#split_starter): Splits the tokens with some needle tokens.
+///
+/// - [`zip_shortest`](#zip_shortest)/[`zip_longest`](#zip_longest): 
+/// Return the token trees of every list iterated over in lockstep.
 /// 
 /// The methods that take integer arguments use
 /// [the `<number>` syntax](./macro.gen_ident_range.html#number-syntax) from [`gen_ident_range`]
@@ -543,6 +554,120 @@
 ///     pub use core_extensions::tokens_method;
 /// }
 /// ```
+/// 
+/// 
+/// ### `zip_shortest`
+/// 
+/// Returns the token trees of every list iterated over in lockstep.
+///
+/// This returns as many token trees as the shortest list.
+///
+/// This is similar to [lockstep iteration in macro_rules! macros](#lockstep_iteration),
+/// except that those require the lists to be the same length.
+///
+/// ```rust
+/// use core_extensions::tokens_method;
+///
+/// fn main() {
+///     assert_eq!(foo(), "bar");
+///     assert_eq!(baz(), "qux");
+/// }
+///
+/// macro_rules! expected {
+///     (
+///         $func:ident $value:literal
+///         ((foo3) (bar3) (qux3))
+///         ((foo5) (bar5) (qux5))
+///         ((foo8) (bar8) (qux8))
+///         ((foo13) (bar13) (qux13))
+///         ((foo21) (bar21) (qux21))
+///     ) => {
+///         fn $func() -> &'static str {
+///             $value
+///         }
+///     }
+/// }
+/// 
+/// // `tokens_method` calls `expected` here
+/// tokens_method!{
+///     expected!{foo "bar"}
+///     zip_shortest
+///     (foo3 foo5 foo8 foo13 foo21)
+///     (bar3 bar5 bar8 bar13 bar21)
+///     (qux3 qux5 qux8 qux13 qux21)
+/// }
+/// 
+/// // `tokens_method` calls `expected` here
+/// tokens_method!{
+///     expected!{baz "qux"}
+///     zip_shortest
+///     (foo3 foo5 foo8 foo13 foo21)
+///     (bar3 bar5 bar8 bar13 bar21)
+///     // this list is truncated because it's longer than the others
+///     (qux3 qux5 qux8 qux13 qux21 qux34 qux55)
+/// }
+/// 
+/// ```
+/// 
+/// <span id="lockstep_iteration"></span>
+/// `macro_rules!` requires lockstep iteration to be over lists of the exact same length:
+/// ```
+/// macro_rules! iteration {
+///     ([$($a:tt)*] [$($b:tt)*]) => {
+///         bar!( $(($a $b))* )
+///     }
+/// }
+/// ```
+/// while `zip_shortest` truncates to the shortest list, 
+/// and `zip_longest` fills in `()` for the shorter lists.
+/// 
+/// 
+/// ### `zip_longest`
+/// 
+/// Returns the token trees of every list iterated over in lockstep.
+///
+/// This returns as many token trees as the longest list,
+/// filling in `()` for the shorter lists.
+///
+/// This is similar to [lockstep iteration in macro_rules! macros](#lockstep_iteration),
+/// except that those require the lists to be the same length.
+///
+/// ```rust
+/// use core_extensions::tokens_method;
+///
+/// fn main() {
+///     assert_eq!(baz(), "qux");
+/// }
+///
+/// macro_rules! expected {
+///     (
+///         $func:ident $value:literal
+///         ((foo3) (bar3) (qux3))
+///         ((foo5) (bar5) (qux5))
+///         ((foo8) (bar8) (qux8))
+///         ((foo13) (bar13) (qux13))
+///         ((foo21) (bar21) (qux21))
+///         (()      ()      (qux34))
+///         (()      ()      (qux55))
+///     ) => {
+///         fn $func() -> &'static str {
+///             $value
+///         }
+///     }
+/// }
+/// 
+/// // `tokens_method` calls `expected` here
+/// tokens_method!{
+///     expected!{baz "qux"}
+///     zip_longest
+///     (foo3 foo5 foo8 foo13 foo21)
+///     (bar3 bar5 bar8 bar13 bar21)
+///     (qux3 qux5 qux8 qux13 qux21 qux34 qux55)
+/// }
+/// 
+/// ```
+/// 
+/// 
 /// 
 /// [`gen_ident_range`]: ./macro.gen_ident_range.html
 pub use core_extensions_proc_macros::tokens_method;

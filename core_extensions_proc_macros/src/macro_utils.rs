@@ -8,6 +8,7 @@ use crate::{
         parse_count_param, parse_ident, parse_int_or_range_param,
         parse_keyword, parse_check_punct,
         parse_parentheses, parse_range_param, parse_macro_invocation,
+        macro_span, out_parenthesized_tt,
     },
     parsing_shared::out_parenthesized,
     mmatches,
@@ -327,6 +328,43 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
                 start = false;
             }
         }
+        "zip_shortest" => {
+            let mut iters = iter_many_parentheses(iter)?;
+            let outer_span = macro_span();
+
+            'outer: loop {
+                let mut zipped = TokenStream::new();
+                for tt_iter in &mut iters {
+                    if let Some(tt) = tt_iter.next() {
+                        out_parenthesized_tt(tt, &mut zipped);
+                    } else {
+                        break 'outer;
+                    }
+                }
+                out_parenthesized(zipped, outer_span, args)
+            }
+        }
+        "zip_longest" => {
+            let mut iters = iter_many_parentheses(iter)?;
+            let outer_span = macro_span();
+
+            loop {
+                let mut zipped = TokenStream::new();
+
+                let mut none_count = 0;
+                for tt_iter in &mut iters {
+                    if let Some(tt) = tt_iter.next() {
+                        out_parenthesized_tt(tt, &mut zipped);
+                    } else {
+                        none_count+=1;
+                        out_parenthesized(TokenStream::new(), outer_span, &mut zipped)
+                    }
+                }
+                if none_count == iters.len() { break }
+
+                out_parenthesized(zipped, outer_span, args)
+            }
+        }
     }
 
     Ok(macro_.into_token_stream())
@@ -341,6 +379,18 @@ fn split_shared(iter: &mut IntoIter) -> crate::Result<(Vec<ComparableTT>, Group,
     let iter = group.stream().into_iter();
     
     Ok((needle, group, iter))
+}
+
+fn iter_many_parentheses(iter: IntoIter) -> crate::Result<Vec<IntoIter>> {
+    let mut out = Vec::new();
+    let mut iter = iter.peekable();
+    
+    while iter.peek().is_some() {
+        let group = parse_parentheses(&mut iter)?;
+        out.push(group.stream().into_iter());
+    }
+
+    Ok(out)
 }
 
 
