@@ -4,7 +4,7 @@ use crate::{
         Delimiter, Ident, Group, Literal, Punct, Spacing, TokenStream, TokenTree,
     },
     macro_utils_shared::{
-        cmp_ts::{self, ComparableTT},
+        cmp_ts::{self, ComparableTT, Found},
         parse_count_param, parse_ident, parse_int_or_range_param,
         parse_keyword, parse_check_punct,
         parse_parentheses, parse_range_param, parse_macro_invocation,
@@ -301,7 +301,30 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             loop {
                 let (tokens, found) = cmp_ts::skip_until_match(&mut iter, &needle);
                 out_parenthesized(tokens, group.span(), args);
-                if let cmp_ts::Found::No = found { break }
+                if let Found::No = found { break }
+            }
+        }
+        "split_terminator" => {
+            let (needle, group, mut iter) = split_shared(&mut iter)?;
+            loop {
+                let (tokens, found) = cmp_ts::skip_until_match(&mut iter, &needle);
+                if mmatches!(found, Found::Yes) || !tokens.is_empty() {
+                    out_parenthesized(tokens, group.span(), args);
+                }
+                if let Found::No = found { break }
+            }
+        }
+        "split_starter" => {
+            let (needle, group, mut iter) = split_shared(&mut iter)?;
+
+            let mut start = true;
+            loop {
+                let (tokens, found) = cmp_ts::skip_until_match(&mut iter, &needle);
+                if !start || ( start && (!tokens.is_empty() || mmatches!(found, Found::No))) {
+                    out_parenthesized(tokens, group.span(), args);
+                }
+                if let Found::No = found { break }
+                start = false;
             }
         }
     }

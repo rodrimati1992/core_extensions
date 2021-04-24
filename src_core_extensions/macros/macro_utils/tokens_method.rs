@@ -373,7 +373,7 @@
 /// Splits the tokens with some needle tokens.
 ///
 /// If the needle is at the end of the tokens, this outputs a final `()`.
-/// Eg: `X` splits `foo x bar x` into `(foo) (bar) ()`.
+/// Eg: `X` splits `foo X bar X` into `(foo) (bar) ()`.
 /// 
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
@@ -411,6 +411,131 @@
 ///             x
 ///         }}
 ///     })
+/// }
+/// 
+/// #[doc(hidden)]
+/// pub mod __ {
+///     pub use core_extensions::tokens_method;
+/// }
+/// ```
+/// 
+/// ### `split_terminator`
+/// 
+/// Splits the tokens with some needle tokens.
+///
+/// If the needle is at the end of the tokens, this does not output an additional `()`.
+/// Eg: `X` splits `foo X bar X` into `(foo) (bar)`.
+/// 
+/// Note that because this example uses this macro in an expression,
+/// it requires at least Rust 1.45.0.
+/// 
+/// ```rust
+/// fn main() {
+///     let expected = "hello99_99world";
+///     
+///     // `++` can be used between strings
+///     assert_eq!(concaten!("hello" ++ format!("{0}_{0}", 99) ++ "world"), expected);
+///
+///     // `++` can also terminate the argument list
+///     assert_eq!(concaten!("hello" ++ format!("{0}_{0}", 99) ++ "world" ++), expected);
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! concaten {
+///     ( $($tt:tt)* ) => {
+///         $crate::__::tokens_method!(
+///             $crate::__priv_concaten!(hello)
+///             split_terminator(++)
+///             ($($tt)*) 
+///         )
+///     }
+/// }
+/// 
+/// #[doc(hidden)]
+/// #[macro_export]
+/// macro_rules! __priv_concaten {
+///     (hello $(($f:expr))* ) => ({
+///         let mut buff = $crate::__::String::new();
+///         $(
+///             buff.push_str($f.as_ref());
+///         )*
+///         buff
+///     });
+///     ($($tt:tt)*) => { core_extensions::compile_error_stringify!{$($tt)*} }
+/// }
+/// 
+/// #[doc(hidden)]
+/// pub mod __ {
+///     pub use core_extensions::tokens_method;
+///     
+///     pub use std::string::String;
+/// }
+/// ```
+/// 
+/// ### `split_starter`
+/// 
+/// Splits the tokens with some needle tokens.
+///
+/// If the needle is at the start of the tokens, this does not output a `()` at the start.
+/// Eg: `X` splits `X foo X bar` into `(foo) (bar)`.
+/// 
+/// Note that because this example uses this macro in an expression,
+/// it requires at least Rust 1.45.0.
+/// 
+/// ```rust
+/// fn main() {
+///     let expected = Flags::Foo.or(Flags::Bar).or(Flags::Baz).or(Flags::Qux);
+///     
+///     // `|` can be used between flags
+///     assert_eq!(combine!(Foo | Bar | Flags::Baz.or(Flags::Qux) ), expected);
+///
+///     // `|` can also start the argument list
+///     const PRE_FLAGS: Flags = combine!(| Foo | returns_flags() | Bar );
+///     assert_eq!(PRE_FLAGS, expected);
+/// }
+/// 
+/// const fn returns_flags()-> Flags {
+///     combine!(Baz | Qux)
+/// }
+/// 
+/// /// Allows using `Foo | Bar` syntax for Flags in a const context
+/// /// (as of Rust 1.51.0, custom types can't overload the `|` operator in const contexts).
+/// #[macro_export]
+/// macro_rules! combine {
+///     ( $($tt:tt)* ) => {
+///         $crate::__::tokens_method!(
+///             $crate::__priv_combine!(world)
+///             split_starter(|)
+///             ($($tt)*) 
+///         )
+///     }
+/// }
+/// 
+/// #[doc(hidden)]
+/// #[macro_export]
+/// macro_rules! __priv_combine {
+///     (world $($param:tt)* ) => (
+///         $crate::Flags::Empty $( .or($crate::__priv_combine!(@flag $param)) )*
+///     );
+///     (@flag ($ident:ident)) => { $crate::Flags::$ident };
+///     (@flag ($expression:expr)) => { $expression };
+/// }
+/// 
+/// #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+/// #[repr(transparent)]
+/// pub struct Flags(u32);
+/// 
+/// impl Flags {
+///     pub const Empty: Self = Self(0);
+///     pub const Foo: Self = Self(1);
+///     pub const Bar: Self = Self(2);
+///     pub const Baz: Self = Self(4);
+///     pub const Qux: Self = Self(8);
+/// 
+///     pub const fn or(mut self, other: Self) -> Self {
+///         self.0 |= other.0;
+///         self
+///     }
 /// }
 /// 
 /// #[doc(hidden)]
