@@ -4,6 +4,14 @@ This started being written for the 0.1.19 release, it doesn't cover versions pri
 
 # 1.0
 
+### 1.4.0
+
+Added the `macro_attr` attribute macro, under the `"macro_utils"` feature.
+
+Added the `tokens_method`, `compile_error_stringify`, and `parenthesize_args` macros, under the `"macro_utils"` feature.
+
+Changed range syntax in `gen_ident_range`, to allow `..X`/`X..`/`..=X`/`..` ranges (this is also used by newer macros).
+
 ### 1.3.0
 
 Added the `count_tts` and `gen_ident_range` macros, under the `"macro_utils"` feature.

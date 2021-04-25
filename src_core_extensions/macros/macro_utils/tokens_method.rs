@@ -1,4 +1,4 @@
-/// Does slice-like operations on tokens, passing the result to a callback macro.
+/// Does slice and iterator operations on tokens, passing the result to a callback macro.
 /// 
 /// # Elements
 /// 
@@ -100,6 +100,8 @@
 /// ### `first`
 ///
 /// Gets the first token tree.
+/// 
+/// If there are no elements, this produces a `()`.
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -140,6 +142,8 @@
 /// ### `last`
 ///
 /// Gets the last token tree.
+/// 
+/// If there are no elements, this produces a `()`.
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -181,6 +185,9 @@
 /// ### `split_first`
 ///
 /// Gets the first token tree, and the remaining ones.
+/// 
+/// If there are no elements, this produces `() ()`.
+/// If there is only one element, this produces `($first_element) ()`.
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -222,6 +229,10 @@
 ///
 /// Gets the last token tree, and the remaining ones.
 ///
+/// If there are no elements, this produces `() ()`.
+/// If there is only one element, this produces `() ($last_elemnent)`.
+///
+///
 /// ```rust
 /// use core_extensions::tokens_method;
 /// 
@@ -261,6 +272,9 @@
 /// ### `split_last_n`
 ///
 /// Gets the last n token trees, and the remaining ones.
+///
+/// If there's fewer than n token trees in the list,
+/// this simply returns the list in `() (here)`.
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -303,6 +317,9 @@
 ///
 /// Gets the token trees before the nth one, and from it.
 ///
+/// If there's fewer than n token trees in the list,
+/// this simply returns the list in `(here) ()`.
+///
 /// ```rust
 /// use core_extensions::tokens_method;
 /// 
@@ -343,6 +360,11 @@
 /// ### `get`
 ///
 /// Gets the token(s) at an index (either an integer or a range).
+///
+/// IF the integer index is out of bounds, this outputs `()`.
+/// 
+/// IF the range is out of bounds,
+/// this outputs the elements at the in-bound indices (of the range).
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -385,6 +407,8 @@
 ///
 /// If the needle is at the end of the tokens, this outputs a final `()`.
 /// Eg: `X` splits `foo X bar X` into `(foo) (bar) ()`.
+/// 
+/// If the needle is not found, this outputs all the tokens.
 /// 
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
@@ -437,6 +461,8 @@
 ///
 /// If the needle is at the end of the tokens, this does not output an additional `()`.
 /// Eg: `X` splits `foo X bar X` into `(foo) (bar)`.
+/// 
+/// If the needle is not found, this outputs all the tokens.
 /// 
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
@@ -491,6 +517,8 @@
 ///
 /// If the needle is at the start of the tokens, this does not output a `()` at the start.
 /// Eg: `X` splits `X foo X bar` into `(foo) (bar)`.
+/// 
+/// If the needle is not found, this outputs all the tokens.
 /// 
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.

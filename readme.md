@@ -120,7 +120,9 @@ and [`quasiconst`] macro (for declaring types that emulate generic constants).
 Enables the `"generics_parsing"` feature.
 
 - `"macro_utils`:
-Enables the [`rewrap_macro_parameters`], [`count_tts`], and [`gen_ident_range`] macro.
+Enables the [`rewrap_macro_parameters`], [`count_tts`], [`gen_ident_range`],
+[`tokens_method`], [`compile_error_stringify`], and [`parenthesize_args`] macro.
+Also enables the [`macro_attr`] attribute.
 
 - `"generics_parsing"`: 
 Enables the [`parse_generics`], [`parse_generics_and_where`],
@@ -233,6 +235,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [`count_tts`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.count_tts.html
 [`gen_ident_range`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.gen_ident_range.html
 [`rewrap_macro_parameters`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.rewrap_macro_parameters.html
+[`tokens_method`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.tokens_method.html
+[`compile_error_stringify`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.compile_error_stringify.html
+[`parenthesize_args`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parenthesize_args.html
+[`macro_attr`]: https://docs.rs/core_extensions/1.*/core_extensions/attr.macro_attr.html
 [`parse_generics`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_generics.html
 [`parse_generics_and_where`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.parse_generics_and_where.html
 [`split_generics_and_where`]: https://docs.rs/core_extensions/1.*/core_extensions/macro.split_generics_and_where.html
