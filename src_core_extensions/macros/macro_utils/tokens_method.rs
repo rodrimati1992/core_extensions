@@ -389,7 +389,8 @@
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
 /// 
-/// ```rust
+#[cfg_attr(feature = "rust_1_46", doc = "```rust")]
+#[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
 /// fn main() {
 ///     assert_eq!(
 ///         piped!(100 |> |x:u32| x + 1 |> |x:u32| x.to_string() ),
@@ -440,7 +441,8 @@
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
 /// 
-/// ```rust
+#[cfg_attr(feature = "rust_1_46", doc = "```rust")]
+#[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
 /// fn main() {
 ///     let expected = "hello99_99world";
 ///     
@@ -493,7 +495,8 @@
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
 /// 
-/// ```rust
+#[cfg_attr(feature = "rust_1_46", doc = "```rust")]
+#[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
 /// fn main() {
 ///     let expected = Flags::Foo.or(Flags::Bar).or(Flags::Baz).or(Flags::Qux);
 ///     

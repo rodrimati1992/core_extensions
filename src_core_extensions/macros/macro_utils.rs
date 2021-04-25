@@ -352,7 +352,10 @@ pub use core_extensions_proc_macros::gen_ident_range;
 /// 
 /// ### Item count
 /// 
-/// ```rust
+/// This example only works from 1.46.0 onwards, not sure why.
+/// 
+#[cfg_attr(feature = "rust_1_46", doc = "```rust")]
+#[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
 /// use core_extensions::macro_attr;
 /// 
 /// fn main() {
