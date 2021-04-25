@@ -224,6 +224,9 @@ where
     I: Iterator<Item = TokenTree>
 {
     match_token!{"expected identifier", input.next() => 
+        Some(TokenTree::Group(group)) if mmatches!(group.delimiter(), Delimiter::None) => {
+            parse_ident(group.stream().into_iter())
+        }
         Some(TokenTree::Ident(ident)) => {
             Ok(ident)
         }
@@ -434,6 +437,13 @@ impl Error {
             end_span: Span::call_site(),
             message,
         }
+    }
+
+    pub(crate) fn start_span(&self) -> Span {
+        self.start_span
+    }
+    pub(crate) fn end_span(&self) -> Span {
+        self.end_span
     }
 
     pub(crate) fn into_compile_error(self) -> TokenStream {

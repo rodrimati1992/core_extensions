@@ -190,8 +190,8 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
                 "."
             );
 
-            match_token!{ERR_MSG, iter.next() => 
-                Some(TokenTree::Ident(ident)) => {
+            match parse_ident(&mut iter) {
+                Ok(ident) => {
                     let keyword = ident.to_string();
 
                     match &keyword[..] {
@@ -202,7 +202,10 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
                             return Err(crate::Error::one_tt(ident.span(), &err));
                         }
                     }
-                },
+                }
+                Err(e) => {
+                    return Err(crate::Error::one_tt(e.start_span(), &ERR_MSG));
+                }
             }
         };
     }

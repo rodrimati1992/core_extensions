@@ -410,6 +410,7 @@ pub use core_extensions_proc_macros::macro_attr;
 /// 
 /// Ỳou can use this to show the tokens passed to a macro.
 #[macro_export]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "macro_utils")))]
 macro_rules! compile_error_stringify {
     ($($tt:tt)*) => {
         $crate::__::compile_error!{
@@ -449,6 +450,7 @@ include!{"./macro_utils/tokens_method.rs"}
 /// 
 /// ```
 #[macro_export]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "macro_utils")))]
 macro_rules! parenthesize_args {
     (
         $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! { $($prefix:tt)* }

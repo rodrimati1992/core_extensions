@@ -670,4 +670,5 @@
 /// 
 /// 
 /// [`gen_ident_range`]: ./macro.gen_ident_range.html
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "macro_utils")))]
 pub use core_extensions_proc_macros::tokens_method;
