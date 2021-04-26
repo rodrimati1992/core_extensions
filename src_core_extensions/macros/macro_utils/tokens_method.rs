@@ -47,6 +47,8 @@
 /// 
 /// # Examples
 /// 
+/// Examples that demonstrate properties common to all methods
+/// 
 /// ### Macro parameters
 /// 
 /// This demonstrates how you can pass macro parameters to `tokens_method`.
@@ -97,7 +99,7 @@
 /// }
 /// ```
 /// 
-/// ### `first`
+/// # `first`
 ///
 /// Gets the first token tree.
 /// 
@@ -139,11 +141,13 @@
 ///
 /// ```
 ///
-/// ### `last`
+/// # `last`
 ///
 /// Gets the last token tree.
 /// 
 /// If there are no elements, this produces a `()`.
+///
+/// ### Example
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -182,12 +186,14 @@
 ///
 /// ```
 ///
-/// ### `split_first`
+/// # `split_first`
 ///
 /// Gets the first token tree, and the remaining ones.
 /// 
 /// If there are no elements, this produces `() ()`.
 /// If there is only one element, this produces `($first_element) ()`.
+///
+/// ### Example
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -225,13 +231,14 @@
 ///
 /// ```
 ///
-/// ### `split_last`
+/// # `split_last`
 ///
 /// Gets the last token tree, and the remaining ones.
 ///
 /// If there are no elements, this produces `() ()`.
 /// If there is only one element, this produces `() ($last_elemnent)`.
 ///
+/// ### Example
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -269,12 +276,14 @@
 ///
 /// ```
 ///
-/// ### `split_last_n`
+/// # `split_last_n`
 ///
 /// Gets the last n token trees, and the remaining ones.
 ///
 /// If there's fewer than n token trees in the list,
 /// this simply returns the list in `() (here)`.
+///
+/// ### Example
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -313,12 +322,14 @@
 ///
 /// ```
 ///
-/// ### `split_at`
+/// # `split_at`
 ///
 /// Gets the token trees before the nth one, and from it.
 ///
 /// If there's fewer than n token trees in the list,
 /// this simply returns the list in `(here) ()`.
+///
+/// ### Example
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -357,7 +368,7 @@
 ///
 /// ```
 ///
-/// ### `get`
+/// # `get`
 ///
 /// Gets the token(s) at an index (either an integer or a range).
 ///
@@ -365,6 +376,8 @@
 /// 
 /// IF the range is out of bounds,
 /// this outputs the elements at the in-bound indices (of the range).
+///
+/// ### Example
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -401,7 +414,7 @@
 ///
 /// ```
 /// 
-/// ### `split`
+/// # `split`
 /// 
 /// Splits the tokens with some needle tokens.
 ///
@@ -412,6 +425,8 @@
 /// 
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
+/// 
+/// ### Example
 /// 
 #[cfg_attr(feature = "rust_1_46", doc = "```rust")]
 #[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
@@ -455,7 +470,7 @@
 /// }
 /// ```
 /// 
-/// ### `split_terminator`
+/// # `split_terminator`
 /// 
 /// Splits the tokens with some needle tokens.
 ///
@@ -466,6 +481,8 @@
 /// 
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
+/// 
+/// ### Example
 /// 
 #[cfg_attr(feature = "rust_1_46", doc = "```rust")]
 #[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
@@ -511,7 +528,7 @@
 /// }
 /// ```
 /// 
-/// ### `split_starter`
+/// # `split_starter`
 /// 
 /// Splits the tokens with some needle tokens.
 ///
@@ -522,6 +539,8 @@
 /// 
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
+/// 
+/// ### Example
 /// 
 #[cfg_attr(feature = "rust_1_46", doc = "```rust")]
 #[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
@@ -587,7 +606,7 @@
 /// ```
 /// 
 /// 
-/// ### `zip_shortest`
+/// # `zip_shortest`
 /// 
 /// Returns the token trees of every list iterated over in lockstep.
 ///
@@ -595,7 +614,9 @@
 ///
 /// This is similar to [lockstep iteration in macro_rules! macros](#lockstep_iteration),
 /// except that those require the lists to be the same length.
-///
+/// 
+/// ### Example
+/// 
 /// ```rust
 /// use core_extensions::tokens_method;
 ///
@@ -653,7 +674,7 @@
 /// and `zip_longest` fills in `()` for the shorter lists.
 /// 
 /// 
-/// ### `zip_longest`
+/// # `zip_longest`
 /// 
 /// Returns the token trees of every list iterated over in lockstep.
 ///
@@ -662,6 +683,8 @@
 ///
 /// This is similar to [lockstep iteration in macro_rules! macros](#lockstep_iteration),
 /// except that those require the lists to be the same length.
+///
+/// ### Example
 ///
 /// ```rust
 /// use core_extensions::tokens_method;
@@ -698,7 +721,170 @@
 /// 
 /// ```
 /// 
+/// # `iterate`
 /// 
+/// Nested iteration over multiple lists.
+/// 
+/// This can iterate over any amount of lists.
+/// 
+/// 
+/// ### Basic example
+///
+/// ```rust
+/// use core_extensions::tokens_method;
+/// 
+/// 
+/// fn main() {
+///     assert_eq!(single(), "111");
+///     assert_eq!(double(), "222");
+///     assert_eq!(triple(), "333");
+/// }
+/// 
+/// macro_rules! assertion_single{
+///     (
+///         $func:ident $expr:literal 
+///         (foo bar baz)
+///     ) => {
+///         fn $func() -> &'static str {
+///             $expr
+///         }
+///     }
+/// }
+/// tokens_method!{
+///     assertion_single!{single "111"}
+///     iterate
+///     (foo bar baz)
+/// }
+/// 
+///
+/// macro_rules! assertion_double{
+///     (
+///         $func:ident $expr:literal 
+///         (
+///             { a } (foo bar baz)
+///             { b } (foo bar baz)
+///             { c } (foo bar baz)
+///         )
+///     ) => {
+///         fn $func() -> &'static str {
+///             $expr
+///         }
+///     }
+/// }
+/// tokens_method!{
+///     assertion_double!{double "222"}
+///     iterate
+///     (a b c)
+///     (foo bar baz)
+/// }
+/// 
+///
+/// macro_rules! assertion_triple{
+///     (
+///         $func:ident $expr:literal 
+///         (
+///             { 3 } (
+///                 { a } (foo bar baz)
+///                 { b } (foo bar baz)
+///                 { c } (foo bar baz)
+///             ) 
+///             { 5 } (
+///                 { a } (foo bar baz)
+///                 { b } (foo bar baz)
+///                 { c } (foo bar baz)
+///             )
+///             { 8 } (
+///                 { a } (foo bar baz)
+///                 { b } (foo bar baz)
+///                 { c } (foo bar baz)
+///             )
+///         )
+///     ) => {
+///         fn $func() -> &'static str {
+///             $expr
+///         }
+///     }
+/// }
+/// tokens_method!{
+///     assertion_triple!{triple "333"}
+///     iterate
+///     (3 5 8)
+///     (a b c)
+///     (foo bar baz)
+/// }
+/// 
+/// ```
+/// 
+/// ### Enum Example
+/// 
+/// This demonstrates a macro to declare an enum in which all the variants have the same fields. 
+///
+/// ```rust
+/// 
+/// homogeneous_enum!{ 
+///     pub enum Foo { Bar, Baz, Qux } 
+///     fields = { a, b, c }
+///     field_type = u32,
+/// }
+///
+/// fn main() {
+///    Foo::Bar{a: 3, b: 5, c: 8};
+///    Foo::Baz{a: 13, b: 21, c: 34};
+///    Foo::Qux{a: 55, b: 89, c: 144};
+/// }
+/// 
+/// #[macro_export]
+/// macro_rules! homogeneous_enum{
+///     (
+///         $(#[$attr:meta])*
+///         $vis:vis enum $enum_name:ident {
+///             $($variant:ident),* $(,)?
+///         }
+///         fields = { $($field:ident),* $(,)? }
+///         field_type = $field_ty:ty $(,)?
+///     ) => {
+///         $crate::__::tokens_method!{
+///             $crate::__priv_homogeneous_enum!{
+///                 $(#[$attr])*
+///                 $vis,
+///                 $enum_name,
+///                 $field_ty,
+///             }
+///             iterate
+///             ($($variant)*)
+///             ($($field)*)
+///         }
+///     }
+/// }
+///
+///
+/// #[doc(hidden)]
+/// #[macro_export]
+/// macro_rules! __priv_homogeneous_enum{
+///     (
+///         $(#[$attr:meta])*
+///         $vis:vis,
+///         $enum_name:ident,
+///         $field_ty:ty,
+///         ($(
+///             {$variant:ident} ($($field_ident:ident)*)
+///         )*)
+///     ) => {
+///         $(#[$attr])*
+///         $vis enum $enum_name {
+///             $(
+///                 $variant {
+///                     $( $field_ident: $field_ty, )*
+///                 },
+///             )*
+///         }
+///     }
+/// }
+///
+/// mod __ { 
+///     pub use core_extensions::tokens_method;
+/// }
+/// ```
 /// 
 /// [`gen_ident_range`]: ./macro.gen_ident_range.html
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "macro_utils")))]

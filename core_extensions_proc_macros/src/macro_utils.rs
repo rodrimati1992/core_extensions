@@ -5,6 +5,8 @@ use crate::{
     },
     macro_utils_shared::{
         cmp_ts::{self, ComparableTT, Found},
+        assert_parentheses,
+        out_braced_tt,
         parse_count_param, parse_ident, parse_int_or_range_param,
         parse_keyword, parse_check_punct,
         parse_parentheses, parse_range_param, parse_macro_invocation,
@@ -20,6 +22,7 @@ use core::{
 };
 
 use alloc::{
+    collections::VecDeque,
     string::ToString,
     vec::Vec,
     format,
@@ -368,6 +371,29 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
                 out_parenthesized(zipped, outer_span, args)
             }
         }
+        "iterate" => {
+            let mut ingroups = parse_iterator_args(iter)?;
+            
+            let mut outgroups = VecDeque::<Group>::new();
+            outgroups.push_front(ingroups.pop().unwrap());
+
+            for ingroup in ingroups.iter().rev() {
+                let nested = outgroups.front().unwrap();
+
+                let mut out_elem = TokenStream::new();
+                
+                for tt in ingroup.stream() {
+                    out_braced_tt(tt, &mut out_elem);
+                    out_elem.extend(once(TokenTree::Group(nested.clone())));
+                }
+
+                let mut group = Group::new(Delimiter::Parenthesis, out_elem);
+                group.set_span(ingroup.span());
+                outgroups.push_front(group);
+            }
+
+            args.extend(once(TokenTree::Group(outgroups.pop_front().unwrap())));
+        }
     }
 
     Ok(macro_.into_token_stream())
@@ -385,18 +411,26 @@ fn split_shared(iter: &mut IntoIter) -> crate::Result<(Vec<ComparableTT>, Group,
 }
 
 fn iter_many_parentheses(iter: IntoIter) -> crate::Result<Vec<IntoIter>> {
-    let mut out = Vec::new();
-    let mut iter = iter.peekable();
-    
-    while iter.peek().is_some() {
-        let group = parse_parentheses(&mut iter)?;
-        out.push(group.stream().into_iter());
-    }
-
-    Ok(out)
+    iter.map(|tt|{
+            match assert_parentheses(tt) {
+                Ok(group) => Ok(group.stream().into_iter()),
+                Err(e) => Err(e),
+            }
+        })
+        .collect()
 }
 
+fn parse_iterator_args(mut iter: IntoIter) -> crate::Result<Vec<Group>> {
+    let mut groups = Vec::new();
+    
+    groups.push(parse_parentheses(&mut iter)?);
 
+    for next in iter {
+        groups.push(assert_parentheses(next)?);
+    }
+
+    Ok(groups)
+}
 
 
 

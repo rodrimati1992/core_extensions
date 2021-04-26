@@ -206,6 +206,14 @@ where
     }
 }
 
+pub(crate) fn assert_parentheses(tt: TokenTree) -> crate::Result<Group> {
+    match tt {
+        TokenTree::Group(group) if mmatches!(group.delimiter(), Delimiter::Parenthesis) => 
+            Ok(group),
+        tt => Err(crate::Error::one_tt(tt.span(), "expected parentheses"))
+    }
+}
+
 pub(crate) fn parse_group<I>(mut input: I) -> crate::Result<Group>
 where
     I: Iterator<Item = TokenTree>
@@ -400,6 +408,17 @@ where
 pub(crate) fn out_parenthesized_tt(tt: TokenTree, out: &mut TokenStream) {
     let span = tt.span();
     out.extend(once(parenthesize_ts(tt.into(), span)));
+}
+
+pub(crate) fn braced_ts(ts: TokenStream, span: Span) -> TokenTree {
+    let mut group = Group::new(Delimiter::Brace, ts);
+    group.set_span(span);
+    TokenTree::Group(group)
+}
+
+pub(crate) fn out_braced_tt(tt: TokenTree, out: &mut TokenStream) {
+    let span = tt.span();
+    out.extend(once(braced_ts(tt.into(), span)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
