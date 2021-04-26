@@ -180,3 +180,19 @@ macro_rules! mmatches {
         }
     };
 } use mmatches;
+
+// Purely for performance
+macro_rules! try_ {
+    ( $expr:expr )=>{
+        match $expr {
+            Ok(x) => x,
+            Err(e) => return Err(e),
+        }
+    };
+    ( $expr:expr, map_err = |$e:tt| $map_err:expr )=>{
+        match $expr {
+            Ok(x) => x,
+            Err($e) => return Err($map_err),
+        }
+    };
+} use try_;

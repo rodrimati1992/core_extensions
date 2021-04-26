@@ -15,7 +15,7 @@ include = [
     "./readme.md", 
     "./APACHE_license", "./MIT_license"
 ]
-teapot = true
+
 
 [badges]
 travis-ci = { repository =  "rodrimati1992/core_extensions/" }

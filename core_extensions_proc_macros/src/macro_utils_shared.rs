@@ -4,7 +4,7 @@ use crate::{
         Delimiter, Group, Ident, Punct, Literal, TokenStream, TokenTree, Spacing, Span,
     },
     parsing_shared::{parenthesize_ts, out_ident},
-    mmatches,
+    mmatches, try_,
 };
 
 use core::{
@@ -52,7 +52,19 @@ macro_rules! match_token {
 
 
 
-pub(crate) fn parse_count_param<I>(input: I) -> crate::Result<u32> 
+pub(crate) fn parse_integer<I>(mut input: I) -> crate::Result<usize>
+where
+    I: Iterator<Item = TokenTree>
+{
+    match_token!{"expected a decimal integer", input.next() => 
+        Some(TokenTree::Literal(lit)) => {
+            lit.to_string().parse::<usize>()
+                .map_err(|_| crate::Error::one_tt(lit.span(), "expected a decimal integer") )
+        }
+    }
+}
+
+pub(crate) fn parse_count_param<I>(input: I) -> crate::Result<(usize, Span)> 
 where
     I: IntoIterator<Item = TokenTree>,
 {
@@ -71,7 +83,7 @@ where
         } => {
             match_token!{"expected parentheses", input.next() =>
                 Some(TokenTree::Group(group)) => {
-                    Ok(group.stream().into_iter().count() as u32)
+                    Ok((group.stream().into_iter().count() as usize, group.span()))
                 }
             }
         }
@@ -88,63 +100,94 @@ where
         Some(TokenTree::Literal(lit)) => {
             const IL_MSG: &str = "could not parse integer literal";
 
-            lit.to_string().parse::<u32>()
-                .map_err(|_| crate::Error::one_tt(lit.span(), IL_MSG) )
+            let int = try_!(lit.to_string().parse::<usize>(),
+                map_err = |_| crate::Error::one_tt(lit.span(), IL_MSG) 
+            );
+
+            Ok((int, lit.span()))
         }
     }
 }
-pub(crate) fn parse_start_bound(input: &mut Peekable<IntoIter>) -> crate::Result<u32> {
-    if mmatches!(input.peek(), Some(TokenTree::Punct(p)) if p.as_char() == '.') {
-        Ok(0)
-    } else {
-        parse_count_param(&mut *input)
+
+////////////////////////////////////////////////////////////////////////////////
+
+pub(crate) struct RangeB {
+    pub(crate) start: usize,
+    pub(crate) end: Option<usize>,
+    pub(crate) start_span: Span,
+    pub(crate) end_span: Span,
+}
+
+pub(crate) fn parse_start_bound(input: &mut Peekable<IntoIter>) -> crate::Result<(usize, Span)> {
+    match input.peek() {
+        Some(TokenTree::Punct(p)) if p.as_char() == '.' => Ok((0, p.span())),
+        _=> parse_count_param(&mut *input)
     }
 }
 
-pub(crate) fn parse_range_param(input: &mut Peekable<IntoIter>) -> crate::Result<Range<u32>> {
-    let first_int = parse_start_bound(&mut *input)?;
+pub(crate) fn parse_range_param(input: &mut Peekable<IntoIter>) -> crate::Result<RangeB> {
+    let (start, start_span) = try_!(parse_start_bound(&mut *input));
+    let (end, end_span);
 
-    let range_ty = parse_range_operator(&mut *input)?;
+    let range_ty = try_!(parse_range_operator(&mut *input));
     
-    let second_int = match range_ty {
-        RangeType::Inclusive | RangeType::Exclusive => parse_count_param(input)?,
-        RangeType::RangeStart => !0,
-    };
-
     match range_ty {
-        RangeType::Inclusive=>Ok(first_int..second_int.saturating_add(1)),
-        RangeType::Exclusive | RangeType::RangeStart=>Ok(first_int..second_int),
-    }
-}
-
-pub(crate) fn parse_integer<I>(mut input: I) -> crate::Result<u32>
-where
-    I: Iterator<Item = TokenTree>
-{
-    match_token!{"expected a decimal integer", input.next() => 
-        Some(TokenTree::Literal(lit)) => {
-            lit.to_string().parse::<u32>()
-                .map_err(|_| crate::Error::one_tt(lit.span(), "expected a decimal integer") )
+        RangeType::Inclusive|RangeType::Exclusive=> {
+            let (end_, end_span_) = try_!(parse_count_param(input));
+            end = if let RangeType::Inclusive = range_ty {
+                Some(end_.saturating_add(1))
+            } else {
+                Some(end_)
+            };
+            end_span = end_span_;
+        }
+        RangeType::RangeStart => {
+            end = None;
+            end_span = start_span;
         }
     }
+    Ok(RangeB{start, end, start_span, end_span})
 }
 
+pub(crate) fn parse_bounded_range_param(
+    input: &mut Peekable<IntoIter>,
+) -> crate::Result<Range<usize>> {
+    let RangeB{start, end, start_span, end_span} = try_!(parse_range_param(input));
+    const ERR_MSG: &str =  "Expected a finite range";
+    let end = match end {
+        Some(x) => x,
+        None => return Err(crate::Error::new(start_span, end_span, ERR_MSG)),
+    };
+    Ok(start .. end)
+}
+
+pub(crate) fn parse_unbounded_range_param(
+    input: &mut Peekable<IntoIter>,
+) -> crate::Result<Range<usize>> {
+    parse_range_param(input)
+        .map(|RangeB{start, end, ..}| start .. end.unwrap_or(!0))
+}
+
+// Implicitly unbounded
 pub(crate) fn parse_int_or_range_param(
     input: &mut Peekable<IntoIter>,
-) -> crate::Result<Range<u32>> {
-    let first_int = parse_start_bound(&mut *input)?;
+) -> crate::Result<Range<usize>> {
+    let (start, _) = try_!(parse_start_bound(&mut *input));
     
-    let (second_int, range_ty) = match parse_range_operator_opt(&mut *input)? {
-        Some(x@RangeType::RangeStart) => (!0, x),
-        Some(x) => (parse_count_param(input)?, x),
-        None => (first_int, RangeType::Inclusive),
+    let end = match try_!(parse_range_operator_opt(&mut *input)) {
+        Some(RangeType::RangeStart) => !0,
+        Some(range_ty) => {
+            let (end_, _) = try_!(parse_count_param(input));
+            if let RangeType::Inclusive = range_ty {
+                end_.saturating_add(1)
+            } else {
+                end_
+            }
+        },
+        None => start.saturating_add(1),
     };
 
-    match range_ty {
-        RangeType::Inclusive=>Ok(first_int..second_int.saturating_add(1)),
-        RangeType::Exclusive=>Ok(first_int..second_int),
-        RangeType::RangeStart=>Ok(first_int..!0),
-    }
+    Ok(start .. end)
 }
 
 

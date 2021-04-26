@@ -79,7 +79,7 @@
 ///         // passing the return value of `split_at` after them.
 ///         $crate::__::tokens_method!{
 ///             __priv_split_array!{foo bar}
-///             split_at($split_at)
+///             split_at($split_at):
 ///             ($($elem)*) // Note the lack of `,`!
 ///         }
 ///     }
@@ -122,7 +122,7 @@
 /// }
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
-///     first
+///     first:
 ///     (1000 20 30 (40 50))
 /// }
 ///
@@ -135,7 +135,7 @@
 /// }
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
-///     first
+///     first:
 ///     ((1 2 3) 20 30 (40 50))
 /// }
 ///
@@ -166,7 +166,7 @@
 /// }
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
-///     last
+///     last:
 ///     (20 30 (40 50) 1000)
 /// }
 ///
@@ -180,7 +180,7 @@
 /// }
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
-///     last
+///     last:
 ///     (20 30 (40 50) (1 2 3))
 /// }
 ///
@@ -212,7 +212,7 @@
 /// }
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
-///     split_first
+///     split_first:
 ///     (1000 20 30 (40 50))
 /// }
 ///
@@ -225,7 +225,7 @@
 /// }
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
-///     split_first
+///     split_first:
 ///     ((1 2 3) 20 30 (40 50))
 /// }
 ///
@@ -257,7 +257,7 @@
 /// }
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
-///     split_last
+///     split_last:
 ///     (20 30 (40 50) 1000)
 /// }
 ///
@@ -270,7 +270,7 @@
 /// }
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
-///     split_last
+///     split_last:
 ///     (20 30 (40 50) (1 2 3))
 /// }
 ///
@@ -302,7 +302,7 @@
 /// }
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
-///     split_last_n(2)
+///     split_last_n(2):
 ///     (20 30 (40 50) 1000)
 /// }
 ///
@@ -316,7 +316,7 @@
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
 ///     // Equivalent to `split_last_n(3)`
-///     split_last_n(count(_ 1 (2 2 2)))
+///     split_last_n(count(_ 1 (2 2 2))):
 ///     (10 20 30 (40 50) (1 2 3))
 /// }
 ///
@@ -348,7 +348,7 @@
 /// }
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
-///     split_at(1)
+///     split_at(1):
 ///     (20 30 (40 50) 1000 2345)
 /// }
 ///
@@ -362,7 +362,7 @@
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
 ///     // Equivalent to `split_at(3)`
-///     split_at(count(_ 1 (2 2 2)))
+///     split_at(count(_ 1 (2 2 2))):
 ///     (20 30 (40 50) 1000 2345)
 /// }
 ///
@@ -388,29 +388,29 @@
 ///     (foo bar (6)) => {}
 /// }
 /// // `tokens_method` invokes `expects_one` here
-/// tokens_method!{expects_one!{ foo bar } get(3)  (2 3 (4 5) 6 7)}
+/// tokens_method!{expects_one!{ foo bar } get(3): (2 3 (4 5) 6 7)}
 /// // `count(_ 1 (2 2))` is equivalent to `3`
-/// tokens_method!{expects_one!{ foo bar }  get(count(_ 1 (2 2)))  (2 3 (4 5) 6 7)}
+/// tokens_method!{expects_one!{ foo bar }  get(count(_ 1 (2 2))): (2 3 (4 5) 6 7)}
 ///
 /// macro_rules! expects_two {
 ///     (baz qux (3 (4 5)) ) => {}
 /// }
-/// tokens_method!{expects_two!{ baz qux }  get(1..3)  (2 3 (4 5) 6 7)}
-/// tokens_method!{expects_two!{ baz qux }  get(1..=2)  (2 3 (4 5) 6 7)}
+/// tokens_method!{expects_two!{ baz qux }  get(1..3): (2 3 (4 5) 6 7)}
+/// tokens_method!{expects_two!{ baz qux }  get(1..=2): (2 3 (4 5) 6 7)}
 ///
 /// macro_rules! expects_three {
 ///     (baz qux (2 3 (4 5)) ) => {}
 /// }
-/// tokens_method!{expects_three!{ baz qux }  get(0..3)  (2 3 (4 5) 6 7)}
-/// tokens_method!{expects_three!{ baz qux }  get( ..3)  (2 3 (4 5) 6 7)}
-/// tokens_method!{expects_three!{ baz qux }  get(0..=2)  (2 3 (4 5) 6 7)}
-/// tokens_method!{expects_three!{ baz qux }  get( ..=2)  (2 3 (4 5) 6 7)}
+/// tokens_method!{expects_three!{ baz qux }  get(0..3): (2 3 (4 5) 6 7)}
+/// tokens_method!{expects_three!{ baz qux }  get( ..3): (2 3 (4 5) 6 7)}
+/// tokens_method!{expects_three!{ baz qux }  get(0..=2): (2 3 (4 5) 6 7)}
+/// tokens_method!{expects_three!{ baz qux }  get( ..=2): (2 3 (4 5) 6 7)}
 ///
 /// macro_rules! expects_four {
 ///     (baz qux (3 (4 5) 6 7) ) => {}
 /// }
-/// tokens_method!{expects_four!{ baz qux }  get(1..)  (2 3 (4 5) 6 7)}
-/// tokens_method!{expects_four!{ baz qux }  get(1..)  (2 3 (4 5) 6 7)}
+/// tokens_method!{expects_four!{ baz qux }  get(1..):  (2 3 (4 5) 6 7)}
+/// tokens_method!{expects_four!{ baz qux }  get(1..):  (2 3 (4 5) 6 7)}
 ///
 /// ```
 /// 
@@ -447,7 +447,7 @@
 ///     ( $($tt:tt)* ) => {
 ///         $crate::__::tokens_method!(
 ///             $crate::__priv_piped!(hello)
-///             split(|>)
+///             split(|>):
 ///             ($($tt)*) 
 ///         )
 ///     }
@@ -501,7 +501,7 @@
 ///     ( $($tt:tt)* ) => {
 ///         $crate::__::tokens_method!(
 ///             $crate::__priv_concaten!(hello)
-///             split_terminator(++)
+///             split_terminator(++):
 ///             ($($tt)*) 
 ///         )
 ///     }
@@ -566,7 +566,7 @@
 ///     ( $($tt:tt)* ) => {
 ///         $crate::__::tokens_method!(
 ///             $crate::__priv_combine!(world)
-///             split_starter(|)
+///             split_starter(|):
 ///             ($($tt)*) 
 ///         )
 ///     }
@@ -643,7 +643,7 @@
 /// // `tokens_method` calls `expected` here
 /// tokens_method!{
 ///     expected!{foo "bar"}
-///     zip_shortest
+///     zip_shortest:
 ///     (foo3 foo5 foo8 foo13 foo21)
 ///     (bar3 bar5 bar8 bar13 bar21)
 ///     (qux3 qux5 qux8 qux13 qux21)
@@ -652,7 +652,7 @@
 /// // `tokens_method` calls `expected` here
 /// tokens_method!{
 ///     expected!{baz "qux"}
-///     zip_shortest
+///     zip_shortest:
 ///     (foo3 foo5 foo8 foo13 foo21)
 ///     (bar3 bar5 bar8 bar13 bar21)
 ///     // this list is truncated because it's longer than the others
@@ -713,7 +713,7 @@
 /// // `tokens_method` calls `expected` here
 /// tokens_method!{
 ///     expected!{baz "qux"}
-///     zip_longest
+///     zip_longest:
 ///     (foo3 foo5 foo8 foo13 foo21)
 ///     (bar3 bar5 bar8 bar13 bar21)
 ///     (qux3 qux5 qux8 qux13 qux21 qux34 qux55)
@@ -752,7 +752,7 @@
 /// }
 /// tokens_method!{
 ///     assertion_single!{single "111"}
-///     iterate
+///     iterate:
 ///     (foo bar baz)
 /// }
 /// 
@@ -773,7 +773,7 @@
 /// }
 /// tokens_method!{
 ///     assertion_double!{double "222"}
-///     iterate
+///     iterate:
 ///     (a b c)
 ///     (foo bar baz)
 /// }
@@ -807,7 +807,7 @@
 /// }
 /// tokens_method!{
 ///     assertion_triple!{triple "333"}
-///     iterate
+///     iterate:
 ///     (3 5 8)
 ///     (a b c)
 ///     (foo bar baz)
@@ -850,7 +850,7 @@
 ///                 $enum_name,
 ///                 $field_ty,
 ///             }
-///             iterate
+///             iterate:
 ///             ($($variant)*)
 ///             ($($field)*)
 ///         }

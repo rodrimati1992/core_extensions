@@ -9,7 +9,7 @@ use crate::{
         out_braced_tt,
         parse_count_param, parse_ident, parse_int_or_range_param,
         parse_keyword, parse_check_punct,
-        parse_parentheses, parse_range_param, parse_macro_invocation,
+        parse_parentheses, parse_bounded_range_param, parse_macro_invocation,
         macro_span, out_parenthesized_tt,
     },
     parsing_shared::out_parenthesized,
@@ -121,7 +121,7 @@ pub(crate) fn gen_ident_range(tokens: TokenStream) -> crate::Result<TokenStream>
 
     parse_keyword(&mut iter, "in")?;
 
-    let range = parse_range_param(&mut iter)?;
+    let range = parse_bounded_range_param(&mut iter)?;
 
     let mut idents = TokenStream::new();
 
@@ -215,6 +215,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
 
     declare_methods!{
         "first" => {
+            parse_no_params(&mut iter)?;
             let group = parse_parentheses(iter)?;
             
             let last_token: TokenStream = group.stream().into_iter().take(1).collect();
@@ -222,6 +223,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             out_parenthesized(last_token, group.span(), args);
         }
         "last" => {
+            parse_no_params(&mut iter)?;
             let group = parse_parentheses(iter)?;
             
             let last_token: TokenStream = 
@@ -230,6 +232,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             out_parenthesized(last_token, group.span(), args);
         }
         "split_first" => {
+            parse_no_params(&mut iter)?;
             let group = parse_parentheses(iter)?;
             
             let mut iter = group.stream().into_iter();
@@ -240,6 +243,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             out_parenthesized(rest, group.span(), args);
         }
         "split_last" => {
+            parse_no_params(&mut iter)?;
             let group = parse_parentheses(iter)?;
             
             let mut iter = group.stream().into_iter();
@@ -256,8 +260,8 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             out_parenthesized(last, group.span(), args);
         }
         "split_last_n" => {
-            let mut params = parse_parentheses(&mut iter)?.stream().into_iter();
-            let last_count = parse_count_param(&mut params)? as usize;
+            let mut params = parse_params(&mut iter)?.stream().into_iter();
+            let (last_count, _) = parse_count_param(&mut params)?;
             crate::macro_utils_shared::expect_no_tokens(params)?;
 
             let group = parse_parentheses(iter)?;
@@ -273,8 +277,8 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             out_parenthesized(last, group.span(), args);
         }
         "split_at" => {
-            let mut params = parse_parentheses(&mut iter)?.stream().into_iter();
-            let split_at = parse_count_param(&mut params)? as usize;
+            let mut params = parse_params(&mut iter)?.stream().into_iter();
+            let (split_at, _) = parse_count_param(&mut params)?;
             crate::macro_utils_shared::expect_no_tokens(params)?;
 
             let group = parse_parentheses(&mut iter)?;
@@ -288,8 +292,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             out_parenthesized(rest, group.span(), args);
         }
         "get" => {
-            let params = parse_parentheses(&mut iter)?;
-            let mut params = params.stream().into_iter().peekable();
+            let mut params = parse_params(&mut iter)?.stream().into_iter().peekable();
             let range = parse_int_or_range_param(&mut params)?;
             crate::macro_utils_shared::expect_no_tokens(params)?;
 
@@ -297,8 +300,8 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
 
             let middle: TokenStream = group.stream()
                 .into_iter()
-                .take(range.end as usize)
-                .skip(range.start as usize)
+                .take(range.end)
+                .skip(range.start)
                 .collect();
 
             out_parenthesized(middle, group.span(), args);
@@ -335,6 +338,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             }
         }
         "zip_shortest" => {
+            parse_no_params(&mut iter)?;
             let mut iters = iter_many_parentheses(iter)?;
             let outer_span = macro_span();
 
@@ -351,6 +355,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             }
         }
         "zip_longest" => {
+            parse_no_params(&mut iter)?;
             let mut iters = iter_many_parentheses(iter)?;
             let outer_span = macro_span();
 
@@ -372,6 +377,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             }
         }
         "iterate" => {
+            parse_no_params(&mut iter)?;
             let mut ingroups = parse_iterator_args(iter)?;
             
             let mut outgroups = VecDeque::<Group>::new();
@@ -399,9 +405,25 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
     Ok(macro_.into_token_stream())
 }
 
+fn parse_params(iter: &mut IntoIter) -> crate::Result<Group> {
+    match_token!{"expected parentheses followed by colon", iter.next() => 
+        Some(TokenTree::Group(group)) if mmatches!(group.delimiter(), Delimiter::Parenthesis) => {
+            parse_no_params(iter)?;
+            Ok(group)
+        }
+    }
+}
+
+fn parse_no_params(iter: &mut IntoIter) -> crate::Result<()> {
+    match_token!{"expected colon", iter.next() => 
+        Some(TokenTree::Punct(p)) if p.as_char() == ':' => {
+            Ok(())
+        }
+    }
+}
 
 fn split_shared(iter: &mut IntoIter) -> crate::Result<(Vec<ComparableTT>, Group, IntoIter)> {
-    let params = parse_parentheses(&mut *iter)?;
+    let params = parse_params(iter)?;
     let needle = ComparableTT::many(params.stream().into_iter());
 
     let group = parse_parentheses(&mut *iter)?;
