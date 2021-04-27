@@ -5,15 +5,17 @@ use crate::{
     },
     macro_utils_shared::{
         cmp_ts::{self, ComparableTT, Found},
-        assert_parentheses,
+        list_generation::{ListIter, parse_bounded, parse_unbounded},
         out_braced_tt,
         parse_count_param, parse_ident, parse_int_or_range_param,
         parse_keyword, parse_check_punct,
         parse_parentheses, parse_bounded_range_param, parse_macro_invocation,
         macro_span, out_parenthesized_tt,
+        match_token,
     },
     parsing_shared::out_parenthesized,
     mmatches,
+    try_,
 };
 
 use core::{
@@ -216,7 +218,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
     declare_methods!{
         "first" => {
             parse_no_params(&mut iter)?;
-            let group = parse_parentheses(iter)?;
+            let group = parse_bounded(&mut iter)?;
             
             let last_token: TokenStream = group.stream().into_iter().take(1).collect();
 
@@ -224,7 +226,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
         }
         "last" => {
             parse_no_params(&mut iter)?;
-            let group = parse_parentheses(iter)?;
+            let group = parse_bounded(&mut iter)?;
             
             let last_token: TokenStream = 
                 group.stream().into_iter().last().into_iter().collect();
@@ -233,7 +235,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
         }
         "split_first" => {
             parse_no_params(&mut iter)?;
-            let group = parse_parentheses(iter)?;
+            let group = parse_bounded(&mut iter)?;
             
             let mut iter = group.stream().into_iter();
             let first: TokenStream = (&mut iter).take(1).collect();
@@ -244,7 +246,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
         }
         "split_last" => {
             parse_no_params(&mut iter)?;
-            let group = parse_parentheses(iter)?;
+            let group = parse_bounded(&mut iter)?;
             
             let mut iter = group.stream().into_iter();
             
@@ -264,7 +266,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             let (last_count, _) = parse_count_param(&mut params)?;
             crate::macro_utils_shared::expect_no_tokens(params)?;
 
-            let group = parse_parentheses(iter)?;
+            let group = parse_bounded(&mut iter)?;
             
             let elems = group.stream().into_iter().collect::<Vec<TokenTree>>();
             
@@ -281,7 +283,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             let (split_at, _) = parse_count_param(&mut params)?;
             crate::macro_utils_shared::expect_no_tokens(params)?;
 
-            let group = parse_parentheses(&mut iter)?;
+            let group = parse_bounded(&mut iter)?;
             
             let mut iter = group.stream().into_iter();
 
@@ -296,7 +298,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             let range = parse_int_or_range_param(&mut params)?;
             crate::macro_utils_shared::expect_no_tokens(params)?;
 
-            let group = parse_parentheses(&mut iter)?;
+            let group = parse_bounded(&mut iter)?;
 
             let middle: TokenStream = group.stream()
                 .into_iter()
@@ -339,7 +341,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
         }
         "zip_shortest" => {
             parse_no_params(&mut iter)?;
-            let mut iters = iter_many_parentheses(iter)?;
+            let ZipArgs{mut iters, ..} = parse_for_zip(iter)?;
             let outer_span = macro_span();
 
             'outer: loop {
@@ -356,7 +358,7 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
         }
         "zip_longest" => {
             parse_no_params(&mut iter)?;
-            let mut iters = iter_many_parentheses(iter)?;
+            let ZipArgs{mut iters, finite_arg_count} = parse_for_zip(iter)?;
             let outer_span = macro_span();
 
             loop {
@@ -371,14 +373,14 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
                         out_parenthesized(TokenStream::new(), outer_span, &mut zipped)
                     }
                 }
-                if none_count == iters.len() { break }
+                if none_count == finite_arg_count { break }
 
                 out_parenthesized(zipped, outer_span, args)
             }
         }
         "iterate" => {
             parse_no_params(&mut iter)?;
-            let mut ingroups = parse_iterator_args(iter)?;
+            let mut ingroups = parse_bounded_args(iter)?;
             
             let mut outgroups = VecDeque::<Group>::new();
             outgroups.push_front(ingroups.pop().unwrap());
@@ -426,29 +428,49 @@ fn split_shared(iter: &mut IntoIter) -> crate::Result<(Vec<ComparableTT>, Group,
     let params = parse_params(iter)?;
     let needle = ComparableTT::many(params.stream().into_iter());
 
-    let group = parse_parentheses(&mut *iter)?;
+    let group = parse_bounded(&mut *iter)?;
     let iter = group.stream().into_iter();
     
     Ok((needle, group, iter))
 }
 
-fn iter_many_parentheses(iter: IntoIter) -> crate::Result<Vec<IntoIter>> {
-    iter.map(|tt|{
-            match assert_parentheses(tt) {
-                Ok(group) => Ok(group.stream().into_iter()),
-                Err(e) => Err(e),
-            }
-        })
-        .collect()
+
+struct ZipArgs {
+    iters: Vec<ListIter>,
+    finite_arg_count: usize,
 }
 
-fn parse_iterator_args(mut iter: IntoIter) -> crate::Result<Vec<Group>> {
+fn parse_for_zip(iter: IntoIter) -> crate::Result<ZipArgs> {
     let mut groups = Vec::new();
+    let mut iter = iter.peekable();
     
-    groups.push(parse_parentheses(&mut iter)?);
+    let mut finite_arg_count = 0;
+    
+    loop {
+        let elem = try_!(parse_unbounded(&mut iter));
+        if elem.is_finite() {
+            finite_arg_count += 1;
+        }
+        groups.push(elem.into_iter());
 
-    for next in iter {
-        groups.push(assert_parentheses(next)?);
+        if let None = iter.peek() { break }
+    }
+
+    if finite_arg_count == 0 {
+        Err(crate::Error::one_tt(macro_span(), "Expected at least one finite list"))
+    } else {
+        Ok(ZipArgs{iters: groups, finite_arg_count})
+    }
+
+}
+
+fn parse_bounded_args(iter: IntoIter) -> crate::Result<Vec<Group>> {
+    let mut groups = Vec::new();
+    let mut iter = iter.peekable();
+    
+    loop {
+        groups.push(try_!(parse_bounded(&mut iter)));
+        if let None = iter.peek() { break }
     }
 
     Ok(groups)

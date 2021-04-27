@@ -20,6 +20,7 @@ use alloc::{
 
 
 pub(crate) mod cmp_ts;
+pub(crate) mod list_generation;
 
 
 
@@ -48,10 +49,10 @@ macro_rules! match_token {
             }
         }
     };
-}
+} pub(crate) use match_token;
 
 
-
+#[allow(dead_code)]
 pub(crate) fn parse_integer<I>(mut input: I) -> crate::Result<usize>
 where
     I: Iterator<Item = TokenTree>
@@ -114,8 +115,7 @@ where
 pub(crate) struct RangeB {
     pub(crate) start: usize,
     pub(crate) end: Option<usize>,
-    pub(crate) start_span: Span,
-    pub(crate) end_span: Span,
+    pub(crate) spans: Spans,
 }
 
 pub(crate) fn parse_start_bound(input: &mut Peekable<IntoIter>) -> crate::Result<(usize, Span)> {
@@ -146,26 +146,21 @@ pub(crate) fn parse_range_param(input: &mut Peekable<IntoIter>) -> crate::Result
             end_span = start_span;
         }
     }
-    Ok(RangeB{start, end, start_span, end_span})
+
+    let spans = Spans {start: start_span, end: end_span};
+    Ok(RangeB{start, end, spans})
 }
 
 pub(crate) fn parse_bounded_range_param(
     input: &mut Peekable<IntoIter>,
 ) -> crate::Result<Range<usize>> {
-    let RangeB{start, end, start_span, end_span} = try_!(parse_range_param(input));
+    let RangeB{start, end, spans} = try_!(parse_range_param(input));
     const ERR_MSG: &str =  "Expected a finite range";
     let end = match end {
         Some(x) => x,
-        None => return Err(crate::Error::new(start_span, end_span, ERR_MSG)),
+        None => return Err(crate::Error::with_spans(spans, ERR_MSG)),
     };
     Ok(start .. end)
-}
-
-pub(crate) fn parse_unbounded_range_param(
-    input: &mut Peekable<IntoIter>,
-) -> crate::Result<Range<usize>> {
-    parse_range_param(input)
-        .map(|RangeB{start, end, ..}| start .. end.unwrap_or(!0))
 }
 
 // Implicitly unbounded
@@ -249,6 +244,7 @@ where
     }
 }
 
+#[allow(dead_code)]
 pub(crate) fn assert_parentheses(tt: TokenTree) -> crate::Result<Group> {
     match tt {
         TokenTree::Group(group) if mmatches!(group.delimiter(), Delimiter::Parenthesis) => 
@@ -448,6 +444,14 @@ where
 
 ////////////////////////////////////////////////////////////////////////////////
 
+pub(crate) fn usize_tt(n: usize, span: Span) -> TokenTree {
+    let mut lit = Literal::usize_unsuffixed(n);
+    lit.set_span(span);
+    TokenTree::Literal(lit)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 pub(crate) fn out_parenthesized_tt(tt: TokenTree, out: &mut TokenStream) {
     let span = tt.span();
     out.extend(once(parenthesize_ts(tt.into(), span)));
@@ -466,26 +470,46 @@ pub(crate) fn out_braced_tt(tt: TokenTree, out: &mut TokenStream) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#[derive(Copy, Clone)]
+pub(crate) struct Spans {
+    pub(crate) start: Span,
+    pub(crate) end: Span,
+}
+
+impl Spans {
+    #[inline(always)]
+    pub(crate) fn new(start: Span, end: Span) -> Self {
+        Self{start, end}
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 pub(crate) struct Error {
-    start_span: Span,
-    end_span: Span,
+    spans: Spans,
     message: String,
 }
 
 impl Error {
+    #[allow(dead_code)]
     pub(crate) fn new(start_span: Span, end_span: Span, message: &str) -> Self {
         Self {
-            start_span,
-            end_span,
+            spans: Spans::new(start_span, end_span),
+            message: message.into(),
+        }
+    }
+
+    pub(crate) fn with_spans(spans: Spans, message: &str) -> Self {
+        Self {
+            spans,
             message: message.into(),
         }
     }
 
     pub(crate) fn one_tt(span: Span, message: &str) -> Self {
         Self {
-            start_span: span,
-            end_span: span,
+            spans: Spans::new(span, span),
             message: message.into(),
         }
     }
@@ -495,24 +519,24 @@ impl Error {
         message.push_str(message_);
 
         Self {
-            start_span: Span::call_site(),
-            end_span: Span::call_site(),
+            spans: Spans::new(Span::call_site(), Span::call_site()),
             message,
         }
     }
 
     pub(crate) fn start_span(&self) -> Span {
-        self.start_span
+        self.spans.start
     }
+    #[allow(dead_code)]
     pub(crate) fn end_span(&self) -> Span {
-        self.end_span
+        self.spans.end
     }
 
     pub(crate) fn into_compile_error(self) -> TokenStream {
         self.to_compile_error()
     }
     pub(crate) fn to_compile_error(&self) -> TokenStream {
-        let Error { ref message, start_span, end_span } = *self;
+        let Error { ref message, spans: Spans{start: start_span, end: end_span} } = *self;
 
         let mut out = TokenStream::new();
 
