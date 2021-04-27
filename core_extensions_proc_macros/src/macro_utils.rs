@@ -1,11 +1,12 @@
 use crate::{
     used_proc_macro::{
         token_stream::IntoIter,
-        Delimiter, Ident, Group, Literal, Punct, Spacing, TokenStream, TokenTree,
+        Delimiter, Ident, Group, Literal, Punct, Span, Spacing, TokenStream, TokenTree,
     },
     macro_utils_shared::{
         cmp_ts::{self, ComparableTT, Found},
         list_generation::{ListIter, parse_bounded, parse_unbounded},
+        expect_no_tokens,
         out_braced_tt,
         parse_count_param, parse_ident, parse_int_or_range_param,
         parse_keyword, parse_check_punct,
@@ -19,13 +20,14 @@ use crate::{
 };
 
 use core::{
-    iter::once,
+    iter::{Peekable, once},
+    ops::Range,
     mem,
 };
 
 use alloc::{
     collections::VecDeque,
-    string::ToString,
+    string::{String, ToString},
     vec::Vec,
     format,
 };
@@ -111,33 +113,70 @@ pub(crate) fn count_tts(tokens: TokenStream) -> crate::Result<TokenStream> {
 
 pub(crate) fn gen_ident_range(tokens: TokenStream) -> crate::Result<TokenStream> {
     let mut iter = tokens.into_iter().peekable();
-    
     let mut macro_ = parse_macro_invocation(&mut iter)?;
+    
+    let idents = try_!(gen_ident_range_just_idents(&mut iter, |x| parse_bounded_range_param(x)));
 
-    parse_keyword(&mut iter, "for")?;
-
-    let prefix = parse_ident(&mut iter)?;
-    let sprefix = prefix.to_string();
-
-    parse_check_punct(&mut iter, '*')?;
-
-    parse_keyword(&mut iter, "in")?;
-
-    let range = parse_bounded_range_param(&mut iter)?;
-
-    let mut idents = TokenStream::new();
-
-    for n in range {
-        let ident = Ident::new(&format!("{}{}", sprefix, n), prefix.span());
-        idents.extend(once(TokenTree::Ident(ident)))
-    }
-
-    let paren = Group::new(Delimiter::Parenthesis, idents);
+    let paren = Group::new(Delimiter::Parenthesis, idents.collect());
 
     macro_.args.extend(once(TokenTree::Group(paren)));
 
     Ok(macro_.into_token_stream())
 }
+
+pub(crate) fn gen_ident_range_just_idents<F>(
+    iter: &mut Peekable<IntoIter>,
+    parse_range: F,
+) -> crate::Result<GenIdentRange>
+where
+    F: FnOnce(&mut Peekable<IntoIter>) -> crate::Result<Range<usize>>
+{
+    try_!(parse_keyword(&mut *iter, "for"));
+
+    let prefix = try_!(parse_ident(&mut *iter));
+    let sprefix = prefix.to_string();
+    let span = prefix.span();
+
+    try_!(parse_check_punct(&mut *iter, '*'));
+
+    try_!(parse_keyword(&mut *iter, "in"));
+
+    let range = try_!(parse_range(&mut *iter));
+
+    try_!(expect_no_tokens(iter));
+
+    Ok(GenIdentRange{sprefix, range, span})
+}
+
+pub(crate) struct GenIdentRange {
+    sprefix: String,
+    range: Range<usize>,
+    span: Span,
+}
+
+impl GenIdentRange{
+    pub(crate) fn span(&self) -> Span {
+        self.span
+    }
+    pub(crate) fn is_unbounded(&self) -> bool {
+        const M: usize = !0;
+        self.range.end == M
+    }
+}
+
+impl Iterator for GenIdentRange {
+    type Item = TokenTree;
+
+    fn next(&mut self) -> Option<TokenTree> {
+        self.range
+            .next()
+            .map(|n| {
+                let ident = Ident::new(&format!("{}{}", self.sprefix, n), self.span);
+                TokenTree::Ident(ident)
+            })
+    }
+}
+
 
 
 pub(crate) fn macro_attr(attr: TokenStream, item: TokenStream) -> crate::Result<TokenStream> {

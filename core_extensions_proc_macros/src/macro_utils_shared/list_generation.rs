@@ -3,10 +3,14 @@ use crate::{
         token_stream::IntoIter,
         Delimiter, Group, TokenStream, TokenTree,
     },
+    macro_utils::{
+        GenIdentRange,
+        gen_ident_range_just_idents,
+    },
     macro_utils_shared::{
         RangeB, Spans,
         match_token,
-        parse_parentheses, parse_range_param,
+        parse_parentheses, parse_range_param, parse_unbounded_range_param,
         usize_tt,
     },
     mmatches, try_,
@@ -22,6 +26,7 @@ use alloc::{
 pub(crate) enum List {
     List(TokenStream, Spans),
     RangeFrom(usize, Spans),
+    GenIdentRange(GenIdentRange),
 }
 
 
@@ -30,6 +35,10 @@ impl List {
     pub(crate) fn spans(&self) -> Spans {
         match self {
             Self::List(_, x) | Self::RangeFrom(_, x) => *x,
+            Self::GenIdentRange(gir) => {
+                let s = gir.span();
+                Spans{start: s, end: s}
+            },
         }
     }
     pub(crate) fn is_finite(&self) -> bool {
@@ -83,6 +92,7 @@ where
                         $(
                             $name => {
                                 let $group = try_!(paren_res);
+                                #[allow(unused_mut)]
                                 let mut $stream_iter = $group.stream().into_iter();
 
                                 $block
@@ -106,6 +116,15 @@ where
         ident,
         group,
         stream,
+        "gen_ident_range" => {
+            let range = try_!(gen_ident_range_just_idents(
+                &mut stream.peekable(),
+                parse_unbounded_range_param,
+            ));
+
+            C::make_gen_idents_range(range, Spans::new(ident.span(), group.span()))
+
+        }
         "range" => {
             let mut stream = stream.peekable();
             let rangeb = try_!(parse_range_param(&mut stream));
@@ -126,6 +145,8 @@ where
 trait Constructors {
     type This;
 
+    fn make_gen_idents_range(range: GenIdentRange, span: Spans) -> crate::Result<Self::This>;
+
     fn make_group(ts: TokenStream, span: Spans) -> Self::This;
 
     fn make_range_start(rangeb: RangeB) -> crate::Result<Self::This>;
@@ -135,6 +156,14 @@ struct Unbounded;
 
 impl Constructors for Unbounded {
     type This = List;
+
+    fn make_gen_idents_range(range: GenIdentRange, spans: Spans) -> crate::Result<Self::This> {
+        if range.is_unbounded() {
+            Ok(List::GenIdentRange(range))
+        } else {
+            Ok(Self::make_group(range.collect(), spans))
+        }
+    }
 
     fn make_group(ts: TokenStream, spans: Spans) -> Self::This {
         List::List(ts, spans)
@@ -150,6 +179,14 @@ struct Bounded;
 
 impl Constructors for Bounded {
     type This = Group;
+    
+    fn make_gen_idents_range(range: GenIdentRange, spans: Spans) -> crate::Result<Self::This> {
+        if range.is_unbounded() {
+            Err(crate::Error::with_spans(spans, "expected bounded range"))
+        } else {
+            Ok(Self::make_group(range.collect(), spans))
+        }
+    }
 
     fn make_group(ts: TokenStream, span: Spans) -> Self::This {
         let mut group = Group::new(Delimiter::Parenthesis, ts);
@@ -181,6 +218,7 @@ where
 pub(crate) enum ListIter {
     List(IntoIter),
     RangeFrom(RangeFrom<usize>, Spans),
+    GenIdentRange(GenIdentRange),
 }
 
 
@@ -192,6 +230,7 @@ impl IntoIterator for List {
         match self {
             Self::List(ts, _) => ListIter::List(ts.into_iter()),
             Self::RangeFrom(start, span) => ListIter::RangeFrom(start.., span),
+            Self::GenIdentRange(gir) => ListIter::GenIdentRange(gir),
         }
     }
 }
@@ -210,6 +249,7 @@ impl Iterator for ListIter{
         match self {
             Self::List(x) => x.next(),
             Self::RangeFrom(x, span) => x.next().map(|x| usize_tt(x, span.start) ),
+            Self::GenIdentRange(x) => x.next(),
         }
     }
 }

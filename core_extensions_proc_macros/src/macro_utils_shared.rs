@@ -163,6 +163,14 @@ pub(crate) fn parse_bounded_range_param(
     Ok(start .. end)
 }
 
+pub(crate) fn parse_unbounded_range_param(
+    input: &mut Peekable<IntoIter>,
+) -> crate::Result<Range<usize>> {
+    let RangeB{start, end, ..} = try_!(parse_range_param(input));
+    let end = end.unwrap_or(!0);
+    Ok(start .. end)
+}
+
 // Implicitly unbounded
 pub(crate) fn parse_int_or_range_param(
     input: &mut Peekable<IntoIter>,

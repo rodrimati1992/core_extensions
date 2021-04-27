@@ -38,8 +38,31 @@
 /// - [`zip_shortest`](#zip_shortest)/[`zip_longest`](#zip_longest): 
 /// Return the token trees of every list iterated over in lockstep.
 /// 
+/// - [`iterate`](#iterate):
+/// Nested iteration over multiple lists.
+/// 
 /// The methods that take integer arguments use
 /// [the `<number>` syntax](./macro.gen_ident_range.html#number-syntax) from [`gen_ident_range`]
+/// 
+/// # Iterators
+/// 
+/// This macro can iterate over both lists of token trees (eg: `(foo bar baz)`),
+/// and iteration functions (eg: `range(0..10)`).
+/// 
+/// ### Functions
+/// 
+/// Iteration functions can be used to generate tokens or transform a list of tokens.
+/// 
+/// These are the functions:
+/// 
+/// - [`range`](#range-fn): Iterates over all the integers in a range, can be unbounded.
+/// 
+/// - [`gen_ident_range`](#gen_ident_range-fn):
+/// Generates identifiers by using the [`gen_ident_range`] macro.
+/// 
+/// When an iterator function generates an unbounded amount of tokens,
+/// they must be constrained by another iterator to be used,
+/// otherwise producing a compile-time error to prevent the proc macro from running forever.
 /// 
 /// # Version compatibility
 /// 
@@ -696,13 +719,13 @@
 /// macro_rules! expected {
 ///     (
 ///         $func:ident $value:literal
-///         ((foo3) (bar3) (qux3))
-///         ((foo5) (bar5) (qux5))
-///         ((foo8) (bar8) (qux8))
-///         ((foo13) (bar13) (qux13))
-///         ((foo21) (bar21) (qux21))
-///         (()      ()      (qux34))
-///         (()      ()      (qux55))
+///         ((0) (bar3) (qux3))
+///         ((1) (bar5) (qux5))
+///         ((2) (bar8) (qux8))
+///         ((3) (bar13) (qux13))
+///         ((4) (bar21) (qux21))
+///         ((5) ()      (qux34))
+///         ((6) ()      (qux55))
 ///     ) => {
 ///         fn $func() -> &'static str {
 ///             $value
@@ -714,7 +737,9 @@
 /// tokens_method!{
 ///     expected!{baz "qux"}
 ///     zip_longest:
-///     (foo3 foo5 foo8 foo13 foo21)
+///
+///     // Unbounded ranges only generate as many tokens as the longest finite iterator
+///     range(0..) 
 ///     (bar3 bar5 bar8 bar13 bar21)
 ///     (qux3 qux5 qux8 qux13 qux21 qux34 qux55)
 /// }
@@ -884,6 +909,101 @@
 /// mod __ { 
 ///     pub use core_extensions::tokens_method;
 /// }
+/// ```
+/// 
+/// <span id="range-fn"></span>
+/// # `range` iterator function
+/// 
+/// Iterates over a range, can be bounded or unbounded.
+/// 
+/// If the range is unbounded, it must be constrained by some other iterator,
+/// otherwise causing a compile-time error.
+/// 
+/// This uses 
+/// [the `<number>` syntax](./macro.gen_ident_range.html#number-syntax) from [`gen_ident_range`]
+/// for the range bounds.
+/// 
+/// ### Example
+/// 
+/// ```
+/// use core_extensions::tokens_method;
+/// 
+/// macro_rules! assertion {
+///     ((0 1 2 3 4)) => {}
+/// }
+///
+/// // `tokens_method` calls `assertion` here
+/// tokens_method!{assertion!{} iterate: range(0..5)}
+/// tokens_method!{assertion!{} iterate: range(..5)}
+/// tokens_method!{assertion!{} iterate: range(0..=4)}
+/// tokens_method!{assertion!{} iterate: range(..=4)}
+/// // You can use `count(....)` to count token trees, using the count as a range bound.
+/// tokens_method!{assertion!{} iterate: range(..count(_ _ _ _ _))}
+///
+/// macro_rules! assert_zip {
+///     (((0) (a)) ((1) (b)) ((2) (c)) ((3) ((d f g))) ((4) ({h i j}))) => {}
+/// }
+/// 
+/// // Both of these call `assert_zip` with the same tokens
+/// tokens_method!{
+///     assert_zip!{}
+///     zip_shortest: 
+///     range(0..)
+///     (a b c (d f g) {h i j})
+/// }
+/// tokens_method!{
+///     assert_zip!{}
+///     zip_longest: 
+///     range(0..)
+///     (a b c (d f g) {h i j})
+/// }
+/// 
+/// ```
+/// 
+/// <span id="gen_ident_range-fn"></span>
+/// # `gen_ident_range` iterator function
+/// 
+/// Generates identifiers by using the [`gen_ident_range`] macro.
+/// 
+/// The range can be unbounded so long as it's constrained by some other iterator,
+/// 
+/// ### Example
+/// 
+/// ```
+/// use core_extensions::tokens_method;
+/// 
+/// macro_rules! assertion {
+///     ((pre_1 pre_2 pre_3 pre_4 pre_5)) => {}
+/// }
+///
+/// // `tokens_method` calls `assertion` here
+/// tokens_method!{
+///     assertion!{}
+///     iterate: gen_ident_range(for pre_* in 1..=5) 
+/// }
+/// tokens_method!{
+///     assertion!{}
+///     iterate: gen_ident_range(for pre_* in 1..6) 
+/// }
+/// tokens_method!{
+///     assertion!{}
+///     iterate: gen_ident_range(for pre_* in 1..=count(_ _ _ _ _)) 
+/// }
+/// 
+/// 
+/// // One way unbounded ranges can be used
+/// macro_rules! assertion_zipped {
+///     (((a) (foo0)) ((b) (foo1)) ((c) (foo2))) => {}
+/// }
+///     
+/// // `tokens_method` calls `assertion_zipped` here
+/// tokens_method!{
+///     assertion_zipped!{}
+///     zip_shortest:   
+///     (a b c)
+///     gen_ident_range(for foo* in 0..) 
+/// }
+/// 
 /// ```
 /// 
 /// [`gen_ident_range`]: ./macro.gen_ident_range.html
