@@ -493,6 +493,46 @@ impl Spans {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+pub(crate) struct RepeatTimes<I> {
+    cloned: I,
+    iter: I,
+    times: usize,
+}
+
+impl<I> RepeatTimes<I>
+where
+    I: Iterator + Clone
+{
+    pub fn new(times: usize, iter: I) -> Self {
+        let cloned = iter.clone();
+        Self{cloned, iter, times}
+    }
+}
+
+impl<I> Iterator for RepeatTimes<I> 
+where
+    I: Iterator + Clone
+{
+    type Item = I::Item;
+
+    fn next(&mut self) -> Option<I::Item> {
+        loop {
+            match self.iter.next() {
+                x @ Some(_) => return x,
+                None if self.times <= 1 => return None,
+                None => {
+                    self.iter = self.cloned.clone();
+                    self.times -= 1;
+                }
+            }
+        }
+    }
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 pub(crate) struct Error {
     spans: Spans,

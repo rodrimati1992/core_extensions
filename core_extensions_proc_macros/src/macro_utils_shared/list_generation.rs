@@ -8,8 +8,10 @@ use crate::{
         gen_ident_range_just_idents,
     },
     macro_utils_shared::{
-        RangeB, Spans,
+        RangeB, RepeatTimes, Spans,
+        expect_no_tokens,
         match_token,
+        parse_check_punct, parse_count_param,
         parse_parentheses, parse_range_param, parse_unbounded_range_param,
         usize_tt,
     },
@@ -17,7 +19,7 @@ use crate::{
 };
 
 use core::{
-    iter::{Chain, Peekable},
+    iter::{Chain, Cycle, Peekable},
     marker::PhantomData,
     ops::RangeFrom,
 };
@@ -37,7 +39,8 @@ pub(crate) enum List {
         bounded: TokenStream,
         spans: Spans,
         unbounded: Box<List>,
-    }
+    },
+    Cycle(TokenStream, Spans),
 }
 
 
@@ -51,6 +54,7 @@ impl List {
                 Spans{start: s, end: s}
             },
             Self::Chain{spans, ..} => *spans,
+            Self::Cycle(_, x) => *x
         }
     }
     pub(crate) fn is_finite(&self) -> bool {
@@ -151,6 +155,43 @@ where
         ident,
         group,
         stream,
+        "cycle" => {
+            let mut args = stream.into_iter();
+            let tokens = try_!(parse_bounded(&mut args));
+
+            try_!(expect_no_tokens(args));
+            C::make_cycle(tokens.stream(), Spans::new(ident.span(), group.span()))
+        }
+        "repeat" => {
+            let mut args = stream.into_iter();
+
+            let times = try_!(parse_count_param(&mut args)).0;
+
+            try_!(parse_check_punct(&mut args, ','));
+
+            let repeated = try_!(parse_bounded(&mut args)).stream().into_iter();
+
+            let tokens = if times == 0 {
+                TokenStream::new()
+            } else {
+                RepeatTimes::new(times, repeated).collect()
+            };
+
+            try_!(expect_no_tokens(args));
+            Ok(C::make_group(tokens, Spans::new(ident.span(), group.span())))
+        }
+        "take" => {
+            let mut args = stream.into_iter();
+
+            let count = try_!(parse_count_param(&mut args)).0;
+
+            try_!(parse_check_punct(&mut args, ','));
+
+            let tokens = try_!(parse_unbounded(&mut args)).into_iter().take(count).collect();
+
+            try_!(expect_no_tokens(args));
+            Ok(C::make_group(tokens, Spans::new(ident.span(), group.span())))
+        }
         "chain" => {
             let iter = ParseManyLists{
                 iter: stream.into_iter().peekable(),
@@ -166,7 +207,6 @@ where
             ));
 
             C::make_gen_idents_range(range, Spans::new(ident.span(), group.span()))
-
         }
         "range" => {
             let mut stream = stream.peekable();
@@ -188,6 +228,8 @@ where
 trait Constructors: Sized {
     type This;
 
+    fn make_cycle(ts: TokenStream, span: Spans) -> crate::Result<Self::This>;
+    
     fn make_chain(_: ParseManyLists<Self>, span: Spans) -> crate::Result<Self::This>;
     
     fn make_gen_idents_range(range: GenIdentRange, span: Spans) -> crate::Result<Self::This>;
@@ -202,6 +244,10 @@ struct Unbounded;
 impl Constructors for Unbounded {
     type This = List;
     
+    fn make_cycle(ts: TokenStream, spans: Spans) -> crate::Result<Self::This> {
+        Ok(List::Cycle(ts, spans))
+    }
+
     fn make_chain(iter: ParseManyLists<Self>, mut spans: Spans) -> crate::Result<Self::This> {
         let mut bounded = TokenStream::new();
         let mut unbounded = None::<Box<List>>;
@@ -249,6 +295,10 @@ struct Bounded;
 
 impl Constructors for Bounded {
     type This = Group;
+
+    fn make_cycle(_: TokenStream, spans: Spans) -> crate::Result<Self::This> {
+        Err(crate::Error::with_spans(spans, "cannot use `cycle` here"))
+    }
 
     fn make_chain(iter: ParseManyLists<Self>, span: Spans) -> crate::Result<Self::This> {
         let mut tokens = TokenStream::new();
@@ -303,6 +353,7 @@ pub(crate) enum ListIter {
     RangeFrom(RangeFrom<usize>, Spans),
     GenIdentRange(GenIdentRange),
     Chain(Chain<IntoIter, Box<ListIter>>),
+    Cycle(Cycle<IntoIter>),
 }
 
 
@@ -317,6 +368,7 @@ impl IntoIterator for List {
             Self::GenIdentRange(gir) => ListIter::GenIdentRange(gir),
             Self::Chain{bounded, unbounded, ..} =>
                 ListIter::Chain(bounded.into_iter().chain(Box::new(unbounded.into_iter()))),
+            Self::Cycle(x, _) => ListIter::Cycle(x.into_iter().cycle()),
         }
     }
 }
@@ -337,6 +389,7 @@ impl Iterator for ListIter{
             Self::RangeFrom(x, span) => x.next().map(|x| usize_tt(x, span.start) ),
             Self::GenIdentRange(x) => x.next(),
             Self::Chain(x) => x.next(),
+            Self::Cycle(x) => x.next(),
         }
     }
 }

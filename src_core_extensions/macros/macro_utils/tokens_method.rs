@@ -960,6 +960,8 @@
 ///     (a b c (d f g) {h i j})
 /// }
 /// 
+/// # fn main() {}
+/// 
 /// ```
 /// 
 /// <span id="gen_ident_range-fn"></span>
@@ -1006,6 +1008,8 @@
 ///     gen_ident_range(for foo* in 0..) 
 /// }
 /// 
+/// # fn main() {}
+/// 
 /// ```
 /// 
 /// <span id="chain-fn"></span>
@@ -1043,6 +1047,102 @@
 ///     range(0..=3)
 ///     chain((a b) range(10..)) 
 /// }
+/// 
+/// # fn main() {}
+/// 
+/// ```
+/// 
+/// <span id="take-fn"></span>
+/// # `take` iterator function
+/// 
+/// Takes some amount of elements from a possibly unbounded iterator.
+/// 
+/// ### Example
+/// 
+/// ```
+/// use core_extensions::tokens_method;
+/// 
+/// macro_rules! assertion {
+///     ((a b 0 1 2)) => {}
+/// }
+///
+/// // `tokens_method` calls `assertion` here
+/// tokens_method!{
+///     assertion!{}
+///     iterate:
+///     take(5, chain((a b) range(0..10)))
+/// }
+/// 
+/// tokens_method!{
+///     assertion!{}
+///     iterate:
+///     take(count(_ _ _ _ _), chain((a b) range(0..)))
+/// }
+/// 
+/// # fn main() {}
+/// 
+/// ```
+/// 
+/// <span id="cycle-fn"></span>
+/// # `cycle` iterator function
+/// 
+/// Takes a bounded iterator and repeats it infinitely.
+/// 
+/// ### Example
+/// 
+/// ```
+/// use core_extensions::tokens_method;
+/// 
+/// macro_rules! assertion {
+///     (
+///         ((0) (a)) ((1) (b)) ((2) (c))
+///         ((0) (d)) ((1) (e)) ((2) (f))
+///         ((0) (g)) ((1) (h))
+///     ) => {}
+/// }
+/// tokens_method!{
+///     assertion!{}
+///     zip_shortest:
+///     cycle(range(0..3))
+///     (a b c d e f g h)
+/// }
+/// 
+/// # fn main() {}
+/// 
+/// ```
+/// 
+/// <span id="repeat-fn"></span>
+/// # `repeat` iterator function
+/// 
+/// Repeats an iterator some amount of times.
+/// 
+/// ### Example
+/// 
+/// ```
+/// use core_extensions::tokens_method;
+/// 
+/// macro_rules! assertion_four_times {
+///     ((0 1 2 0 1 2 0 1 2 0 1 2)) => {}
+/// }
+/// // `tokens_method` calls `assertion_four_times` here
+/// tokens_method!{
+///     assertion_four_times!{}
+///     iterate:
+///     repeat(4, range(0..=2))
+/// }
+/// 
+/// 
+/// macro_rules! assertion_zero_times {
+///     (()) => {}
+/// }
+/// // `tokens_method` calls `assertion_zero_times` here
+/// tokens_method!{
+///     assertion_zero_times!{}
+///     iterate:
+///     repeat(0, range(0..=2))
+/// }
+/// 
+/// # fn main() {}
 /// 
 /// ```
 /// 
