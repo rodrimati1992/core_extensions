@@ -59,6 +59,8 @@
 /// 
 /// - [`gen_ident_range`](#gen_ident_range-fn):
 /// Generates identifiers by using the [`gen_ident_range`] macro.
+///
+/// - [`chain`](#chain-fn): Concatenates multiple iterators.
 /// 
 /// When an iterator function generates an unbounded amount of tokens,
 /// they must be constrained by another iterator to be used,
@@ -1002,6 +1004,44 @@
 ///     zip_shortest:   
 ///     (a b c)
 ///     gen_ident_range(for foo* in 0..) 
+/// }
+/// 
+/// ```
+/// 
+/// <span id="chain-fn"></span>
+/// # `chain` iterator function
+/// 
+/// Concatenates multiple iterators.
+/// 
+/// The iterators can be unbounded so long as `chain` is constrained by some other iterator,
+/// 
+/// ### Example
+/// 
+/// ```
+/// use core_extensions::tokens_method;
+/// 
+/// macro_rules! assertion {
+///     ((a b c 0 1 2)) => {}
+/// }
+///
+/// // `tokens_method` calls `assertion` here
+/// tokens_method!{
+///     assertion!{}
+///     iterate: chain((a b c) range(0..=2)) 
+/// }
+/// 
+/// 
+/// macro_rules! assertion_zipped {
+///     (((0) (a)) ((1) (b)) ((2) (10)) ((3) (11))) => {};
+/// }
+///
+/// // One way unbounded ranges can be used.
+/// // `tokens_method` calls `assertion_zipped` here
+/// tokens_method!{
+///     assertion_zipped!{}
+///     zip_shortest:
+///     range(0..=3)
+///     chain((a b) range(10..)) 
 /// }
 /// 
 /// ```

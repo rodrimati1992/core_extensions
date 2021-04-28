@@ -16,17 +16,28 @@ use crate::{
     mmatches, try_,
 };
 
-use core::ops::RangeFrom;
+use core::{
+    iter::{Chain, Peekable},
+    marker::PhantomData,
+    ops::RangeFrom,
+};
 
 use alloc::{
+    boxed::Box,
     string::ToString,
     format,
 };
 
+// All the finite lists should be `List::List`
 pub(crate) enum List {
     List(TokenStream, Spans),
     RangeFrom(usize, Spans),
     GenIdentRange(GenIdentRange),
+    Chain{
+        bounded: TokenStream,
+        spans: Spans,
+        unbounded: Box<List>,
+    }
 }
 
 
@@ -39,6 +50,7 @@ impl List {
                 let s = gir.span();
                 Spans{start: s, end: s}
             },
+            Self::Chain{spans, ..} => *spans,
         }
     }
     pub(crate) fn is_finite(&self) -> bool {
@@ -47,8 +59,31 @@ impl List {
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
 
-fn parse_impl<I, C>(mut iter: I) -> crate::Result<C::This>
+struct ParseManyLists<C>{
+    iter: Peekable<IntoIter>,
+    _marker: PhantomData<C>,
+}
+
+impl<C> Iterator for ParseManyLists<C> 
+where 
+    C: Constructors
+{
+    type Item = crate::Result<C::This>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(_) = self.iter.peek() {
+            Some(parse_impl::<_, C>(&mut self.iter))
+        } else {
+            None
+        }
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+fn parse_impl<I, C>(iter: &mut I) -> crate::Result<C::This>
 where
     I: Iterator<Item = TokenTree>,
     C: Constructors,
@@ -80,7 +115,7 @@ where
                     const IDENT_ERR: &str =
                         concat!("expected ", method_names!(),", or parentheses.");
 
-                    let paren_res = parse_parentheses(&mut iter);
+                    let paren_res = parse_parentheses(iter);
 
                     match &keyword[..] {
                         $fname => {
@@ -116,6 +151,14 @@ where
         ident,
         group,
         stream,
+        "chain" => {
+            let iter = ParseManyLists{
+                iter: stream.into_iter().peekable(),
+                _marker: PhantomData,
+            };
+            
+            C::make_chain(iter, Spans::new(ident.span(), group.span()))
+        }
         "gen_ident_range" => {
             let range = try_!(gen_ident_range_just_idents(
                 &mut stream.peekable(),
@@ -142,9 +185,11 @@ where
 }
 
 
-trait Constructors {
+trait Constructors: Sized {
     type This;
 
+    fn make_chain(_: ParseManyLists<Self>, span: Spans) -> crate::Result<Self::This>;
+    
     fn make_gen_idents_range(range: GenIdentRange, span: Spans) -> crate::Result<Self::This>;
 
     fn make_group(ts: TokenStream, span: Spans) -> Self::This;
@@ -156,6 +201,31 @@ struct Unbounded;
 
 impl Constructors for Unbounded {
     type This = List;
+    
+    fn make_chain(iter: ParseManyLists<Self>, mut spans: Spans) -> crate::Result<Self::This> {
+        let mut bounded = TokenStream::new();
+        let mut unbounded = None::<Box<List>>;
+
+        for elem in iter {
+            let elem = try_!(elem);
+
+            spans.end = elem.spans().end;
+
+            if let None = unbounded {
+                if let List::List(list, _) = elem {
+                    bounded.extend(list);
+                } else {
+                    unbounded = Some(Box::new(elem))
+                }
+            }
+        }
+
+        if let Some(unbounded) = unbounded {
+            Ok(List::Chain{bounded, spans, unbounded})
+        } else {
+            Ok(List::List(bounded, spans))
+        }
+    }
 
     fn make_gen_idents_range(range: GenIdentRange, spans: Spans) -> crate::Result<Self::This> {
         if range.is_unbounded() {
@@ -179,6 +249,19 @@ struct Bounded;
 
 impl Constructors for Bounded {
     type This = Group;
+
+    fn make_chain(iter: ParseManyLists<Self>, span: Spans) -> crate::Result<Self::This> {
+        let mut tokens = TokenStream::new();
+
+        for elem in iter {
+            let elem = try_!(elem);
+            tokens.extend(elem.stream());
+        }
+
+        let mut group = Group::new(Delimiter::Parenthesis, tokens);
+        group.set_span(span.start);
+        Ok(group)
+    }
     
     fn make_gen_idents_range(range: GenIdentRange, spans: Spans) -> crate::Result<Self::This> {
         if range.is_unbounded() {
@@ -219,6 +302,7 @@ pub(crate) enum ListIter {
     List(IntoIter),
     RangeFrom(RangeFrom<usize>, Spans),
     GenIdentRange(GenIdentRange),
+    Chain(Chain<IntoIter, Box<ListIter>>),
 }
 
 
@@ -231,6 +315,8 @@ impl IntoIterator for List {
             Self::List(ts, _) => ListIter::List(ts.into_iter()),
             Self::RangeFrom(start, span) => ListIter::RangeFrom(start.., span),
             Self::GenIdentRange(gir) => ListIter::GenIdentRange(gir),
+            Self::Chain{bounded, unbounded, ..} =>
+                ListIter::Chain(bounded.into_iter().chain(Box::new(unbounded.into_iter()))),
         }
     }
 }
@@ -250,6 +336,7 @@ impl Iterator for ListIter{
             Self::List(x) => x.next(),
             Self::RangeFrom(x, span) => x.next().map(|x| usize_tt(x, span.start) ),
             Self::GenIdentRange(x) => x.next(),
+            Self::Chain(x) => x.next(),
         }
     }
 }
