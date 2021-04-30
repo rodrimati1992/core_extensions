@@ -110,6 +110,34 @@ where
     }
 }
 
+
+
+pub(crate) struct CountAnd<U> {
+    pub(crate) count: usize,
+    #[allow(dead_code)]
+    pub(crate) count_span: Span,
+    pub(crate) other: U,
+}
+
+pub(crate) fn parse_count_and<I, F, U>(iter: I, func: F) -> crate::Result<CountAnd<U>>
+where
+    I: IntoIterator<Item = TokenTree>,
+    F: FnOnce(&mut I::IntoIter) -> crate::Result<U>,
+{
+    let mut iter = iter.into_iter();
+
+    let (count, count_span) = try_!(parse_count_param(&mut iter));
+
+    try_!(parse_check_punct(&mut iter, ','));
+
+    let other = try_!(func(&mut iter));
+
+    try_!(expect_no_tokens(iter));
+
+    Ok(CountAnd{count, count_span, other})
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 pub(crate) struct RangeB {

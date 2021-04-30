@@ -1083,6 +1083,43 @@
 /// 
 /// ```
 /// 
+/// <span id="skip-fn"></span>
+/// # `skip` iterator function
+/// 
+/// Takes some amount of elements from a possibly unbounded iterator.
+/// 
+/// ### Example
+/// 
+/// ```
+/// use core_extensions::tokens_method;
+/// 
+/// macro_rules! assertion {
+///     ((f g 0 1 2)) => {}
+/// }
+///
+/// // `tokens_method` calls `assertion` here
+/// tokens_method!{
+///     assertion!{}
+///     iterate:
+///     skip(5, chain((a b c d e f g) range(0..3)))
+/// }
+/// tokens_method!{
+///     assertion!{}
+///     iterate:
+///     skip(count(_ _ _ _ _), chain((a b c d e f g) range(0..3)))
+/// }
+/// 
+/// // passing an unbounded iterator to skip
+/// tokens_method!{
+///     assertion!{}
+///     iterate:
+///     take(5, skip(4, chain((b c d e f g) range(0..))))
+/// }
+/// 
+/// # fn main() {}
+/// 
+/// ```
+/// 
 /// <span id="cycle-fn"></span>
 /// # `cycle` iterator function
 /// 
