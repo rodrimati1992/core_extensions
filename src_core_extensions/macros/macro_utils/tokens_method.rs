@@ -62,6 +62,15 @@
 ///
 /// - [`chain`](#chain-fn): Concatenates multiple iterators.
 /// 
+/// - [`take`](#take-fn): Takes some amount of elements from a possibly unbounded iterator.
+///
+/// - [`skip`](#skip-fn): Skips elements from a possibly unbounded iterator.
+///
+/// - [`cycle`](#cycle-fn): Takes a bounded iterator and repeats it infinitely.
+///
+/// - [`repeat`](#repeat-fn): Repeats a bounded iterator some amount of times.
+///
+/// 
 /// When an iterator function generates an unbounded amount of tokens,
 /// they must be constrained by another iterator to be used,
 /// otherwise producing a compile-time error to prevent the proc macro from running forever.
@@ -1086,7 +1095,7 @@
 /// <span id="skip-fn"></span>
 /// # `skip` iterator function
 /// 
-/// Takes some amount of elements from a possibly unbounded iterator.
+/// Skips elements from a possibly unbounded iterator.
 /// 
 /// ### Example
 /// 
@@ -1151,7 +1160,7 @@
 /// <span id="repeat-fn"></span>
 /// # `repeat` iterator function
 /// 
-/// Repeats an iterator some amount of times.
+/// Repeats a bounded iterator some amount of times.
 /// 
 /// ### Example
 /// 
