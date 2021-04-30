@@ -333,5 +333,210 @@ fn zip_longest_test() {
             ((aaa * bbb / ccc) ())
         ")
     }
-
 }
+
+
+#[test]
+fn cycle_iter_test() {
+    assert_tm!{
+        "
+            ((fooA) (0))
+            ((fooB) (1))
+            ((fooC) (2))
+            ((fooD) (0))
+            ((fooE) (1))
+            ((fooF) (2))
+            ((fooG) (0))
+            ((fooH) (1))
+        ",
+        zip_shortest: 
+            (fooA fooB fooC fooD fooE fooF fooG fooH)
+            cycle(range(0..3))
+    }
+    assert_tm!{
+        "
+            ((fooA) (foo))
+            ((fooB) (bar))
+            ((fooC) (qux))
+            ((fooD) (foo))
+            ((fooE) (bar))
+            ((fooF) (qux))
+            ((fooG) (foo))
+            ((fooH) (bar))
+        ",
+        zip_longest: 
+            (fooA fooB fooC fooD fooE fooF fooG fooH)
+            cycle((foo bar qux))
+    }
+}
+
+
+#[test]
+fn repeat_iter_test() {
+    assert_tm!{
+        "
+            ((fooA) (0))
+            ((fooB) (1))
+            ((fooC) (2))
+            ((fooD) (0))
+            ((fooE) (1))
+            ((fooF) (2))
+            ((fooG) (0))
+            ((fooH) (1))
+            ((fooI) (2))
+            ((fooJ) ())
+            ((fooK) ())
+        ",
+        zip_longest: 
+            (fooA fooB fooC fooD fooE fooF fooG fooH fooI fooJ fooK)
+            repeat(3, (0 1 2))
+    }
+    assert_tm!{
+        "(0 1 2 0 1 2 0 1 2)",
+        iterate: repeat(3, (0 1 2))
+    }
+}
+
+
+#[test]
+fn take_iter_test() {
+    assert_tm!{
+        "
+            (a b c d 5 6 7 8 9 10)
+        ",
+        iterate: 
+            take(10, chain((a b c d) range(5..)))
+    }
+    assert_tm!{
+        "
+            ((a) (5))
+            ((b) (6))
+            ((c) (7))
+            ((d) (8))
+            ((e) (9))
+            ((f) (10))
+            ((g) ())
+            ((h) ())
+        ",
+        zip_longest: 
+            (a b c d e f g h)
+            take(6, range(5..))
+    }
+}
+
+#[test]
+fn skip_iter_test() {
+    assert_tm!{
+        "(c d 5 6 7 8 9 10)",
+        iterate: skip(2, chain((a b c d) range(5..=10)))
+    }
+    assert_tm!{
+        "(6 7 8 9 10)",
+        iterate: skip(5, chain((a b c d) range(5..=10)))
+    }
+    assert_tm!{
+        "
+            ((a) (11))
+            ((b) (12))
+            ((c) (13))
+            ((d) (14))
+            ((e) (15))
+            ((f) (16))
+            ((g) (17))
+            ((h) (18))
+        ",
+        zip_longest: 
+            (a b c d e f g h)
+            skip(6, range(5..))
+    }
+}
+
+
+#[test]
+fn chain_iter_test() {
+    assert_tm!{
+        "(a b c d 5 6)",
+        iterate: chain((a b c d) range(5..7))
+    }
+    assert_tm!{
+        "
+            ((a) (0))
+            ((b) (1))
+            ((c) (2))
+            ((d) (3))
+            ((e) (6))
+            ((f) (7))
+            ((g) (8))
+            ((h) (foo))
+            (() (bar))
+            (() (baz))
+        ",
+        zip_longest: 
+            (a b c d e f g h)
+            chain(range(0..=3) range(6..=8) (foo bar baz))
+    }
+    assert_tm!{
+        "
+            ((a) (0))
+            ((b) (1))
+            ((c) (2))
+            ((d) (3))
+            ((e) (6))
+            ((f) (7))
+            ((g) (8))
+            ((h) (9))
+        ",
+        zip_longest: 
+            (a b c d e f g h)
+            chain(range(0..=3) range(6..))
+    }
+}
+
+#[test]
+fn gen_ident_range_iter_test() {
+    assert_tm!{
+        "(f0 f1 f2 f3)",
+        iterate: gen_ident_range(for f* in 0..=3)
+    }
+    assert_tm!{
+        "
+            ((a) (f10))
+            ((b) (f11))
+            ((c) (f12))
+            ((d) (f13))
+            ((e) (f14))
+            ((f) (f15))
+            (() (f16))
+            (() (f17))
+            (() (f18))
+        ",
+        zip_longest: 
+            (a b c d e f)
+            gen_ident_range(for f* in 10..=18)
+    }
+    assert_tm!{
+        "
+            ((a) (f10))
+            ((b) (f11))
+            ((c) (f12))
+            ((d) (f13))
+            ((e) (f14))
+            ((f) (f15))
+        ",
+        zip_longest: 
+            (a b c d e f)
+            gen_ident_range(for f* in 10..)
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
