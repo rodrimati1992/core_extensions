@@ -202,23 +202,26 @@ pub(crate) fn parse_unbounded_range_param(
 // Implicitly unbounded
 pub(crate) fn parse_int_or_range_param(
     input: &mut Peekable<IntoIter>,
-) -> crate::Result<Range<usize>> {
-    let (start, _) = try_!(parse_start_bound(&mut *input));
-    
+) -> crate::Result<RangeB> {
+    let (start, start_span) = try_!(parse_start_bound(&mut *input));
+    let mut end_span = start_span;
+
     let end = match try_!(parse_range_operator_opt(&mut *input)) {
-        Some(RangeType::RangeStart) => !0,
+        Some(RangeType::RangeStart) => None,
         Some(range_ty) => {
-            let (end_, _) = try_!(parse_count_param(input));
+            let (end_, end_span_) = try_!(parse_count_param(input));
+            end_span = end_span_;
             if let RangeType::Inclusive = range_ty {
-                end_.saturating_add(1)
+                Some(end_.saturating_add(1))
             } else {
-                end_
+                Some(end_)
             }
         },
-        None => start.saturating_add(1),
+        None => Some(start.saturating_add(1)),
     };
 
-    Ok(start .. end)
+    let spans = Spans{start: start_span, end: end_span};
+    Ok(RangeB{start, end, spans})
 }
 
 

@@ -118,6 +118,10 @@ fn split_at_test() {
 
 #[test]
 fn get_test() {
+    assert_tm!{"(3)", get(1): range(2..)}
+    assert_tm!{"(3 4 5)", get(1..=3): range(2..)}
+    assert_tm!{"(2 3 4 5)", get(..=3): range(2..)}
+
     assert_tm!{"(3)", get(0): (3 5 (8 13) {21 34} 55)}
     assert_tm!{"(5)", get(1): (3 5 (8 13) {21 34} 55)}
     assert_tm!{"((8 13))", get(2): (3 5 (8 13) {21 34} 55)}

@@ -139,11 +139,14 @@
 /// 
 /// If there are no elements, this produces a `()`.
 ///
+/// This can take an unbounded iterator function, since it only gets the first element.
+///
 /// ```rust
 /// use core_extensions::tokens_method;
 /// 
 /// fn main() {
 ///     assert_eq!(foo(), "bar");
+///     assert_eq!(foo2(), "bar2");
 ///     assert_eq!(baz(), "qux");
 /// }
 ///
@@ -158,6 +161,11 @@
 ///     expects_fooooo!{ foo "bar" }
 ///     first:
 ///     (1000 20 30 (40 50))
+/// }
+/// tokens_method!{
+///     expects_fooooo!{ foo2 "bar2" }
+///     first:
+///     range(1000..) // taking an unbounded iterator argument
 /// }
 ///
 /// macro_rules! expects_baaaz {
@@ -411,6 +419,9 @@
 /// IF the range is out of bounds,
 /// this outputs the elements at the in-bound indices (of the range).
 ///
+/// If the input elements come from an unbounded iterator,
+/// the range must have an end bound.
+///
 /// ### Example
 ///
 /// ```rust
@@ -423,14 +434,20 @@
 /// }
 /// // `tokens_method` invokes `expects_one` here
 /// tokens_method!{expects_one!{ foo bar } get(3): (2 3 (4 5) 6 7)}
+///
+/// // taking an unbounded iterator
+/// tokens_method!{expects_one!{ foo bar } get(2): range(4..)}
+///
 /// // `count(_ 1 (2 2))` is equivalent to `3`
 /// tokens_method!{expects_one!{ foo bar }  get(count(_ 1 (2 2))): (2 3 (4 5) 6 7)}
+///
 ///
 /// macro_rules! expects_two {
 ///     (baz qux (3 (4 5)) ) => {}
 /// }
 /// tokens_method!{expects_two!{ baz qux }  get(1..3): (2 3 (4 5) 6 7)}
 /// tokens_method!{expects_two!{ baz qux }  get(1..=2): (2 3 (4 5) 6 7)}
+///
 ///
 /// macro_rules! expects_three {
 ///     (baz qux (2 3 (4 5)) ) => {}
@@ -440,11 +457,17 @@
 /// tokens_method!{expects_three!{ baz qux }  get(0..=2): (2 3 (4 5) 6 7)}
 /// tokens_method!{expects_three!{ baz qux }  get( ..=2): (2 3 (4 5) 6 7)}
 ///
+///
 /// macro_rules! expects_four {
 ///     (baz qux (3 (4 5) 6 7) ) => {}
 /// }
 /// tokens_method!{expects_four!{ baz qux }  get(1..):  (2 3 (4 5) 6 7)}
 /// tokens_method!{expects_four!{ baz qux }  get(1..):  (2 3 (4 5) 6 7)}
+/// tokens_method!{
+///     expects_four!{ baz qux }
+///     get(1..=4):
+///     chain((2 3 (4 5)) range(6..))
+/// }
 ///
 /// ```
 /// 

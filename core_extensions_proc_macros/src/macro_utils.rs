@@ -261,11 +261,11 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
     declare_methods!{
         "first" => {
             parse_no_params(&mut iter)?;
-            let group = parse_bounded(&mut iter)?;
-            
-            let last_token: TokenStream = group.stream().into_iter().take(1).collect();
+            let xx = parse_unbounded(&mut iter)?;
+            let span = xx.spans().start;
+            let last_token: TokenStream = xx.into_iter().take(1).collect();
 
-            out_parenthesized(last_token, group.span(), args);
+            out_parenthesized(last_token, span, args);
         }
         "last" => {
             parse_no_params(&mut iter)?;
@@ -340,16 +340,19 @@ pub(crate) fn tokens_method(tokens: TokenStream) -> crate::Result<TokenStream> {
             let mut params = parse_params(&mut iter)?.stream().into_iter().peekable();
             let range = parse_int_or_range_param(&mut params)?;
             crate::macro_utils_shared::expect_no_tokens(params)?;
+            
+            let span: Span;
+            let middle: TokenStream = if let Some(end) = range.end {
+                let xx = parse_unbounded(&mut iter)?;
+                span = xx.spans().start;
+                xx.into_iter().take(end).skip(range.start).collect()
+            } else {
+                let xx = parse_bounded(&mut iter)?;
+                span = xx.span();
+                xx.stream().into_iter().skip(range.start).collect()
+            };
 
-            let group = parse_bounded(&mut iter)?;
-
-            let middle: TokenStream = group.stream()
-                .into_iter()
-                .take(range.end)
-                .skip(range.start)
-                .collect();
-
-            out_parenthesized(middle, group.span(), args);
+            out_parenthesized(middle, span, args);
         }
         "split" => {
             let (needle, group, mut iter) = split_shared(&mut iter)?;
