@@ -17,7 +17,7 @@ include = [
 
 [features]
 rust_1_45 = []
-item_parsing = []
+item_parsing = ["macro_utils"]
 macro_utils = []
 
 [dev-dependencies.proc-macro2]

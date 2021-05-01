@@ -33,6 +33,10 @@ use alloc::{
 };
 
 
+#[cfg(test)]
+mod mu_tests;
+
+
 pub fn rewrap_macro_parameters(tokens: TokenStream) -> TokenStream {
     let mut prev_tilde;
     let mut curr_tilde = false;

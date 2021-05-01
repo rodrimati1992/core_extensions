@@ -21,6 +21,9 @@ use crate::used_proc_macro::{Delimiter, Group, Punct, Spacing, Span, TokenStream
 use core::iter::once;
 
 #[cfg(test)]
+mod test_utils;
+
+#[cfg(test)]
 mod tests;
 
 mod parsing_shared;
