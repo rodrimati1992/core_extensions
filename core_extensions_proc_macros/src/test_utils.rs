@@ -3,7 +3,10 @@ use crate::used_proc_macro::TokenStream;
 use alloc::string::{String, ToString};
 
 pub(crate) fn remove_whitespaces(x: &str) -> String {
-    x.chars().filter(|x| !x.is_whitespace()).collect()
+    x.chars()
+        .filter(|x| !x.is_whitespace())
+        .flat_map(char::to_lowercase)
+        .collect()
 }
 
 

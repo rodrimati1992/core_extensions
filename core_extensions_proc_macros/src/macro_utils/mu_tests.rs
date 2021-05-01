@@ -22,6 +22,13 @@ const UNBOUNDED_ERR_CASES: &[(&str, &str)] = &[
     ("f!() zip_shortest: range(1..)", "Expected at least one finite list"),
     ("f!() zip_longest: range(1..)", "Expected at least one finite list"),
     ("f!() iterate: range(1..)", "Expected a bounded"),
+    ("f!() iterate: cycle((1)) ", "Expected a bounded"),
+    ("f!() iterate: repeat(4, range(1..)) ", "Expected a bounded"),
+    ("f!() iterate: skip(10, range(1..)) ", "Expected a bounded"),
+    ("f!() iterate: chain(range(1..)) ", "Expected a bounded"),
+    ("f!() iterate: chain((a b c d) range(1..)) ", "Expected a bounded"),
+    ("f!() iterate: chain((a b c d) range(1..) range(1..)) ", "Expected a bounded"),
+    ("f!() iterate: gen_ident_range(for i* in 0..) ", "Expected a bounded"),
 ];
 
 

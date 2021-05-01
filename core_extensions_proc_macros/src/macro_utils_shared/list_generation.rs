@@ -307,11 +307,11 @@ impl Constructors for Bounded {
     type This = Group;
 
     fn make_cycle(_: TokenStream, spans: Spans) -> crate::Result<Self::This> {
-        Err(crate::Error::with_spans(spans, "cannot use `cycle` here"))
+        Err(crate::Error::with_spans(spans, "expected a bounded iterator"))
     }
 
     fn make_skip_unbounded(_: usize, what: List) -> crate::Result<Self::This> {
-        Err(crate::Error::with_spans(what.spans(), "expected bounded iterator"))
+        Err(crate::Error::with_spans(what.spans(), "expected a bounded iterator"))
     }
 
     fn make_chain(iter: ParseManyLists<Self>, span: Spans) -> crate::Result<Self::This> {
@@ -328,7 +328,7 @@ impl Constructors for Bounded {
     }
     
     fn make_gen_idents_range_unb(_: GenIdentRange, spans: Spans) -> crate::Result<Self::This> {
-        Err(crate::Error::with_spans(spans, "expected bounded range"))
+        Err(crate::Error::with_spans(spans, "expected a bounded range"))
     }
 
     fn make_group(ts: TokenStream, span: Spans) -> Self::This {
