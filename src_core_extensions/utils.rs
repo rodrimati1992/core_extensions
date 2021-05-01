@@ -174,7 +174,7 @@ pub unsafe fn impossible() -> ! {
     }
     #[cfg(not(debug_assertions))]
     {
-        std::hint::unreachable_unchecked()
+        std_::hint::unreachable_unchecked()
     }
 }
 

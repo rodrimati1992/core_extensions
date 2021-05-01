@@ -56,6 +56,10 @@ jobs:
         cargo test --no-default-features --features "${{ env.rust146 }} alloc all_items"
         cargo test --no-default-features --features "${{ env.rust146 }} std all_items"
 
+        cargo test --release --no-default-features --features "${{ env.rust146 }} all_items";
+        cargo test --release --no-default-features --features "${{ env.rust146 }} alloc all_items";
+        cargo test --release --no-default-features --features "${{ env.rust146 }} std all_items";
+
   nightly-tests:
     runs-on: ubuntu-latest
 
