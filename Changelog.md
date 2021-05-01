@@ -4,6 +4,10 @@ This started being written for the 0.1.19 release, it doesn't cover versions pri
 
 # 1.0
 
+### 1.3.3
+
+Fixed failing release builds due to conditionally compiled code.
+
 ### 1.3.0
 
 Added the `count_tts` and `gen_ident_range` macros, under the `"macro_utils"` feature.
