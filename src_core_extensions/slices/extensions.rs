@@ -517,6 +517,23 @@ mod tests {
         string::String,
     };
 
+    struct Unpromoted<T> {
+        inner: T,
+        _dummy:  std_::cell::Cell<u32>,
+    }
+    fn Unpromoted<T>(inner: T) -> Unpromoted<T> {
+        Unpromoted {
+            inner,
+            _dummy: std_::cell::Cell::new(10),
+        }
+    }
+    impl<T> std_::ops::Deref for Unpromoted<T> {
+        type Target = T;
+        fn deref(&self) -> &T {
+            &self.inner
+        }
+    }
+
     #[test]
     fn contains_slice() {
         fn inner<T>(list: &[T; 12]){
@@ -547,7 +564,7 @@ mod tests {
             let slice_b = &list[4..8];
             let slice_c = &list[8..12];
             
-            let other = [(); 12];
+            let other = Unpromoted([(); 12]);
 
             assert_eq!(slice_b.contains_slice(&slice_a[3..]), true);
             assert_eq!(slice_b.contains_slice(&slice_a[4..]), false);
@@ -560,10 +577,10 @@ mod tests {
             assert_eq!(slice_b.contains_slice(&slice_c[0..]), true);
             assert_eq!(slice_b.contains_slice(&slice_c[1..]), true);
             
-            assert_eq!(list.contains_slice(&other), false);
-            assert_eq!(slice_a.contains_slice(&other), false);
-            assert_eq!(slice_b.contains_slice(&other), false);
-            assert_eq!(slice_c.contains_slice(&other), false);
+            assert_eq!(list.contains_slice(&*other), false);
+            assert_eq!(slice_a.contains_slice(&*other), false);
+            assert_eq!(slice_b.contains_slice(&*other), false);
+            assert_eq!(slice_c.contains_slice(&*other), false);
 
             assert_eq!(other.contains_slice(&list), false);
             assert_eq!(other.contains_slice(&slice_a), false);
@@ -599,7 +616,7 @@ mod tests {
             let slice_b = &list[4..8];
             let slice_c = &list[8..12];
             
-            let other = [(); 12];
+            let other = Unpromoted([(); 12]);
 
             assert_eq!(slice_b.offset_of_slice(&slice_a[3..]), 0);
 
@@ -611,10 +628,10 @@ mod tests {
             assert_eq!(slice_b.offset_of_slice(&slice_c[0..]), 0);
             assert_eq!(slice_b.offset_of_slice(&slice_c[1..]), 0);
 
-            assert_eq!(list.offset_of_slice(&other), 12);
-            assert_eq!(slice_a.offset_of_slice(&other), 4);
-            assert_eq!(slice_b.offset_of_slice(&other), 4);
-            assert_eq!(slice_c.offset_of_slice(&other), 4);
+            assert_eq!(list.offset_of_slice(&*other), 12);
+            assert_eq!(slice_a.offset_of_slice(&*other), 4);
+            assert_eq!(slice_b.offset_of_slice(&*other), 4);
+            assert_eq!(slice_c.offset_of_slice(&*other), 4);
 
             assert_eq!(other.offset_of_slice(&list), 12);
             assert_eq!(other.offset_of_slice(&slice_a), 12);
@@ -651,7 +668,7 @@ mod tests {
             let slice_b = &list[4..8];
             let slice_c = &list[8..12];
 
-            let other = [(); 12];
+            let other = Unpromoted([(); 12]);
 
             assert_eq!(slice_b.get_offset_of_slice(&slice_a[3..]), Some(0));
 
@@ -663,10 +680,10 @@ mod tests {
             assert_eq!(slice_b.get_offset_of_slice(&slice_c[0..]), Some(0));
             assert_eq!(slice_b.get_offset_of_slice(&slice_c[1..]), Some(0));
             
-            assert_eq!(list.get_offset_of_slice(&other), None);
-            assert_eq!(slice_a.get_offset_of_slice(&other), None);
-            assert_eq!(slice_b.get_offset_of_slice(&other), None);
-            assert_eq!(slice_c.get_offset_of_slice(&other), None);
+            assert_eq!(list.get_offset_of_slice(&*other), None);
+            assert_eq!(slice_a.get_offset_of_slice(&*other), None);
+            assert_eq!(slice_b.get_offset_of_slice(&*other), None);
+            assert_eq!(slice_c.get_offset_of_slice(&*other), None);
 
             assert_eq!(other.get_offset_of_slice(&list), None);
             assert_eq!(other.get_offset_of_slice(&slice_a), None);
@@ -702,7 +719,7 @@ mod tests {
             let slice_b = &list[4..8];
             let slice_c = &list[8..12];
             
-            let other = [(); 12];
+            let other = Unpromoted([(); 12]);
 
             assert_eq!(slice_b.index_of(&slice_a[3]), 0);
 
@@ -753,7 +770,7 @@ mod tests {
             let slice_b = &list[4..8];
             let slice_c = &list[8..12];
             
-            let other = [(); 12];
+            let other = Unpromoted([(); 12]);
 
             assert_eq!(slice_b.get_index_of(&slice_a[3]), Some(0));
 
