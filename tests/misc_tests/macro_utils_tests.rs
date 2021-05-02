@@ -1,6 +1,9 @@
 use krate::{count_tts, gen_ident_range, rewrap_macro_parameters};
 
 
+mod tokens_method_tests;
+
+
 #[test]
 fn different_delimiters() {
     macro_rules! assertion_1 {
@@ -145,9 +148,9 @@ mod gen_idents_test {
 
     macro_rules! ident_test {
         (
-            $count_expr:literal $expected_expr:tt ($($t_expr:expr),*),
+            ($count_expr:literal) $expected_expr:tt ($($t_expr:expr),*),
             $count_ty:tt $expected_ty:tt ($($t_ty:ty),*),
-            $count_path:literal $expected_path:tt ($($t_path:path),*),
+            ($count_path:expr) $expected_path:tt ($($t_path:path),*),
             $count_item:tt $expected_item:tt ($($t_item:item)*),
             $count_tt:tt $expected_tt:tt ($($t_tt:tt)*),
         ) => {
@@ -169,9 +172,9 @@ mod gen_idents_test {
     }
 
     ident_test!{
-        3 (f0 f1 f2) (1 + 1, f(10) - 1, a * b / c),
+        (3) (f0 f1 f2) (1 + 1, f(10) - 1, a * b / c),
         4 (f0 f1 f2 f3) (Vec<T>, HashMap<i32, i32>, u64, dyn A + B),
-        5 (f0 f1 f2 f3 f4) (::a::b, c, crate::d::<e>::f, g::h, ::i),
+        (5) (f0 f1 f2 f3 f4) (::a::b, c, crate::d::<e>::f, g::h, ::i),
         6 (f0 f1 f2 f3 f4 f5) (
             const _: () = ();
             impl Foo {}

@@ -21,6 +21,9 @@ use crate::used_proc_macro::{Delimiter, Group, Punct, Spacing, Span, TokenStream
 use core::iter::once;
 
 #[cfg(test)]
+mod test_utils;
+
+#[cfg(test)]
 mod tests;
 
 mod parsing_shared;
@@ -28,10 +31,11 @@ mod parsing_shared;
 mod splitting_generics;
 
 #[cfg(feature = "macro_utils")]
-mod macro_utils;
+#[macro_use]
+mod macro_utils_shared;
 
 #[cfg(feature = "macro_utils")]
-mod macro_utils_shared;
+mod macro_utils;
 
 #[cfg(feature = "item_parsing")]
 mod item_parsing;
@@ -42,6 +46,13 @@ use crate::macro_utils_shared::Error;
 
 #[cfg(feature = "macro_utils")]
 type Result<T> = core::result::Result<T, Error>;
+
+
+#[cfg(feature = "macro_utils")]
+#[proc_macro_attribute]
+pub fn macro_attr(attr: TokenStream, item: TokenStream) -> TokenStream {
+    crate::macro_utils::macro_attr(attr, item).unwrap_or_else(Error::into_compile_error)
+}
 
 
 #[doc(hidden)]
@@ -109,6 +120,15 @@ pub fn gen_ident_range(input_tokens: proc_macro::TokenStream) -> proc_macro::Tok
 }
 
 
+#[cfg(feature = "macro_utils")]
+#[proc_macro]
+pub fn tokens_method(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input_tokens: TokenStream = input_tokens.into();
+    let out = macro_utils::tokens_method(input_tokens).unwrap_or_else(Error::into_compile_error); 
+    out.into()
+}
+
+
 
 #[doc(hidden)]
 #[proc_macro]
@@ -163,3 +183,19 @@ macro_rules! mmatches {
         }
     };
 } use mmatches;
+
+// Purely for performance
+macro_rules! try_ {
+    ( $expr:expr )=>{
+        match $expr {
+            Ok(x) => x,
+            Err(e) => return Err(e),
+        }
+    };
+    ( $expr:expr, map_err = |$e:tt| $map_err:expr )=>{
+        match $expr {
+            Ok(x) => x,
+            Err($e) => return Err($map_err),
+        }
+    };
+} use try_;

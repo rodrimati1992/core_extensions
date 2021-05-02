@@ -4,7 +4,7 @@ use krate::utils::transmute_ignore_size;
 use krate::utils::transmute_vec;
 
 
-#[cfg(feature = "generics_parsing")]
+#[allow(dead_code)]
 pub fn remove_whitespace(s: &str) -> String {
     s.chars().filter(|c| !c.is_whitespace()).collect()
 }
