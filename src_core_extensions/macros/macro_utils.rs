@@ -444,6 +444,9 @@ include!{"./macro_utils/tokens_method.rs"}
 ///     }
 /// }
 ///
+/// // `parenthesize_args` invokes `count_tts` here,
+/// // then `count_tts` counts `a b c d e` as having 5 tokens,
+/// // passing `5` as the `$count` parameter to `the_macro`.
 /// parenthesize_args!{
 ///     count_tts!{
 ///         the_macro!{foo}
