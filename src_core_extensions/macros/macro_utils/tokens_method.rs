@@ -157,6 +157,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_fooooo` here
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
 ///     first:
@@ -175,6 +176,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_baaaz` here
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
 ///     first:
@@ -206,6 +208,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_fooooo` here
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
 ///     last:
@@ -220,6 +223,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_baaaz` here
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
 ///     last:
@@ -252,6 +256,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_fooooo` here
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
 ///     split_first:
@@ -265,6 +270,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_baaaz` here
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
 ///     split_first:
@@ -297,6 +303,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_fooooo` here
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
 ///     split_last:
@@ -310,6 +317,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_baaaz` here
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
 ///     split_last:
@@ -342,6 +350,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_fooooo` here
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
 ///     split_last_n(2):
@@ -355,6 +364,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_baaaz` here
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
 ///     // Equivalent to `split_last_n(3)`
@@ -388,6 +398,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_fooooo` here
 /// tokens_method!{
 ///     expects_fooooo!{ foo "bar" }
 ///     split_at(1):
@@ -401,6 +412,7 @@
 ///         }
 ///     }
 /// }
+/// // `tokens_method` calls `expects_baaaz` here
 /// tokens_method!{
 ///     expects_baaaz!{ baz "qux" }
 ///     // Equivalent to `split_at(3)`
@@ -445,6 +457,7 @@
 /// macro_rules! expects_two {
 ///     (baz qux (3 (4 5)) ) => {}
 /// }
+/// // `tokens_method` calls `expects_two` here
 /// tokens_method!{expects_two!{ baz qux }  get(1..3): (2 3 (4 5) 6 7)}
 /// tokens_method!{expects_two!{ baz qux }  get(1..=2): (2 3 (4 5) 6 7)}
 ///
@@ -452,6 +465,7 @@
 /// macro_rules! expects_three {
 ///     (baz qux (2 3 (4 5)) ) => {}
 /// }
+/// // `tokens_method` calls `expects_three` here
 /// tokens_method!{expects_three!{ baz qux }  get(0..3): (2 3 (4 5) 6 7)}
 /// tokens_method!{expects_three!{ baz qux }  get( ..3): (2 3 (4 5) 6 7)}
 /// tokens_method!{expects_three!{ baz qux }  get(0..=2): (2 3 (4 5) 6 7)}
@@ -461,6 +475,7 @@
 /// macro_rules! expects_four {
 ///     (baz qux (3 (4 5) 6 7) ) => {}
 /// }
+/// // `tokens_method` calls `expects_four` here
 /// tokens_method!{expects_four!{ baz qux }  get(1..):  (2 3 (4 5) 6 7)}
 /// tokens_method!{expects_four!{ baz qux }  get(1..):  (2 3 (4 5) 6 7)}
 /// tokens_method!{
@@ -480,10 +495,10 @@
 /// 
 /// If the needle is not found, this outputs all the tokens.
 /// 
+/// ### Example
+/// 
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
-/// 
-/// ### Example
 /// 
 #[cfg_attr(feature = "rust_1_46", doc = "```rust")]
 #[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
@@ -536,10 +551,10 @@
 /// 
 /// If the needle is not found, this outputs all the tokens.
 /// 
+/// ### Example
+/// 
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
-/// 
-/// ### Example
 /// 
 #[cfg_attr(feature = "rust_1_46", doc = "```rust")]
 #[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
@@ -594,10 +609,10 @@
 /// 
 /// If the needle is not found, this outputs all the tokens.
 /// 
+/// ### Example
+/// 
 /// Note that because this example uses this macro in an expression,
 /// it requires at least Rust 1.45.0.
-/// 
-/// ### Example
 /// 
 #[cfg_attr(feature = "rust_1_46", doc = "```rust")]
 #[cfg_attr(not(feature = "rust_1_46"), doc = "```ignore")]
