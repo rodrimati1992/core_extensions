@@ -147,6 +147,8 @@ pub trait SliceExt {
     ///
     /// # Example
     ///
+    /// ### Called on slices
+    ///
     /// ```
     /// use core_extensions::SliceExt;
     ///
@@ -164,11 +166,37 @@ pub trait SliceExt {
     /// assert!(!list.contains_slice(&another));
     ///
     /// ```
+    ///
+    /// ### Called on `str`s
+    ///
+    /// ```
+    /// use core_extensions::SliceExt;
+    ///
+    /// let string = "foo bar baz";
+    /// 
+    /// let another = String::from(string);
+    /// 
+    /// let foo = &string[..3];
+    /// let bar = &string[4..7];
+    /// let baz = &string[8..11];
+    /// 
+    /// assert!(string.contains_slice(foo));
+    /// assert!(string.contains_slice(bar));
+    /// assert!(string.contains_slice(baz));
+    ///
+    /// // Empty slices aren't considered contained by any other slice
+    /// assert!(!string.contains_slice(&string[..0]));
+    ///
+    /// assert!(!string.contains_slice(&another));
+    ///
+    /// ```
     fn contains_slice(&self, other: &Self) -> bool;
 
     /// Checks whether `self` is exactly the `other` slice in memory.
     ///
     /// # Example
+    ///
+    /// ### Called on slices
     ///
     /// ```
     /// use core_extensions::SliceExt;
@@ -187,6 +215,30 @@ pub trait SliceExt {
     /// assert!(!list.is_slice(&other));
     ///
     /// ```
+    ///
+    /// ### Called on `str`s
+    ///
+    /// ```
+    /// use core_extensions::SliceExt;
+    ///
+    /// let string = "foo bar baz";
+    /// 
+    /// let another = String::from(string);
+    /// 
+    /// let foo = &string[..3];
+    /// let bar = &string[4..7];
+    /// let baz = &string[8..11];
+    /// 
+    /// assert!(!string.is_slice(foo));
+    /// assert!(!string.is_slice(bar));
+    /// assert!(!string.is_slice(baz));
+    /// assert!(string.is_slice(string));
+    ///
+    /// assert!(string[..0].is_slice(&string[..0]));
+    ///
+    /// assert!(!string.is_slice(&another));
+    ///
+    /// ```
     fn is_slice(&self, other: &Self) -> bool;
 
     /// Returns the index at which `other` starts.
@@ -194,6 +246,8 @@ pub trait SliceExt {
     /// If `other` is not inside `self`, this returns `self.len()`
     ///
     /// # Example
+    ///
+    /// ### Called on slices
     ///
     /// ```
     /// use core_extensions::SliceExt;
@@ -211,6 +265,30 @@ pub trait SliceExt {
     /// assert_eq!(list.offset_of_slice(&other), list.len());
     ///
     /// ```
+    ///
+    /// ### Called on `str`s
+    ///
+    /// ```
+    /// use core_extensions::SliceExt;
+    ///
+    /// let string = "foo bar baz";
+    /// 
+    /// let another = String::from(string);
+    /// 
+    /// let foo = &string[..3];
+    /// let bar = &string[4..7];
+    /// let baz = &string[8..11];
+    /// 
+    /// assert_eq!(string.offset_of_slice(string), 0);
+    /// assert_eq!(string.offset_of_slice(&string[..0]), 0);
+    /// assert_eq!(string.offset_of_slice(foo), 0);
+    /// assert_eq!(string.offset_of_slice(bar), 4);
+    /// assert_eq!(string.offset_of_slice(baz), 8);
+    /// assert_eq!(string.offset_of_slice(&string[11..]), 11);
+    ///
+    /// assert_eq!(string.offset_of_slice(&another), string.len());
+    ///
+    /// ```
     fn offset_of_slice(&self, other: &Self) -> usize;
 
     /// Returns the index at which `other` starts.
@@ -218,6 +296,8 @@ pub trait SliceExt {
     /// If `other` is a zero-length slice, or is not inside `self`, this returns `None`.
     ///
     /// # Example
+    ///
+    /// ### Called on slices
     ///
     /// ```
     /// use core_extensions::SliceExt;
@@ -235,6 +315,30 @@ pub trait SliceExt {
     /// assert_eq!(list.get_offset_of_slice(&other), None);
     ///
     /// ```
+    ///
+    /// ### Called on `str`s
+    ///
+    /// ```
+    /// use core_extensions::SliceExt;
+    ///
+    /// let string = "foo bar baz";
+    /// 
+    /// let another = String::from(string);
+    /// 
+    /// let foo = &string[..3];
+    /// let bar = &string[4..7];
+    /// let baz = &string[8..11];
+    /// 
+    /// assert_eq!(string.get_offset_of_slice(&string[..0]), None);
+    /// assert_eq!(string.get_offset_of_slice(string), Some(0));
+    /// assert_eq!(string.get_offset_of_slice(foo), Some(0));
+    /// assert_eq!(string.get_offset_of_slice(bar), Some(4));
+    /// assert_eq!(string.get_offset_of_slice(baz), Some(8));
+    /// assert_eq!(string.get_offset_of_slice(&string[11..]), None);
+    ///
+    /// assert_eq!(string.get_offset_of_slice(&another), None);
+    ///
+    /// ```
     fn get_offset_of_slice(&self, other: &Self) -> Option<usize>;
 
     /// Returns the index of `other` if it's stored in the slice (if it points within the slice).
@@ -242,6 +346,8 @@ pub trait SliceExt {
     /// If `other` is not inside `self`, this returns `self.len()`.
     ///
     /// # Example
+    ///
+    /// ### Called on slices
     ///
     /// ```
     /// use core_extensions::SliceExt;
@@ -261,6 +367,27 @@ pub trait SliceExt {
     /// assert_eq!(list.index_of(&other[1]), list.len());
     ///
     /// ```
+    ///
+    /// ### Called on `str`s
+    ///
+    /// ```
+    /// use core_extensions::SliceExt;
+    ///
+    /// let string = String::from("abcdefgh");
+    /// let bytes = string.as_bytes();
+    ///
+    /// let other = b"abcdefgh";
+    ///
+    /// assert_eq!(string.index_of(&bytes[0]), 0);
+    /// assert_eq!(string.index_of(&bytes[3]), 3);
+    /// assert_eq!(string.index_of(&bytes[5]), 5);
+    /// assert_eq!(string.index_of(bytes.as_ptr().wrapping_offset(6)), 6);
+    /// assert_eq!(string.index_of(bytes.as_ptr().wrapping_offset(7)), 7);
+    /// assert_eq!(string.index_of(&0), string.len());
+    ///
+    /// assert_eq!(string.index_of(&other[0]), string.len());
+    /// assert_eq!(string.index_of(&other[1]), string.len());
+    /// ```
     fn index_of(&self, other: *const Self::Elem) -> usize;
 
     /// Returns the index of `other` if it's stored in the slice (if it points within the slice).
@@ -268,6 +395,8 @@ pub trait SliceExt {
     /// If `other` is not inside `self`, this returns `None`.
     ///
     /// # Example
+    ///
+    /// ### Called on slices
     ///
     /// ```
     /// use core_extensions::SliceExt;
@@ -286,6 +415,27 @@ pub trait SliceExt {
     /// assert_eq!(list.get_index_of(&other[0]), None);
     /// assert_eq!(list.get_index_of(&other[1]), None);
     ///
+    /// ```
+    ///
+    /// ### Called on `str`s
+    ///
+    /// ```
+    /// use core_extensions::SliceExt;
+    ///
+    /// let string = String::from("abcdefgh");
+    /// let bytes = string.as_bytes();
+    ///
+    /// let other = b"abcdefgh";
+    ///
+    /// assert_eq!(string.get_index_of(&bytes[0]), Some(0));
+    /// assert_eq!(string.get_index_of(&bytes[3]), Some(3));
+    /// assert_eq!(string.get_index_of(&bytes[5]), Some(5));
+    /// assert_eq!(string.get_index_of(bytes.as_ptr().wrapping_offset(6)), Some(6));
+    /// assert_eq!(string.get_index_of(bytes.as_ptr().wrapping_offset(7)), Some(7));
+    /// assert_eq!(string.get_index_of(&0), None);
+    ///
+    /// assert_eq!(string.get_index_of(&other[0]), None);
+    /// assert_eq!(string.get_index_of(&other[1]), None);
     /// ```
     fn get_index_of(&self, other: *const Self::Elem) -> Option<usize>;
 
