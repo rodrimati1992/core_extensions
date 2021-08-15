@@ -14,6 +14,9 @@ mod internal;
 #[macro_use]
 mod matches_macro;
 
+// #[macro_use]
+// mod doc_macros;
+
 #[macro_use]
 #[cfg(feature = "phantom")]
 pub mod phantomdata;

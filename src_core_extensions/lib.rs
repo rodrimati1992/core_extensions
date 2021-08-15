@@ -118,7 +118,9 @@
 //! Enables the `"generics_parsing"` feature.
 //!
 //! - `"macro_utils`:
-//! Enables the [`rewrap_macro_parameters`], [`count_tts`], and [`gen_ident_range`] macro.
+//! Enables the [`rewrap_macro_parameters`], [`count_tts`], [`gen_ident_range`],
+//! [`tokens_method`], [`compile_error_stringify`], and [`parenthesize_args`] macro.
+//! Also enables the [`macro_attr`] attribute.
 //!
 //! - `"generics_parsing"`: 
 //! Enables the [`parse_generics`], [`parse_generics_and_where`],
@@ -218,6 +220,10 @@
 //! [`count_tts`]: ./macro.count_tts.html
 //! [`gen_ident_range`]: ./macro.gen_ident_range.html
 //! [`rewrap_macro_parameters`]: ./macro.rewrap_macro_parameters.html
+//! [`tokens_method`]: ./macro.tokens_method.html
+//! [`compile_error_stringify`]: ./macro.compile_error_stringify.html
+//! [`parenthesize_args`]: ./macro.parenthesize_args.html
+//! [`macro_attr`]: ./attr.macro_attr.html
 //! [`parse_generics`]: ./macro.parse_generics.html
 //! [`parse_generics_and_where`]: ./macro.parse_generics_and_where.html
 //! [`split_generics_and_where`]: ./macro.split_generics_and_where.html
@@ -478,7 +484,7 @@ pub use self::void::Void;
 #[doc(hidden)]
 pub mod __ {
     pub use std_::marker::PhantomData as PD;
-    pub use std_::compile_error;
+    pub use std_::{concat, compile_error, stringify};
     pub use self::foo::Usize as usize;
 
     mod foo {

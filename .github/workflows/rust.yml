@@ -26,7 +26,7 @@ jobs:
         rustup override set ${{ matrix.rust }}
         cargo -V
         cd "${{github.workspace}}/core_extensions_proc_macros"
-        cargo test
+        cargo test --features item_parsing
 
         cd "${{github.workspace}}/"
         cargo test --no-default-features --features "${{ env.rust146 }} std bools"
@@ -55,6 +55,10 @@ jobs:
         cargo test --no-default-features --features "${{ env.rust146 }} all_items"
         cargo test --no-default-features --features "${{ env.rust146 }} alloc all_items"
         cargo test --no-default-features --features "${{ env.rust146 }} std all_items"
+
+        cargo test --release --no-default-features --features "${{ env.rust146 }} all_items";
+        cargo test --release --no-default-features --features "${{ env.rust146 }} alloc all_items";
+        cargo test --release --no-default-features --features "${{ env.rust146 }} std all_items";
 
   nightly-tests:
     runs-on: ubuntu-latest
