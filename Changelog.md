@@ -4,6 +4,20 @@ This started being written for the 0.1.19 release, it doesn't cover versions pri
 
 # 1.0
 
+### 1.4.2
+
+Made these macros work inside expressions before Rust 1.45.0:
+- quasiconst
+- impl_parse_generics
+- impl_split
+- parse_generics
+- parse_generics_and_where
+- parse_split_generics
+- parse_split_generics_and_where
+- split_generics_and_where
+
+Breaking change(?) due to the changes to make item-level macros work in expressions before Rust 1.45.0, they cannot be used as expressions anymore.
+
 ### 1.4.0
 
 Added the `macro_attr` attribute macro, under the `"macro_utils"` feature.
