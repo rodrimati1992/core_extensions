@@ -28,3 +28,14 @@ macro_rules! if_rust_1_46 {
         $($since_1_46)*
     };
 }
+
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __coerce_item {
+    ($item:item) => {
+        $item
+    }
+}
+

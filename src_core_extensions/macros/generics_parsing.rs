@@ -1,11 +1,6 @@
 /// For parsing item definitions,
 /// passing the generic parameters unchanged to a callback macro.
 /// 
-/// # Version compatibility
-/// 
-/// This macro can only be used inside of functions since Rust 1.45.0,
-/// before that version it can only be used outside of functions.
-/// 
 /// # Examples
 /// 
 /// ### Basic
@@ -17,9 +12,7 @@
 /// ```rust
 /// use core_extensions::split_generics_and_where;
 /// 
-/// fn main() {
-///     assert_eq!(hello(), "world")
-/// }
+/// assert_eq!(hello(), "world");
 /// 
 /// // `split_generics_and_where` calls `crate::foo` here
 /// split_generics_and_where! {
@@ -77,6 +70,7 @@
 ///         x * x * x
 ///     }
 /// }
+///
 /// fn main() {
 ///     assert_eq!(get_count(), 0);
 ///
@@ -152,10 +146,12 @@ macro_rules! split_generics_and_where {
         $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! $prefix:tt
         ($($generics:tt)*)
     ) => {
-        $crate::__::__priv_split_generics!{
-            ($($generics)*)
+        $crate::__coerce_item!{
+            $crate::__::__priv_split_generics!{
+                ($($generics)*)
 
-            $(:: $(@$leading@)? )? $first $(:: $trailing)* ! $prefix
+                $(:: $(@$leading@)? )? $first $(:: $trailing)* ! $prefix
+            }
         }
     };
 }
@@ -165,11 +161,6 @@ macro_rules! split_generics_and_where {
 /// with the generic parameters transformed for use in type definitions,
 /// impl blocks and generic arguments.
 /// 
-/// 
-/// # Version compatibility
-/// 
-/// This macro can only be used inside of functions since Rust 1.45.0,
-/// before that version it can only be used outside of functions.
 /// 
 /// # Examples
 /// 
@@ -182,7 +173,7 @@ macro_rules! split_generics_and_where {
 /// ```rust
 /// use core_extensions::parse_generics_and_where;
 /// 
-/// fn main() {
+/// {
 ///     assert_eq!(hello(), "world")
 /// }
 /// 
@@ -257,7 +248,7 @@ macro_rules! split_generics_and_where {
 /// }
 /// 
 /// 
-/// fn main() {
+/// {
 ///     let bar: Foo = Foo::new(3, [5, 8]);
 ///     assert_eq!(bar, Foo{foo: 3, bar: [5, 8]});
 /// 
@@ -332,11 +323,13 @@ macro_rules! parse_generics_and_where {
 
         ($($generics:tt)*)
     ) => {
-        $crate::__::__priv_split_generics!{
-            ($($generics)*)
+        $crate::__coerce_item!{
+            $crate::__::__priv_split_generics!{
+                ($($generics)*)
 
-            $crate::__pgaw_unparsed_generics!{
-                ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
+                $crate::__pgaw_unparsed_generics!{
+                    ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
+                }
             }
         }
     };
@@ -399,12 +392,6 @@ macro_rules! __pgaw_parsed_generics {
 /// Transforms generic parameters for use in type definitions,
 /// impl blocks and generic arguments, passing them to a callback macro.
 /// 
-/// 
-/// # Version compatibility
-/// 
-/// This macro can only be used inside of functions since Rust 1.45.0,
-/// before that version it can only be used outside of functions.
-/// 
 /// # Examples
 /// 
 /// ### Basic
@@ -414,7 +401,7 @@ macro_rules! __pgaw_parsed_generics {
 /// ```rust
 /// use core_extensions::parse_generics;
 /// 
-/// fn main() {
+/// {
 ///     assert_eq!(hello(), "world")
 /// }
 /// 
@@ -635,13 +622,15 @@ macro_rules! __pg_type_param_bounds {
         $prev_bounds:tt
         ( + $rem_bounds:ty $(= $default:ty)? , $($rem:tt)* )
     ) => {
-        $crate::__::__priv_unwrap_bound!{
-            $rem_bounds
+        $crate::__coerce_item!{
+            $crate::__::__priv_unwrap_bound!{
+                $rem_bounds
 
-            $crate::__pg_type_param_finish!{
-                $fixed
-                $prev_bounds
-                ( ($($default)?) $($rem)* )
+                $crate::__pg_type_param_finish!{
+                    $fixed
+                    $prev_bounds
+                    ( ($($default)?) $($rem)* )
+                }
             }
         }
     };
@@ -726,11 +715,6 @@ macro_rules! __pg_type_param_finish {
 /// transforming generics to a form easily parsable by a callback macro.
 /// 
 /// 
-/// # Version compatibility
-/// 
-/// This macro can only be used inside of functions since Rust 1.45.0,
-/// before that version it can only be used outside of functions.
-/// 
 /// # Examples
 /// 
 /// ### Basic
@@ -742,13 +726,13 @@ macro_rules! __pg_type_param_finish {
 /// ```rust
 /// use core_extensions::parse_split_generics_and_where;
 /// 
-/// fn main() {
+/// {
 ///     assert_eq!(hello(), "world")
 /// }
 /// 
 /// // `parse_split_generics_and_where` calls `crate::foo` here
 /// parse_split_generics_and_where! {
-///     crate::foo!{ 
+///     foo!{ 
 ///         // The first tokens passed to the `crate::foo` macro
 ///         hello "world" foo bar 
 ///     }
@@ -934,11 +918,13 @@ macro_rules! parse_split_generics_and_where {
         $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! $prefix:tt
         ($($generics:tt)*)
     ) => {
-        $crate::__::__priv_split_generics!{
-            ($($generics)*)
+        $crate::__coerce_item!{
+            $crate::__::__priv_split_generics!{
+                ($($generics)*)
 
-            $crate::__psgw_unparsed_generics!{
-                ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
+                $crate::__psgw_unparsed_generics!{
+                    ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
+                }
             }
         }
     };
@@ -1001,12 +987,6 @@ macro_rules! __psgw_parsed_generics {
 
 /// Transforms generic parameters to a form easily parsable by a callback macro.
 /// 
-/// 
-/// # Version compatibility
-/// 
-/// This macro can only be used inside of functions since Rust 1.45.0,
-/// before that version it can only be used outside of functions.
-/// 
 /// # Examples
 /// 
 /// ### Basic
@@ -1016,6 +996,8 @@ macro_rules! __psgw_parsed_generics {
 /// ```
 /// use core_extensions::parse_split_generics;
 /// 
+/// 
+/// // This calls the `foo` macro
 /// parse_split_generics!{
 ///     // The first tokens passed to the `crate::foo` macro
 ///     foo!{ hello "world" }
@@ -1050,7 +1032,6 @@ macro_rules! __psgw_parsed_generics {
 ///     };
 /// }
 ///
-/// # fn main() {}
 /// ```
 /// 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
@@ -1203,13 +1184,15 @@ macro_rules! __psg_type_param_bounds {
         $prev_bounds:tt
         ( + $rem_bounds:ty $(= $default:ty)? , $($rem:tt)* )
     ) => {
-        $crate::__::__priv_unwrap_bound!{
-            $rem_bounds
+        $crate::__coerce_item!{
+            $crate::__::__priv_unwrap_bound!{
+                $rem_bounds
 
-            $crate::__psg_type_param_finish!{
-                $fixed
-                $prev_bounds
-                ( ($($default)?) $($rem)* )
+                $crate::__psg_type_param_finish!{
+                    $fixed
+                    $prev_bounds
+                    ( ($($default)?) $($rem)* )
+                }
             }
         }
     };

@@ -22,7 +22,6 @@
 /// quasiconst!{const Bar: &'static str = "world"}
 /// quasiconst!{const SINGLE_INT[T: IntegerExt = u8]: Single<T> = Single(T::ONE) }
 /// 
-/// # fn main(){
 /// assert_eq!(getconst!(Foo), "hello");
 /// assert_eq!(getconst!(Bar), "world");
 /// 
@@ -35,7 +34,6 @@
 /// 
 /// // `Type<..>` is special syntax from `getconst`, to infer all generic parameters.
 /// assert_eq!(getconst!(SINGLE_INT<..>), Single(1u128));
-/// # }
 /// 
 /// ```
 /// 
@@ -101,11 +99,6 @@ macro_rules! getconst {
 /// 
 /// - An inherent `NEW` associated constant that constructs the struct.
 /// 
-/// # Version compatibility
-/// 
-/// This macro can only be used inside of functions since Rust 1.45.0,
-/// before that version it can only be used outside of functions.
-/// 
 /// # Examples
 /// 
 /// ### Basic
@@ -115,8 +108,6 @@ macro_rules! getconst {
 /// 
 /// quasiconst!{ const NONE<T>: Option<T> = None }
 /// 
-/// # fn main() {
-/// 
 /// // `getconst` is the unambiguous way to get the constant
 /// assert_eq!([getconst!(NONE<String>); 4], [None, None, None, None]);
 ///
@@ -125,8 +116,6 @@ macro_rules! getconst {
 /// // I get worse compiler errors with `::VAL` than with `getconst`
 /// // when the bounds of the generic constant aren't satisfied.
 /// assert_eq!([NONE::<u8>::VAL; 4], [None, None, None, None]);
-/// 
-/// # }
 /// 
 /// ```
 /// 
@@ -151,7 +140,6 @@ macro_rules! getconst {
 ///     U::VAL
 /// }
 /// 
-/// # fn main() {
 /// assert_eq!(constant::<PAIR<[u8; 3]>>(), ([0, 0, 0], [0, 0, 0]));
 /// assert_eq!(constant::<PAIR<bool>>(), (false, false));
 /// 
@@ -160,7 +148,6 @@ macro_rules! getconst {
 ///
 /// // Pair<_> is inferred to be `Pair<String>`
 /// assert_eq!(constrained::<(String, String), PAIR<_>>(), (String::new(), String::new()));
-/// # }
 /// 
 /// ```
 /// 
@@ -257,20 +244,22 @@ macro_rules! quasiconst {
         = $value:expr
         $(; $($rem:tt)* )?
     ) => {
-        $crate::parse_generics!{
-            $crate::__declare_const_inner!{
-                (
-                    $(#[$attr])*,
-                    $vis,
-                    $ident,
-                    $ty,
-                    [$($($constraints)*)?],
-                    $value,
-                    concat!("Cosntructs a `", stringify!($ident), "` (the type)"),
-                )
-            }
+        $crate::__coerce_item!{
+            $crate::parse_generics!{
+                $crate::__declare_const_inner!{
+                    (
+                        $(#[$attr])*,
+                        $vis,
+                        $ident,
+                        $ty,
+                        [$($($constraints)*)?],
+                        $value,
+                        concat!("Cosntructs a `", stringify!($ident), "` (the type)"),
+                    )
+                }
 
-            ($($($generic_params)*)?)
+                ($($($generic_params)*)?)
+            }
         }
 
         $($crate::quasiconst!{ $($rem)* })?

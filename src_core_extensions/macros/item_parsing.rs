@@ -3,11 +3,6 @@
 /// passing the generic parameters unchanged to a callback macro.
 /// 
 /// 
-/// # Version compatibility
-/// 
-/// This macro can only be used inside of functions since Rust 1.45.0,
-/// before that version it can only be used outside of functions.
-/// 
 /// # Example
 /// 
 /// ### Basic
@@ -19,9 +14,7 @@
 /// ```rust
 /// use core_extensions::impl_split;
 /// 
-/// fn main(){
-///     assert_eq!(hello(), "world");
-/// }
+/// assert_eq!(hello(), "world");
 /// 
 /// // impl_split invokes `bar` here
 /// impl_split!{
@@ -162,10 +155,12 @@ macro_rules! impl_split {
         $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! $prefix:tt
         ($($split:tt)*)
     ) => {
-        $crate::__::__priv_split_impl!{
-            ($($split)*)
+        $crate::__coerce_item!{
+            $crate::__::__priv_split_impl!{
+                ($($split)*)
 
-            $(:: $(@$leading@)? )? $first $(:: $trailing)* ! $prefix
+                $(:: $(@$leading@)? )? $first $(:: $trailing)* ! $prefix
+            }
         }
     };
 }
@@ -175,11 +170,6 @@ macro_rules! impl_split {
 /// For parsing impl blocks, 
 /// transforming the generic parameters to a form easily parsable by the callback macro.
 /// 
-/// 
-/// # Version compatibility
-/// 
-/// This macro can only be used inside of functions since Rust 1.45.0,
-/// before that version it can only be used outside of functions.
 /// 
 /// # Example
 /// 
@@ -192,9 +182,7 @@ macro_rules! impl_split {
 /// ```rust
 /// use core_extensions::impl_parse_generics;
 /// 
-/// fn main(){
-///     assert_eq!(hello(), "world");
-/// }
+/// assert_eq!(hello(), "world");
 /// 
 /// // impl_parse_generics invokes `bar` here
 /// impl_parse_generics!{

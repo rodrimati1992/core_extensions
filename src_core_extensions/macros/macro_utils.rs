@@ -109,7 +109,7 @@ if_rust_1_46!{
     /// 
     /// This macro requires Rust 1.45.0 to be invoked with a callback parameter,
     /// inside an expression.
-    /// 
+    ///
     /// # Example
     /// 
     /// ```rust
@@ -307,7 +307,6 @@ if_rust_1_46!{
 /// 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "macro_utils")))]
 pub use core_extensions_proc_macros::gen_ident_range;
-
 
 /// For using function-like macros as attributes.
 /// 
