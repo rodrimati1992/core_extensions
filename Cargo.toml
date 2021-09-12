@@ -96,7 +96,7 @@ default-features = false
 optional = true
 
 [dependencies.core_extensions_proc_macros]
-version = "=1.4.0"
+version = "=1.4.1"
 path = "./core_extensions_proc_macros"
 optional = true
 
