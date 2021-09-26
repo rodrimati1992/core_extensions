@@ -53,6 +53,8 @@ alloc=[]
 
 serde_=["serde"]
 
+derive = ["core_extensions_proc_macros/derive"]
+
 bools=["type_identity"]
 callable=[]
 collections=[]

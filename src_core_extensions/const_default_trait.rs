@@ -219,6 +219,8 @@ macro_rules! impl_const_default{
 }
 
 impl_const_default!{
+    for[] isize=0,
+    for[] usize=0,
     for[] i8=0,
     for[] u8=0,
     for[] i16=0,

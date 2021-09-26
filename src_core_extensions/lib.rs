@@ -283,6 +283,9 @@ pub extern crate alloc;
 pub extern crate core_extensions_proc_macros;
 
 
+#[cfg(feature = "derive")]
+extern crate self as core_extensions;
+
 
 #[doc(hidden)]
 #[macro_use]
