@@ -278,13 +278,16 @@ pub extern crate core as std_;
 #[macro_use]
 pub extern crate alloc;
 
+
 #[doc(hidden)]
 #[cfg(feature = "enable_proc_macro_crate")]
 pub extern crate core_extensions_proc_macros;
 
-
 #[cfg(feature = "derive")]
 extern crate self as core_extensions;
+
+#[cfg(all(feature = "derive", feature = "const_default"))]
+include!{"./derive/const_default_docs.rs"}
 
 
 #[doc(hidden)]
@@ -503,4 +506,5 @@ pub mod __ {
     #[cfg(feature = "item_parsing")]
     pub use core_extensions_proc_macros::__priv_split_impl;
 }
+
 
