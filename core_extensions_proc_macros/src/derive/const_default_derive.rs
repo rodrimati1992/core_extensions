@@ -29,6 +29,7 @@ pub(crate) fn derive_impl(di: DeriveInput) -> syn::Result<TokenStream2> {
     let type_param_bounds = config.type_param_bounds.into_iter();
     let field_bounds = config.field_bounds.into_iter();
     let field_values = config.field_values;
+    let extra_predicates = config.extra_predicates.into_iter();
     let crate_path = config.crate_path;
     let variant = config.variant.into_iter();
 
@@ -45,6 +46,7 @@ pub(crate) fn derive_impl(di: DeriveInput) -> syn::Result<TokenStream2> {
                 #( #preds, )*
                 #( #type_param_bounds, )*
                 #( #field_bounds, )*
+                #( #extra_predicates, )*
             {
                 const DEFAULT: Self = Self #(::#variant)* {
                     #field_values

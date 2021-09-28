@@ -10,6 +10,7 @@ use proc_macro2::Span;
 
 use syn::{
     parse::ParseBuffer,
+    punctuated::Punctuated,
     Attribute, Ident, Token,
 };
 
@@ -44,6 +45,7 @@ struct ParsedAttributes<'a> {
     type_param_bounds: Vec<(&'a Ident, Option<Bounds>)>,
     variant: Option<VariantAttributes>,    
     field_bound_attr: Option<FieldBoundAttr>,
+    extra_predicates: Punctuated<syn::WherePredicate, Token!(,)>,    
     debug_print: bool,
     crate_path: syn::Path,
 }
@@ -53,6 +55,7 @@ pub(super) struct Configuration<'a> {
     pub(super) field_bounds: Vec<TokenStream2>,
     pub(super) field_values: TokenStream2,
     pub(super) variant: Option<&'a Ident>,
+    pub(super) extra_predicates: Punctuated<syn::WherePredicate, Token!(,)>,    
     pub(super) debug_print: bool,
     pub(super) crate_path: syn::Path,
 }
@@ -63,6 +66,7 @@ impl<'a> ParsedAttributes<'a> {
             mut type_param_bounds,
             variant,
             field_bound_attr,
+            extra_predicates,
             debug_print,
             crate_path,
         } = self;
@@ -123,6 +127,7 @@ impl<'a> ParsedAttributes<'a> {
             field_bounds,
             field_values,
             variant,
+            extra_predicates,
             debug_print,
             crate_path,
         })
@@ -147,6 +152,7 @@ pub(super) fn parse_attributes<'a>(ds: &'a DataStructure<'a>) -> syn::Result<Con
             .collect(),
         field_bound_attr: None,
         variant: None,
+        extra_predicates: Punctuated::new(),
         debug_print: false,
         crate_path: syn::parse_quote!(::core_extensions),
     };
@@ -268,6 +274,14 @@ fn parse_attribute_inner<'a>(
                     expr,
                     paren_span: input.span(),
                 };
+            }
+        }
+    } else if let Some(_) = input.peek_parse(Token!(where))? {
+        if !input.is_empty() {
+            loop{
+                this.extra_predicates.push(input.parse::<syn::WherePredicate>()?);
+                if input.is_empty() { break; }
+                input.parse::<Token!(,)>()?;
             }
         }
     } else if let Some(_) = input.peek_parse(keyword::debug_print)? {
