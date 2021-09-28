@@ -28,7 +28,7 @@ mod derive;
 
 #[cfg(feature = "derive")]
 #[proc_macro_derive(ConstDefault, attributes(cdef))]
-pub fn derive_const_default(input: TokenStream) -> TokenStream {
+pub fn derive_const_default(input: proc_macro::TokenStream) -> TokenStream {
     syn::parse(input)
         .and_then(crate::derive::const_default_derive::derive_impl)
         .unwrap_or_else(syn::Error::into_compile_error)

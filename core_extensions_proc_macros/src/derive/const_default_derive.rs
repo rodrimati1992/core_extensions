@@ -12,8 +12,14 @@ use syn::{
 
 use quote::{TokenStreamExt, ToTokens, quote};
 
+#[cfg(test)]
+use alloc::string::{String, ToString};
+
 
 mod cd_attribute_parsing;
+
+#[cfg(test)]
+mod cd_tests;
 
 
 
@@ -60,6 +66,16 @@ pub(crate) fn derive_impl(di: DeriveInput) -> syn::Result<TokenStream2> {
     }
 
     Ok(ret)
+}
+
+
+#[cfg(test)]
+pub(crate) fn derive_for_tests(input: &str) -> Result<String, String> {
+    syn::parse_str(input)
+        .and_then(crate::derive::const_default_derive::derive_impl)
+        .map_err(syn::Error::into_compile_error)
+        .map(|x| x.to_string())
+        .map_err(|x| x.to_string())
 }
 
 

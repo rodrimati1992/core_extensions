@@ -27,12 +27,15 @@ jobs:
         cargo -V
         cd "${{github.workspace}}/core_extensions_proc_macros"
         cargo test --features item_parsing
+        cargo test --features item_parsing derive
 
         cd "${{github.workspace}}/"
+        cargo test --no-default-features --features "${{ env.rust146 }} std derive"
         cargo test --no-default-features --features "${{ env.rust146 }} std bools"
         cargo test --no-default-features --features "${{ env.rust146 }} std callable"
         cargo test --no-default-features --features "${{ env.rust146 }} std collections"
         cargo test --no-default-features --features "${{ env.rust146 }} std const_default"
+        cargo test --no-default-features --features "${{ env.rust146 }} std const_default derive"
         cargo test --no-default-features --features "${{ env.rust146 }} std const_val"
         cargo test --no-default-features --features "${{ env.rust146 }} std macro_utils"
         cargo test --no-default-features --features "${{ env.rust146 }} std generics_parsing"
@@ -47,6 +50,7 @@ jobs:
         cargo test --no-default-features --features "${{ env.rust146 }} std slices"
         cargo test --no-default-features --features "${{ env.rust146 }} std strings"
         cargo test --no-default-features --features "${{ env.rust146 }} std transparent_newtype"
+        cargo test --no-default-features --features "${{ env.rust146 }} std transparent_newtype derive"
         cargo test --no-default-features --features "${{ env.rust146 }} std type_asserts"
         cargo test --no-default-features --features "${{ env.rust146 }} std type_identity"
         cargo test --no-default-features --features "${{ env.rust146 }} std type_level_bool"
@@ -56,9 +60,17 @@ jobs:
         cargo test --no-default-features --features "${{ env.rust146 }} alloc all_items"
         cargo test --no-default-features --features "${{ env.rust146 }} std all_items"
 
+        cargo test --no-default-features --features "${{ env.rust146 }} all_items derive"
+        cargo test --no-default-features --features "${{ env.rust146 }} alloc all_items derive"
+        cargo test --no-default-features --features "${{ env.rust146 }} std all_items derive"
+
         cargo test --release --no-default-features --features "${{ env.rust146 }} all_items";
         cargo test --release --no-default-features --features "${{ env.rust146 }} alloc all_items";
         cargo test --release --no-default-features --features "${{ env.rust146 }} std all_items";
+
+        cargo test --release --no-default-features --features "${{ env.rust146 }} all_items derive";
+        cargo test --release --no-default-features --features "${{ env.rust146 }} alloc all_items derive";
+        cargo test --release --no-default-features --features "${{ env.rust146 }} std all_items derive";
 
   nightly-tests:
     runs-on: ubuntu-latest
@@ -75,7 +87,7 @@ jobs:
         rustup override set "$MIRI_NIGHTLY"
         rustup component add miri
         cargo miri setup
-        cargo miri test --features "serde all_items rust_1_51"
+        cargo miri test --features "serde all_items rust_1_51 derive"
 
         rm Cargo.lock
         cargo clean
@@ -86,4 +98,4 @@ jobs:
         cargo update
         cargo build --all-features
         
-        cargo test --features "serde all_items rust_1_51"
+        cargo test --features "serde all_items rust_1_51 derive"

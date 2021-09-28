@@ -91,6 +91,7 @@ docsrs = []
 
 [dev-dependencies]
 rand = "0.4.6"
+static_assertions = "1.1"
 
 [dependencies.serde]
 version = "1.0"

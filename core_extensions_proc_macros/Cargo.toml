@@ -23,6 +23,7 @@ macro_utils = []
 
 [dependencies.syn]
 version = "1.0.77"
+features = ["full"]
 optional = true
 
 [dependencies]

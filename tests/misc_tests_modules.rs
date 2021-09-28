@@ -4,9 +4,13 @@ extern crate alloc;
 
 // Renamed it to krate to test that macros work through reexports
 extern crate core_extensions as krate;
+extern crate static_assertions;
 
 
 mod misc_tests {
+    #[cfg(all(feature = "derive", feature = "const_default"))]
+    mod const_default_derive;
+
     #[cfg(feature = "const_val")]
     mod quasiconst_tests;
 

@@ -282,6 +282,7 @@ fn parse_attribute_inner<'a>(
                 this.extra_predicates.push(input.parse::<syn::WherePredicate>()?);
                 if input.is_empty() { break; }
                 input.parse::<Token!(,)>()?;
+                if input.is_empty() { break; }
             }
         }
     } else if let Some(_) = input.peek_parse(keyword::debug_print)? {
