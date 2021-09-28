@@ -3,52 +3,106 @@ use crate::{
     TokenStream2,
 };
 
+use proc_macro2::Span;
+
 use syn::{
     punctuated::Punctuated,
-    self, Attribute, Data, DeriveInput, Field as SynField, Fields as SynFields, Generics, Ident,
-    Type, Visibility,
+    DeriveInput,
 };
 
-use quote::quote;
+use quote::{TokenStreamExt, ToTokens, quote};
+
+
+mod cd_attribute_parsing;
+
 
 
 pub(crate) fn derive_impl(di: DeriveInput) -> syn::Result<TokenStream2> {
-    let ds = DataStructure::new(&di);
+    let ds = &DataStructure::new(&di);
     let name = ds.name;
 
-    if ds.data_variant != DataVariant::Struct {
-        return Err(syn::Error::new(name.span(), "Only structs are supported right now"));
+    if ds.data_variant == DataVariant::Union {
+        return Err(syn::Error::new(name.span(), "Only structs and enums are supported"));
     }
 
-    let ty_params = ds.generics.type_params().map(|x| &x.ident);
-    let field_names = ds.variants[0].fields.iter().map(|f| &f.ident);
+    let config = cd_attribute_parsing::parse_attributes(ds)?;
+    let type_param_bounds = config.type_param_bounds.into_iter();
+    let field_bounds = config.field_bounds.into_iter();
+    let field_values = config.field_values;
+    let crate_path = config.crate_path;
+    let variant = config.variant.into_iter();
+
     let (impl_generics, ty_generics, where_clause) = ds.generics.split_for_impl();
     let preds = Punctuated::new(); 
     let preds = where_clause.map_or(&preds, |x| &x.predicates).into_iter();
     
-    Ok(quote! {
+    let ret = quote! {
         const _: () = {
-            use ::core_extensions as __ce_bCj7dq3Pud;
+            use #crate_path as __ce_bCj7dq3Pud;
 
             impl #impl_generics __ce_bCj7dq3Pud::ConstDefault for #name #ty_generics
             where
                 #( #preds, )*
-                #( #ty_params: __ce_bCj7dq3Pud::ConstDefault, )*
+                #( #type_param_bounds, )*
+                #( #field_bounds, )*
             {
-                const DEFAULT: Self = Self {
-                    #( #field_names: __ce_bCj7dq3Pud::ConstDefault::DEFAULT, )*
+                const DEFAULT: Self = Self #(::#variant)* {
+                    #field_values
                 };
             }
         };
-    })
+    };
+
+    if config.debug_print {
+        core::panic!("{}", ret);
+    }
+
+    Ok(ret)
 }
 
 
 
+/// Which bounds a thing has
+#[derive(Clone)]
+enum Bounds {
+    ConstDefault,
+    Custom(TypeBounds),
+}
+
+type TypeBounds = syn::punctuated::Punctuated<syn::TypeParamBound, syn::Token!(+)>;
+
+/// Which bounds a thing has
+#[derive(Clone)]
+enum DefaultVal {
+    ConstDefault,
+    Custom {
+        expr: TokenStream2,
+        paren_span: Span,
+    },
+}
+
+impl ToTokens for Bounds {
+    fn to_tokens(&self, ts: &mut TokenStream2) {
+        match self {
+            Bounds::ConstDefault => ts.append_all(quote!(__ce_bCj7dq3Pud::ConstDefault)),
+            Bounds::Custom(bounds) => bounds.to_tokens(ts),
+        }
+    }
+}
 
 
-
-
+impl ToTokens for DefaultVal {
+    fn to_tokens(&self, ts: &mut TokenStream2) {
+        match self {
+            DefaultVal::ConstDefault =>{
+                ts.append_all(quote!(__ce_bCj7dq3Pud::ConstDefault::DEFAULT));
+            }
+            DefaultVal::Custom{expr, paren_span} => {
+                ts.append_all(quote::quote_spanned!(*paren_span => (#expr)));
+            }
+        }
+    }
+}
 
 
 

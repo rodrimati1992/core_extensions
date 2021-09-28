@@ -203,6 +203,7 @@ macro_rules! mmatches {
 } use mmatches;
 
 // Purely for performance
+#[allow(unused_macros)]
 macro_rules! try_ {
     ( $expr:expr )=>{
         match $expr {
@@ -216,4 +217,6 @@ macro_rules! try_ {
             Err($e) => return Err($map_err),
         }
     };
-} use try_;
+}
+#[allow(unused_imports)]
+use try_;

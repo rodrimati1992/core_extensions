@@ -7,8 +7,6 @@ use quote::{ToTokens, format_ident};
 
 use proc_macro2::TokenStream;
 
-use core::fmt::{self, Display};
-
 use alloc::{
     format,
     vec::Vec,
