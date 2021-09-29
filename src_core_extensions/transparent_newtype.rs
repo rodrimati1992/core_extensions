@@ -133,6 +133,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
 
     /// Converts `Box<Self::Inner>` to a `Box<Self>`.
     #[cfg(feature = "alloc")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
     fn from_inner_box(v: Box<Self::Inner>) -> Box<Self> {
         unsafe { Box::from_raw(Self::from_inner_raw_mut(Box::into_raw(v))) }
@@ -179,6 +180,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
 
     /// Converts `self` to a `Box<Self::Inner>`.
     #[cfg(feature = "alloc")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
     fn into_inner_box(self: Box<Self>) -> Box<Self::Inner> {
         unsafe { Box::from_raw(Self::as_inner_raw_mut(Box::into_raw(self))) }
@@ -271,6 +273,7 @@ unsafe impl<T> TransparentNewtype for core::mem::ManuallyDrop<T> {
 
 /// Converts a `Vec` of `T` into a `Vec` of the type that `T` wraps.
 #[cfg(feature = "alloc")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
 pub fn into_inner_vec<T>(this: Vec<T>) -> Vec<T::Inner>
 where
     T: TransparentNewtype,
@@ -281,6 +284,7 @@ where
 
 /// Converts a `Vec` of some type into a `Vec` of a wrapper around that type.
 #[cfg(feature = "alloc")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
 pub fn from_inner_vec<T>(this: Vec<T::Inner>) -> Vec<T>
 where
     T: TransparentNewtype,

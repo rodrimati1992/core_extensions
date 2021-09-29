@@ -204,6 +204,8 @@ impl_tuple_const_default! {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P}
 macro_rules! impl_const_default{
     (
         $( 
+            $(#[$attr:meta])*
+
             for[$($for:tt)*]
             $ty:ty = 
             $def:expr
@@ -211,6 +213,7 @@ macro_rules! impl_const_default{
         $(,)*
     )=>{
         $(
+            $(#[$attr])*
             impl<$($for)*> ConstDefault for $ty {
                 const DEFAULT: Self= $def;
             }
@@ -280,7 +283,9 @@ impl_const_default!{
 
 #[cfg(feature = "alloc")]
 impl_const_default!{
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     for[T] ::alloc::vec::Vec<T> = Self::new(),
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     for[] ::alloc::string::String = Self::new(),
 }
 
