@@ -60,16 +60,16 @@ fn test_where_attr() {
 #[test]
 fn test_default_variant_attr() {
     {
-        let ret  = dft("enum Foo{Bar, Baz};").unwrap_err();
-        assert_eq!(ret.consecutive_unspace(&["expected", "#[cdef(default)]", "variant"]));
+        let ret  = dft("enum Foo{Bar, Baz}").unwrap_err();
+        assert!(ret.consecutive_unspace(&["expected", "#[cdef(default)]"]));
     }
     {
-        let right = dft("enum Foo{#[cdef(default)] Bar, Baz};").unwrap();
-        assert_eq!(ret.consecutive_unspace(&["impl", "ConstDefault", "for Foo","::Bar"]));
+        let ret = dft("enum Foo{#[cdef(default)] Bar, Baz}").unwrap();
+        assert!(ret.consecutive_unspace(&["impl", "ConstDefault", "for Foo","::Bar"]));
     }
     {
-        let right = dft("enum Foo{Bar, #[cdef(default)] Baz};").unwrap();
-        assert_eq!(ret.consecutive_unspace(&["impl", "ConstDefault", "for Foo","::Baz"]));
+        let ret = dft("enum Foo{Bar, #[cdef(default)] Baz}").unwrap();
+        assert!(ret.consecutive_unspace(&["impl", "ConstDefault", "for Foo","::Baz"]));
     }
 }
 

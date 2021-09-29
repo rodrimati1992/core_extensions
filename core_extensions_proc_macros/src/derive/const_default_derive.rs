@@ -35,8 +35,8 @@ pub(crate) fn derive_impl(di: DeriveInput) -> syn::Result<TokenStream2> {
     let type_param_bounds = config.type_param_bounds.into_iter();
     let field_bounds = config.field_bounds.into_iter();
     let field_values = config.field_values;
-    let extra_predicates = config.extra_predicates.into_iter();
-    let crate_path = config.crate_path;
+    let extra_predicates = config.shared.extra_predicates.into_iter();
+    let crate_path = config.shared.crate_path;
     let variant = config.variant.into_iter();
 
     let (impl_generics, ty_generics, where_clause) = ds.generics.split_for_impl();
@@ -61,7 +61,7 @@ pub(crate) fn derive_impl(di: DeriveInput) -> syn::Result<TokenStream2> {
         };
     };
 
-    if config.debug_print {
+    if config.shared.debug_print {
         core::panic!("{}", ret);
     }
 
