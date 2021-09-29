@@ -61,12 +61,80 @@ macro_rules! impl_transparent_newtype {
             from as _
         }
 
+        #[inline(always)]
         fn as_inner_raw(this: *const $S) -> *const <$S as $crate::TransparentNewtype>::Inner {
             this as _
         }
 
+        #[inline(always)]
         fn as_inner_raw_mut(this: *mut $S) -> *mut <$S as $crate::TransparentNewtype>::Inner {
             this as _
+        }
+    )
+}
+
+
+/// For delegating the implementation of the [`TransparentNewtype`] trait to a field.
+///
+/// # Example
+///
+/// ```rust
+/// use core_extensions::{TransparentNewtype, TransparentNewtypeExt};
+///
+/// use std::num::Wrapping;
+///
+/// #[derive(Debug, PartialEq, Eq)]
+/// #[repr(transparent)]
+/// struct Foo<T: ?Sized>(T);
+///
+/// unsafe impl<T: ?Sized + TransparentNewtype> TransparentNewtype for Foo<T> {
+///     core_extensions::delegate_transparent_newtype_impl!{Self, T}
+/// }
+/// 
+/// assert_eq!(
+///     Foo::<Wrapping<u8>>::from_inner(3),
+///     Foo(Wrapping(3)),
+/// );
+/// assert_eq!(
+///     Foo::<Wrapping<bool>>::from_inner_ref(&true),
+///     &Foo(Wrapping(true)),
+/// );
+/// assert_eq!(
+///     Foo::<Wrapping<&str>>::from_inner_mut(&mut "hello"),
+///     &mut Foo(Wrapping("hello")),
+/// );
+/// 
+/// 
+/// 
+/// ```
+///
+/// [`TransparentNewtype`]: ./transparent_newtype/trait.TransparentNewtype.html#example 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "transparent_newtype")))]
+#[macro_export]
+macro_rules! delegate_transparent_newtype_impl {
+    ($S:ty, $Field:ty) => (
+        type Inner = <$Field as $crate::TransparentNewtype>::Inner;
+
+        #[inline(always)]
+        fn from_inner_raw(from: *const <$S as $crate::TransparentNewtype>::Inner) -> *const $S {
+            <$Field as $crate::TransparentNewtype>::from_inner_raw(from)
+                as _
+        }
+
+        #[inline(always)]
+        fn from_inner_raw_mut(from: *mut <$S as $crate::TransparentNewtype>::Inner) -> *mut $S {
+            <$Field as $crate::TransparentNewtype>::from_inner_raw_mut(from)
+                as _
+        }
+
+        #[inline(always)]
+        fn as_inner_raw(this: *const $S) -> *const <$S as $crate::TransparentNewtype>::Inner {
+            <$Field as $crate::TransparentNewtype>::as_inner_raw(this as _)
+        }
+
+        #[inline(always)]
+        fn as_inner_raw_mut(this: *mut $S) -> *mut <$S as $crate::TransparentNewtype>::Inner {
+            <$Field as $crate::TransparentNewtype>::as_inner_raw_mut(this as _)
         }
     )
 }

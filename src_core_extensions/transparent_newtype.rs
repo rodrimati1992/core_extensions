@@ -24,14 +24,32 @@ use crate::utils::transmute_ignore_size;
 /// and the type of that field must be used as the [`TransparentNewtype::Inner`]
 /// associated type.
 ///
-/// The recommended way to implement this trait's required methods is with:
+/// The recommended way to implement this trait's required methods is with
+/// the [`impl_transparent_newtype`] macro:
 /// ```
-/// # struct Foo;
-/// 
-/// # unsafe impl core_extensions::TransparentNewtype for Foo{
-/// #    type Inner = ();
+/// # struct Foo<T>(T);
+/// #
+/// # use core_extensions::TransparentNewtype;
+/// #
+/// unsafe impl<T> TransparentNewtype for Foo<T> {
+///     type Inner = T;
 ///     core_extensions::impl_transparent_newtype!{Self}
-/// # }
+/// }
+/// ```
+/// 
+/// The `TransparentNewtype` impl can be delegate to a field using the 
+/// [`delegate_transparent_newtype_impl`] macro:
+/// 
+/// ```rust
+/// # type FieldType = std::num::Wrapping<u8>;
+/// #
+/// # struct Foo(FieldType);
+/// #
+/// # use core_extensions::TransparentNewtype;
+/// #
+/// unsafe impl TransparentNewtype for Foo {
+///     core_extensions::delegate_transparent_newtype_impl!{Self, FieldType}
+/// }
 /// ```
 ///
 /// # Example
@@ -84,6 +102,8 @@ use crate::utils::transmute_ignore_size;
 ///
 /// [`TransparentNewtype::Inner`]: #associatedtype.Inner
 /// [`TransparentNewtypeExt`]: ./trait.TransparentNewtypeExt.html
+/// [`impl_transparent_newtype`]: ../macro.impl_transparent_newtype.html
+/// [`delegate_transparent_newtype_impl`]: ../macro.delegate_transparent_newtype_impl.html
 ///
 pub unsafe trait TransparentNewtype {
     /// The wrapped type
