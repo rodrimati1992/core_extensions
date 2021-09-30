@@ -222,8 +222,8 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     /// use std::mem::ManuallyDrop as MD;
     /// use std::rc::Rc;
     /// 
-    /// assert_eq!(Wrapping::from_inner_arc(Rc::new(3)), Rc::new(Wrapping(3)));
-    /// assert_eq!(MD::from_inner_arc(Rc::new(5)), Rc::new(MD::new(5)));
+    /// assert_eq!(Wrapping::from_inner_rc(Rc::new(3)), Rc::new(Wrapping(3)));
+    /// assert_eq!(MD::from_inner_rc(Rc::new(5)), Rc::new(MD::new(5)));
     /// 
     /// ```
     #[cfg(feature = "alloc")]
@@ -243,7 +243,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     /// use std::num::Wrapping;
     /// use std::mem::ManuallyDrop;
     /// 
-    /// assert_eq!(Wrapping::new(3).into_inner(), 3);
+    /// assert_eq!(Wrapping(3).into_inner(), 3);
     /// assert_eq!(ManuallyDrop::new(5).into_inner(), 5);
     /// 
     /// ```
@@ -267,7 +267,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     /// use std::num::Wrapping;
     /// use std::mem::ManuallyDrop;
     /// 
-    /// assert_eq!(Wrapping::new(3).as_inner(), &3);
+    /// assert_eq!(Wrapping(3).as_inner(), &3);
     /// assert_eq!(ManuallyDrop::new(5).as_inner(), &5);
     /// 
     /// ```
@@ -286,7 +286,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     /// use std::num::Wrapping;
     /// use std::mem::ManuallyDrop;
     /// 
-    /// assert_eq!(Wrapping::new(3).as_inner_mut(), &mut 3);
+    /// assert_eq!(Wrapping(3).as_inner_mut(), &mut 3);
     /// assert_eq!(ManuallyDrop::new(5).as_inner_mut(), &mut 5);
     /// 
     /// ```
@@ -305,7 +305,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     /// use std::num::Wrapping;
     /// use std::mem::ManuallyDrop;
     /// 
-    /// assert_eq!(Box::new(Wrapping::new(3)).into_inner_box(), Box::new(3));
+    /// assert_eq!(Box::new(Wrapping(3)).into_inner_box(), Box::new(3));
     /// assert_eq!(Box::new(ManuallyDrop::new(5)).into_inner_box(), Box::new(5));
     /// 
     /// ```
@@ -335,7 +335,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         /// use std::sync::Arc;
         /// 
         /// assert_eq!(
-        ///     Wrapping::into_inner_arc(Arc::new(Wrapping::new(3))),
+        ///     Wrapping::into_inner_arc(Arc::new(Wrapping(3))),
         ///     Arc::new(3)
         /// );
         /// assert_eq!(
@@ -345,7 +345,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         /// 
         /// // Calling this as a method requires the "rust_1_46" feature
         #[cfg_attr(not(feature = "rust_1_46"), doc = "# /*")]
-        /// assert_eq!(Arc::new(Wrapping::new(3)).into_inner_arc(), Arc::new(3));
+        /// assert_eq!(Arc::new(Wrapping(3)).into_inner_arc(), Arc::new(3));
         /// assert_eq!(Arc::new(ManuallyDrop::new(5)).into_inner_arc(), Arc::new(5));
         #[cfg_attr(not(feature = "rust_1_46"), doc = "# */")]
         /// 
@@ -385,7 +385,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         /// use std::rc::Rc;
         /// 
         /// assert_eq!(
-        ///     Wrapping::into_inner_rc(Rc::new(Wrapping::new(3))),
+        ///     Wrapping::into_inner_rc(Rc::new(Wrapping(3))),
         ///     Rc::new(3)
         /// );
         /// assert_eq!(
@@ -395,7 +395,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         /// 
         /// // Calling this as a method requires the "rust_1_46" feature
         #[cfg_attr(not(feature = "rust_1_46"), doc = "# /*")]
-        /// assert_eq!(Rc::new(Wrapping::new(3)).into_inner_rc(), Rc::new(3));
+        /// assert_eq!(Rc::new(Wrapping(3)).into_inner_rc(), Rc::new(3));
         /// assert_eq!(Rc::new(ManuallyDrop::new(5)).into_inner_rc(), Rc::new(5));
         #[cfg_attr(not(feature = "rust_1_46"), doc = "# */")]
         /// 
