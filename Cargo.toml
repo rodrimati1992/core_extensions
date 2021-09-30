@@ -89,6 +89,7 @@ enable_proc_macro_crate = ["core_extensions_proc_macros"]
 
 rust_1_46 = ["core_extensions_proc_macros/rust_1_45"]
 rust_1_51 = ["rust_1_46"]
+rust_latest_stable = ["rust_1_51"]
 
 # Enables indicators in the docs for what features are required to enable items.
 docsrs = []

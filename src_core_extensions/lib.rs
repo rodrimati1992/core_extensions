@@ -8,18 +8,32 @@
 //! ```toml
 //! [dependencies.core_extensions]
 //! version = "1.5"
-//! features = ["std", "all_items"]
+//! features = [
+//!     ## enables items that use anything from the standard `std` or `alloc` crates.
+//!     "std",
+//!     ## Requires the latest stable release, enables all the rust-version-dependent features
+//!     "rust_latest_stable",
+//!     ## enables all the item features 
+//!     "all_items",
+//! ]
 //! ```
-//! The "std" feature is required to enable impls and items that use [`std`] types,
+//! The `"std"` feature is required to enable impls and items that use [`std`] types,
 //! otherwise only the [`core`] library is supported.
 //! 
-//! Here are all the item features individually([documented here](#cargo-features-section)):
+//! `"rust_latest_stable"` enables all the `"rust_1_*"` crate features
+//! to use the newest stable language features,
+//! [here's a list of all the `"rust_1_*"` features](#cargo-features-lang-section),
 //! 
+//! `"all_items"` enables all of the *item features* ([documented here](#cargo-features-section)):
+//! 
+//! Here is the expanded version of the above configuration:
 //! ```toml
 //! [dependencies.core_extensions]
 //! version = "1.5"
 //! features = [
 //!     "std",
+//!     "rust_latest_stable"
+//!     ## all of the features below are what "all_items" enables
 //!     "derive"
 //!     "bools",
 //!     "callable",
@@ -45,9 +59,6 @@
 //!     "void",
 //! ]
 //! ```
-//! 
-//! This crate currently [requires cargo features](#cargo-features-lang-section)
-//! to use newer language features,
 //!
 //! # Examples
 //!
@@ -113,20 +124,12 @@
 //!     Debug::fmt(this, f)
 //! }
 //! ```
-//!
-//! # no-std support
-//!
-//! This crate works in `#![no_std]` contexts by default.
-//!
-//! # Supported Rust versions
-//!
-//! This crate support Rust back to 1.41.0,
-//! requiring cargo features to use language features from newer versions.
-//!
 //! <span id = "cargo-features-section"></span>
 //! # Cargo Features
 //!
-//! ### crate features
+//! ### Item features
+//!
+//! Item features enables items from this crate.
 //!
 //! The `"all_items"` feature enables all of these features,
 //! you can use it instead of the ones below if you don't mind longer compile-times.
@@ -221,6 +224,11 @@
 //!
 //! - "rust_1_51": Enables the "rust_1_46" feature, and impls of traits for all array lengths.
 //!
+//! - "rust_latest_stable":
+//! Enables all the "rust_1_*" features.
+//! This requires the last stable release of Rust,
+//! since more `"rust_1_*"` features can be added at any time.
+//!
 //! ### Support for other crates
 //!
 //! All of these are disabled by default:
@@ -240,6 +248,17 @@
 //!
 //! `"docsrs"`: Used to document the required features in docs.rs, requires Rust nightly.
 //! Doesn't enable any items itself.
+//!
+//!
+//! # no-std support
+//!
+//! This crate works in `#![no_std]` contexts by default.
+//!
+//! # Supported Rust versions
+//!
+//! This crate support Rust back to 1.41.0,
+//! requiring cargo features to use language features from newer versions.
+//!
 //!
 //! [`collections`]: ./collections/index.html
 //! [`callable`]: ./callable/index.html
