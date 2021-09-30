@@ -1,10 +1,10 @@
 use crate::{
-    derive::{DataStructure, DataVariant, Field, ParseBufferExt, Struct, SynResultExt},
+    derive::{self, DataStructure, DataVariant, Field, ParseBufferExt, Struct, SynResultExt},
     mmatches,
 };
 
 use syn::{
-    parse::ParseBuffer,
+    parse::{ParseBuffer, Parser},
     punctuated::Punctuated,
     spanned,
     Attribute, Token,
@@ -51,42 +51,25 @@ pub(crate) trait AttrParsing<'a>: Sized {
         attribute: &Attribute,
     ) -> syn::Result<()> {
         if attribute.path.is_ident(Self::HELPER_ATTR) {
-            attribute.parse_args_with(move|input: &'_ ParseBuffer<'_>| {
-                if let Some(_) = input.peek_parse(Token!(where))? {
-                    check_is_container(&ctx, &attribute.path)?;
+            let closure = move|input: &'_ ParseBuffer<'_>| {
+                parse_helper_attribute_contents(self, ds, ctx, input)
+            };
 
-                    if !input.is_empty() {
-                        let this = self.shared_config_mut();
-                        loop{
-                            this.extra_predicates.push(input.parse::<syn::WherePredicate>()?);
-                            if input.is_empty() { break; }
-                            input.parse::<Token!(,)>()?;
-                            if input.is_empty() { break; }
-                        }
-                    }
-                } else if let Some(_) = input.peek_parse(keyword::debug_print)? {
-                    check_is_container(&ctx, &attribute.path)?;
-
-                    self.shared_config_mut().debug_print = true;
-                } else if let Some(_) = input.peek_parse(Token!(crate))? {
-                    check_is_container(&ctx, &attribute.path)?;
-
-                    input.parse::<Token!(=)>()?;
-                    self.shared_config_mut().crate_path = input.parse::<syn::Path>()?;
-                } else {
-                    self.parse_helper_attribute(ds, ctx, input)?;
-                }
-                Ok(())
-            })
+            if attribute.tokens.is_empty() {
+                Parser::parse2(closure, crate::TokenStream2::new())
+            } else {
+                attribute.parse_args_with(closure)
+            }
+        } else if crate::mmatches!(ctx, ParseCtx::Container) {
+            self.parse_other_container_attr(ds, attribute)
         } else {
-            self.parse_other_top_level_attr(ds, ctx, attribute)
+            Ok(())
         }
     }
 
-    fn parse_other_top_level_attr(
+    fn parse_other_container_attr(
         &mut self,
         _ds: &'a DataStructure<'a>,
-        _ctx: ParseCtx<'a>,
         _attribute: &Attribute,
     ) -> syn::Result<()> {
         Ok(())
@@ -103,6 +86,43 @@ pub(crate) trait AttrParsing<'a>: Sized {
 
     fn shared_config_mut(&mut self) -> &mut SharedConfig;
 }
+
+fn parse_helper_attribute_contents<'a, T: AttrParsing<'a>>(
+    this: &mut T,
+    ds: &'a DataStructure<'a>,
+    ctx: ParseCtx<'a>,
+    input: &'_ ParseBuffer<'_>,
+) -> syn::Result<()> {
+    let empty = &derive::utils::Empty(input.span());
+
+    if let Some(_) = input.peek_parse(Token!(where))? {
+        check_is_container(&ctx, empty)?;
+
+        if !input.is_empty() {
+            let this = this.shared_config_mut();
+            loop{
+                this.extra_predicates.push(input.parse::<syn::WherePredicate>()?);
+                if input.is_empty() { break; }
+                input.parse::<Token!(,)>()?;
+                if input.is_empty() { break; }
+            }
+        }
+    } else if let Some(_) = input.peek_parse(keyword::debug_print)? {
+        check_is_container(&ctx, empty)?;
+
+        this.shared_config_mut().debug_print = true;
+    } else if let Some(_) = input.peek_parse(Token!(crate))? {
+        check_is_container(&ctx, empty)?;
+
+        input.parse::<Token!(=)>()?;
+        this.shared_config_mut().crate_path = input.parse::<syn::Path>()?;
+    } else {
+        this.parse_helper_attribute(ds, ctx, input)?;
+    }
+    Ok(())
+}
+
+
 
 pub(crate) struct SharedConfig {
     pub(crate) extra_predicates: Punctuated<syn::WherePredicate, Token!(,)>,    
@@ -145,6 +165,15 @@ pub(crate) fn check_is_container(
     }
 }
 
+pub(crate) fn check_is_field<'a>(
+    ctx: ParseCtx<'a>,
+    sp: &dyn spanned::Spanned,
+) -> syn::Result<&'a Field<'a>> {
+    match ctx {
+        ParseCtx::Field(f) => Ok(f),
+        _ => Err(syn::Error::new(sp.span(), "Can only use this attribute on a field"))
+    }
+}
 
 pub(crate) fn check_is_variant_or_field(
     ctx: &ParseCtx<'_>, 

@@ -289,6 +289,9 @@ extern crate self as core_extensions;
 #[cfg(all(feature = "derive", feature = "const_default"))]
 include!{"./derive/const_default_docs.rs"}
 
+#[cfg(all(feature = "derive", feature = "transparent_newtype"))]
+include!{"./derive/transparent_newtype_docs.rs"}
+
 
 #[doc(hidden)]
 #[macro_use]

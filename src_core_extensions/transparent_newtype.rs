@@ -24,33 +24,10 @@ use crate::utils::transmute_ignore_size;
 /// and the type of that field must be used as the [`TransparentNewtype::Inner`]
 /// associated type.
 ///
-/// The recommended way to implement this trait's required methods is with
-/// the [`impl_transparent_newtype`] macro:
-/// ```
-/// # struct Foo<T>(T);
-/// #
-/// # use core_extensions::TransparentNewtype;
-/// #
-/// unsafe impl<T> TransparentNewtype for Foo<T> {
-///     type Inner = T;
-///     core_extensions::impl_transparent_newtype!{Self}
-/// }
-/// ```
-/// 
-/// The `TransparentNewtype` impl can be delegate to a field using the 
-/// [`delegate_transparent_newtype_impl`] macro:
-/// 
-/// ```rust
-/// # type FieldType = std::num::Wrapping<u8>;
-/// #
-/// # struct Foo(FieldType);
-/// #
-/// # use core_extensions::TransparentNewtype;
-/// #
-/// unsafe impl TransparentNewtype for Foo {
-///     core_extensions::delegate_transparent_newtype_impl!{Self, FieldType}
-/// }
-/// ```
+/// This trait can be implemented with any of these macros:
+/// - The [`TransparentNewtype`] derive macro (requires the "derive" feature).
+/// - The [`impl_transparent_newtype`] macro
+/// - The [`delegate_transparent_newtype_impl`] macro.
 ///
 /// # Example
 ///
@@ -102,6 +79,7 @@ use crate::utils::transmute_ignore_size;
 ///
 /// [`TransparentNewtype::Inner`]: #associatedtype.Inner
 /// [`TransparentNewtypeExt`]: ./trait.TransparentNewtypeExt.html
+/// [`TransparentNewtype`]: ../derive.TransparentNewtype.html
 /// [`impl_transparent_newtype`]: ../macro.impl_transparent_newtype.html
 /// [`delegate_transparent_newtype_impl`]: ../macro.delegate_transparent_newtype_impl.html
 ///

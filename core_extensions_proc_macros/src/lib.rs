@@ -35,6 +35,15 @@ pub fn derive_const_default(input: proc_macro::TokenStream) -> TokenStream {
         .into()
 }
 
+#[cfg(feature = "derive")]
+#[proc_macro_derive(TransparentNewtype, attributes(twrap))]
+pub fn derive_transparent_newtype(input: proc_macro::TokenStream) -> TokenStream {
+    syn::parse(input)
+        .and_then(crate::derive::transparent_newtype_derive::derive_impl)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
 
 
 
