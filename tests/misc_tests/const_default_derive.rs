@@ -171,13 +171,17 @@ fn test_where_clause_attr(){
 mod defs {
     use super::*;
 
+    const fn pow(n: u32) -> u32 {
+        1 << n
+    }
+
     #[derive(Debug, PartialEq, ConstDefault)]
     #[cdef(crate = krate)]
     pub enum Enum {
         #[cdef(default)]
         Foo {
             bar: u8,
-            #[cdef(default = 2u32.pow(3))]
+            #[cdef(default = pow(3))]
             baz: u32,
         },
         Bar,
@@ -188,7 +192,7 @@ mod defs {
     pub struct Struc {
         #[cdef(default = {
             let x = 5u8;
-            (x.pow(2) + x) / 2
+            (x * x + x) / 2
         })]
         pub bar: u8,
         pub baz: u32,

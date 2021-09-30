@@ -39,7 +39,7 @@
 /// 
 /// ### Variant attributes
 /// 
-/// `#[cdef(default)]`([example](#default-value-example)): <br>
+/// `#[cdef(default)]`([example](#basic-enum-example)): <br>
 /// Uses that variant for the default value.
 /// This must be used on exactly one variant.
 /// 
@@ -69,6 +69,7 @@
 /// 
 /// ```
 /// 
+/// <a id = "basic-enum-example"></a>
 /// ### Basic enum
 /// 
 /// ```rust
