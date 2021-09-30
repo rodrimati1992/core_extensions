@@ -3,6 +3,13 @@ use krate::transparent_newtype::{TransparentNewtype, TransparentNewtypeExt};
 #[cfg(feature = "alloc")]
 use krate::transparent_newtype::{from_inner_vec, into_inner_vec};
 
+
+#[cfg(feature = "derive")]
+mod tn_derive_tests;
+
+
+
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[repr(transparent)]
 struct Trans<T: ?Sized>(T);

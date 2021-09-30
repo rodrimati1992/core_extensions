@@ -19,6 +19,9 @@ use std_::sync::atomic;
 
 /// A const equivalent of the `Default` trait.
 ///
+/// This trait can be derived with the [`ConstDefault`] derive macro
+/// (requires the "derive" feature).
+///
 /// # Features
 ///
 /// Enabling the "rust_1_51" feature allows arrays of all lengths to implement this trait,
@@ -26,7 +29,7 @@ use std_::sync::atomic;
 ///
 /// # Example
 ///
-/// Implementing `ConstDefault` for a struct
+/// Manually implementing `ConstDefault` for a struct
 ///
 /// ```rust
 /// use core_extensions::{ConstDefault, const_default};
@@ -54,6 +57,8 @@ use std_::sync::atomic;
 /// assert_eq!(const_default!(Point<Option<()>>), Point{x: None, y: None});
 /// # }
 /// ```
+/// 
+/// [`ConstDefault`]: ./derive.ConstDefault.html    
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_default")))]
 pub trait ConstDefault: Sized {
     /// The default value for `Self`.

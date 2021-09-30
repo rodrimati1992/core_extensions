@@ -16,6 +16,9 @@ use alloc::string::{String, ToString};
 
 mod tn_attribute_parsing;
 
+#[cfg(test)]
+mod tn_tests;
+
 use self::tn_attribute_parsing::WrappedFieldTranparency;
 
 
@@ -80,7 +83,7 @@ pub(crate) fn derive_impl(di: DeriveInput) -> syn::Result<TokenStream2> {
 #[cfg(test)]
 pub(crate) fn derive_for_tests(input: &str) -> Result<String, String> {
     syn::parse_str(input)
-        .and_then(crate::derive::const_default_derive::derive_impl)
+        .and_then(crate::derive::transparent_newtype_derive::derive_impl)
         .map_err(syn::Error::into_compile_error)
         .map(|x| x.to_string())
         .map_err(|x| x.to_string())

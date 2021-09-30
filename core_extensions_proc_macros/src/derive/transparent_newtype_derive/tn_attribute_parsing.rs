@@ -24,7 +24,7 @@ pub(super) enum WrappedFieldTranparency {
 
 struct ParsedAttributes<'a> {
     field: Option<WrappedField<'a>>,
-    has_transparent_repr: bool,
+    has_transparent_repr: Option<bool>,
     shared: SharedConfig,
 }
 
@@ -35,20 +35,11 @@ pub(super) struct Configuration<'a> {
 
 
 pub(super) fn parse_attributes<'a>(ds: &'a DataStructure<'a>) -> syn::Result<Configuration<'a>> {
-    let mut this = ParsedAttributes{
+    ParsedAttributes{
         field: None,
-        has_transparent_repr: false,
+        has_transparent_repr: Some(false),
         shared: SharedConfig::new(),
-    };
-
-    if let [field] = &ds.variants[0].fields[..] {
-        this.field = Some(WrappedField{
-            field,
-            transparency: WrappedFieldTranparency::Direct,
-        })
-    }
-
-    this.parse_item_attributes(ds)
+    }.parse_item_attributes(ds)
 }
 
 mod keyword {
@@ -72,6 +63,10 @@ impl<'a> AttrParsing<'a> for ParsedAttributes<'a> {
     ) -> syn::Result<()> {
         let field = attr_parsing::check_is_field(ctx, &Empty(input.span()))?;
 
+        if self.field.is_some() {
+            return Err(input.error("cannot use the `#[twrap]` attribute on multiple fields"));
+        }
+
         let mut assign_field = |transparency| {
             self.field = Some(WrappedField{field, transparency});
         };
@@ -93,9 +88,14 @@ impl<'a> AttrParsing<'a> for ParsedAttributes<'a> {
     ) -> syn::Result<()> {
         if attribute.path.is_ident("repr") {
             attribute.parse_args_with(move|input: &'_ ParseBuffer<'_>| {
-                input.parse::<keyword::transparent>()?;
+                match (input.peek_parse(keyword::transparent)?, &mut self.has_transparent_repr) {
+                    (Some(_), Some(has_transparent_repr)) if input.is_empty() => 
+                        *has_transparent_repr = true,
+                    (_, has_transparent_repr) =>
+                        *has_transparent_repr = None,
+                }
 
-                self.has_transparent_repr = true;
+                input.parse::<crate::TokenStream2>()?;
                 Ok(())
             })
         } else {
@@ -103,7 +103,16 @@ impl<'a> AttrParsing<'a> for ParsedAttributes<'a> {
         }
     }
 
-    fn finish(self, _de: &'a DataStructure<'a>) -> syn::Result<Self::Config> {
+    fn finish(mut self, ds: &'a DataStructure<'a>) -> syn::Result<Self::Config> {
+        if self.field.is_none() {
+            if let [field] = &ds.variants[0].fields[..] {
+                self.field = Some(WrappedField{
+                    field,
+                    transparency: WrappedFieldTranparency::Direct,
+                })
+            }
+        }
+
         let field = self.field.ok_or_else(||{
             syn::Error::new(
                 Span::call_site(),
@@ -111,8 +120,11 @@ impl<'a> AttrParsing<'a> for ParsedAttributes<'a> {
             )
         })?;
 
-        if !self.has_transparent_repr {
-            let msg = "This type must have a `#[repr(transaprent)]` representation attribute.";
+        if self.has_transparent_repr != Some(true) {
+            let msg = "\
+                This type must have a `#[repr(transparent)]` attribute,\
+                and no other representation attribute.\
+            ";
             return Err(syn::Error::new(Span::call_site(), msg));
         }
 
