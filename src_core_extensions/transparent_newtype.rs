@@ -107,6 +107,19 @@ pub unsafe trait TransparentNewtype {
 /// 
 pub trait TransparentNewtypeExt: TransparentNewtype {
     /// Converts `Self::Inner` to `Self`.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::TransparentNewtypeExt;
+    /// 
+    /// use std::num::Wrapping;
+    /// use std::mem::ManuallyDrop;
+    /// 
+    /// assert_eq!(Wrapping::from_inner(3), Wrapping(3));
+    /// assert_eq!(ManuallyDrop::from_inner(5), ManuallyDrop::new(5));
+    /// 
+    /// ```
     #[inline(always)]
     fn from_inner(v: Self::Inner) -> Self
     where
@@ -118,18 +131,57 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     }
 
     /// Converts `&Self::Inner` to a `&Self`.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::TransparentNewtypeExt;
+    /// 
+    /// use std::num::Wrapping;
+    /// use std::mem::ManuallyDrop;
+    /// 
+    /// assert_eq!(Wrapping::from_inner_ref(&3), &Wrapping(3));
+    /// assert_eq!(ManuallyDrop::from_inner_ref(&5), &ManuallyDrop::new(5));
+    /// 
+    /// ```
     #[inline(always)]
     fn from_inner_ref(v: &Self::Inner) -> &Self {
         unsafe { &*Self::from_inner_raw(v) }
     }
     
     /// Converts `&mut Self::Inner` to a `&mut Self`.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::TransparentNewtypeExt;
+    /// 
+    /// use std::num::Wrapping;
+    /// use std::mem::ManuallyDrop;
+    /// 
+    /// assert_eq!(Wrapping::from_inner_ref(&mut 3), &mut Wrapping(3));
+    /// assert_eq!(ManuallyDrop::from_inner_ref(&mut 5), &mut ManuallyDrop::new(5));
+    /// 
+    /// ```
     #[inline(always)]
     fn from_inner_mut(v: &mut Self::Inner) -> &mut Self {
         unsafe { &mut *Self::from_inner_raw_mut(v) }
     }
 
-    /// Converts `Box<Self::Inner>` to a `Box<Self>`.
+    /// Converts `Box<Self::Inner>` to a `Box<Self>` without allocating.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::TransparentNewtypeExt;
+    /// 
+    /// use std::num::Wrapping;
+    /// use std::mem::ManuallyDrop as MD;
+    /// 
+    /// assert_eq!(Wrapping::from_inner_box(Box::new(3)), Box::new(Wrapping(3)));
+    /// assert_eq!(MD::from_inner_box(Box::new(5)), Box::new(MD::new(5)));
+    /// 
+    /// ```
     #[cfg(feature = "alloc")]
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
@@ -137,7 +189,21 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         unsafe { Box::from_raw(Self::from_inner_raw_mut(Box::into_raw(v))) }
     }
 
-    /// Converts `Arc<Self::Inner>` to a `Arc<Self>`.
+    /// Converts `Arc<Self::Inner>` to a `Arc<Self>` without allocating.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::TransparentNewtypeExt;
+    /// 
+    /// use std::num::Wrapping;
+    /// use std::mem::ManuallyDrop as MD;
+    /// use std::sync::Arc;
+    /// 
+    /// assert_eq!(Wrapping::from_inner_arc(Arc::new(3)), Arc::new(Wrapping(3)));
+    /// assert_eq!(MD::from_inner_arc(Arc::new(5)), Arc::new(MD::new(5)));
+    /// 
+    /// ```
     #[cfg(feature = "alloc")]
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
@@ -145,7 +211,21 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         unsafe { Arc::from_raw(Self::from_inner_raw(Arc::into_raw(v))) }
     }
     
-    /// Converts `Rc<Self::Inner>` to a `Rc<Self>`.
+    /// Converts `Rc<Self::Inner>` to a `Rc<Self>` without allocating.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::TransparentNewtypeExt;
+    /// 
+    /// use std::num::Wrapping;
+    /// use std::mem::ManuallyDrop as MD;
+    /// use std::rc::Rc;
+    /// 
+    /// assert_eq!(Wrapping::from_inner_arc(Rc::new(3)), Rc::new(Wrapping(3)));
+    /// assert_eq!(MD::from_inner_arc(Rc::new(5)), Rc::new(MD::new(5)));
+    /// 
+    /// ```
     #[cfg(feature = "alloc")]
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
@@ -154,6 +234,19 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     }
 
     /// Converts `self` to a `Self::Inner`.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::TransparentNewtypeExt;
+    /// 
+    /// use std::num::Wrapping;
+    /// use std::mem::ManuallyDrop;
+    /// 
+    /// assert_eq!(Wrapping::new(3).into_inner(), 3);
+    /// assert_eq!(ManuallyDrop::new(5).into_inner(), 5);
+    /// 
+    /// ```
     #[inline(always)]
     fn into_inner(self) -> Self::Inner
     where
@@ -165,18 +258,57 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     }
 
     /// Converts `self` to a `&Self::Inner`.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::TransparentNewtypeExt;
+    /// 
+    /// use std::num::Wrapping;
+    /// use std::mem::ManuallyDrop;
+    /// 
+    /// assert_eq!(Wrapping::new(3).as_inner(), &3);
+    /// assert_eq!(ManuallyDrop::new(5).as_inner(), &5);
+    /// 
+    /// ```
     #[inline(always)]
     fn as_inner(&self) -> &Self::Inner {
         unsafe { &*Self::as_inner_raw(self) }
     }
 
     /// Converts `self` to a `&mut Self::Inner`.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::TransparentNewtypeExt;
+    /// 
+    /// use std::num::Wrapping;
+    /// use std::mem::ManuallyDrop;
+    /// 
+    /// assert_eq!(Wrapping::new(3).as_inner_mut(), &mut 3);
+    /// assert_eq!(ManuallyDrop::new(5).as_inner_mut(), &mut 5);
+    /// 
+    /// ```
     #[inline(always)]
     fn as_inner_mut(&mut self) -> &mut Self::Inner {
         unsafe { &mut *Self::as_inner_raw_mut(self) }
     }
 
-    /// Converts `self` to a `Box<Self::Inner>`.
+    /// Converts `self` to a `Box<Self::Inner>` without allocating.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use core_extensions::TransparentNewtypeExt;
+    /// 
+    /// use std::num::Wrapping;
+    /// use std::mem::ManuallyDrop;
+    /// 
+    /// assert_eq!(Box::new(Wrapping::new(3)).into_inner_box(), Box::new(3));
+    /// assert_eq!(Box::new(ManuallyDrop::new(5)).into_inner_box(), Box::new(5));
+    /// 
+    /// ```
     #[cfg(feature = "alloc")]
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     #[inline(always)]
@@ -185,7 +317,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     }
 
     if_rust_1_46!{
-        /// Converts `self` to a `Arc<Self::Inner>`.
+        /// Converts `self` to a `Arc<Self::Inner>` without allocating.
         /// 
         /// # Self parameter
         /// 
@@ -193,6 +325,31 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         /// from taking a `this` parameter to taking a `self` parameter,
         /// which allows calling it with `.into_inner_arc()`
         /// 
+        /// # Example
+        /// 
+        /// ```rust
+        /// use core_extensions::TransparentNewtypeExt;
+        /// 
+        /// use std::num::Wrapping;
+        /// use std::mem::ManuallyDrop;
+        /// use std::sync::Arc;
+        /// 
+        /// assert_eq!(
+        ///     Wrapping::into_inner_arc(Arc::new(Wrapping::new(3))),
+        ///     Arc::new(3)
+        /// );
+        /// assert_eq!(
+        ///     ManuallyDrop::into_inner_arc(Arc::new(ManuallyDrop::new(5))),
+        ///     Arc::new(5)
+        /// );
+        /// 
+        /// // Calling this as a method requires the "rust_1_46" feature
+        #[cfg_attr(not(feature = "rust_1_46"), doc = "# /*")]
+        /// assert_eq!(Arc::new(Wrapping::new(3)).into_inner_arc(), Arc::new(3));
+        /// assert_eq!(Arc::new(ManuallyDrop::new(5)).into_inner_arc(), Arc::new(5));
+        #[cfg_attr(not(feature = "rust_1_46"), doc = "# */")]
+        /// 
+        /// ```
         #[cfg(feature = "alloc")]
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
         #[inline(always)]
@@ -210,7 +367,7 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
     }
 
     if_rust_1_46!{
-        /// Converts `self` to a `Rc<Self::Inner>`.
+        /// Converts `self` to a `Rc<Self::Inner>` without allocating.
         /// 
         /// # Self parameter
         /// 
@@ -218,6 +375,31 @@ pub trait TransparentNewtypeExt: TransparentNewtype {
         /// from taking a `this` parameter to taking a `self` parameter,
         /// which allows calling it with `.into_inner_rc()`
         /// 
+        /// # Example
+        /// 
+        /// ```rust
+        /// use core_extensions::TransparentNewtypeExt;
+        /// 
+        /// use std::num::Wrapping;
+        /// use std::mem::ManuallyDrop;
+        /// use std::rc::Rc;
+        /// 
+        /// assert_eq!(
+        ///     Wrapping::into_inner_rc(Rc::new(Wrapping::new(3))),
+        ///     Rc::new(3)
+        /// );
+        /// assert_eq!(
+        ///     ManuallyDrop::into_inner_rc(Rc::new(ManuallyDrop::new(5))),
+        ///     Rc::new(5)
+        /// );
+        /// 
+        /// // Calling this as a method requires the "rust_1_46" feature
+        #[cfg_attr(not(feature = "rust_1_46"), doc = "# /*")]
+        /// assert_eq!(Rc::new(Wrapping::new(3)).into_inner_rc(), Rc::new(3));
+        /// assert_eq!(Rc::new(ManuallyDrop::new(5)).into_inner_rc(), Rc::new(5));
+        #[cfg_attr(not(feature = "rust_1_46"), doc = "# */")]
+        /// 
+        /// ```
         #[cfg(feature = "alloc")]
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
         #[inline(always)]
