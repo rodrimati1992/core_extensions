@@ -60,12 +60,15 @@
 /// use core_extensions::ConstDefault;
 /// 
 /// #[derive(Debug, PartialEq, ConstDefault)]
-/// struct Foo {
-///     bar: u32,
+/// struct Foo<T> {
+///     bar: T,
 ///     baz: Option<String>,
 /// }
 /// 
-/// assert_eq!(Foo::DEFAULT, Foo{bar: 0, baz: None});
+/// const DEF: Foo<[bool; 2]> = Foo::DEFAULT;
+/// assert_eq!(DEF, Foo{bar: [false, false], baz: None});
+/// 
+/// assert_eq!(Foo{bar: "", baz: None}, ConstDefault::DEFAULT);
 /// 
 /// ```
 /// 
@@ -81,6 +84,9 @@
 ///     #[cdef(default)]
 ///     Baz(Option<String>),
 /// }
+/// 
+/// const DEF: Foo = ConstDefault::DEFAULT;
+/// assert_eq!(DEF, Foo::Baz(None));
 /// 
 /// assert_eq!(Foo::DEFAULT, Foo::Baz(None));
 /// 
@@ -187,8 +193,8 @@
 ///     baz: U,
 /// }
 /// 
-/// let def = PartialBounds::<NoDefault<()>, u32>::DEFAULT;
-/// assert_eq!(def, PartialBounds{bar: PhantomData, baz: 0});
+/// const DEF: PartialBounds<NoDefault<()>, u32> = ConstDefault::DEFAULT;
+/// assert_eq!(DEF, PartialBounds{bar: PhantomData, baz: 0});
 /// 
 /// ```
 /// 
@@ -213,8 +219,8 @@
 ///     baz: Custom<U>,
 /// }
 /// 
-/// let def = FieldBounds::<NoDefault<u8>, i32>::DEFAULT;
-/// assert_eq!(def, FieldBounds{bar: PhantomData, baz: Custom(0)});
+/// const DEF: FieldBounds<NoDefault<u8>, i32> = FieldBounds::DEFAULT;
+/// assert_eq!(DEF, FieldBounds{bar: PhantomData, baz: Custom(0)});
 /// 
 /// 
 /// #[derive(Debug, PartialEq, ConstDefault)]
@@ -246,8 +252,8 @@
 ///     baz: Custom<U>,
 /// }
 /// 
-/// let def = FieldBound::<NoDefault<u8>, i32>::DEFAULT;
-/// assert_eq!(def, FieldBound{bar: PhantomData, baz: Custom(0)});
+/// const DEF: FieldBound<NoDefault<u8>, i32> = FieldBound::DEFAULT;
+/// assert_eq!(DEF, FieldBound{bar: PhantomData, baz: Custom(0)});
 /// 
 /// 
 /// #[derive(Debug, PartialEq, ConstDefault)]
