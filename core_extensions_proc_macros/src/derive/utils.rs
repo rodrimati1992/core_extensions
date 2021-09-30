@@ -2,7 +2,6 @@ use syn::parse::{Parse, ParseBuffer, Peek};
 
 use quote::TokenStreamExt;
 
-
 pub struct Empty(pub proc_macro2::Span);
 
 impl quote::ToTokens for Empty {

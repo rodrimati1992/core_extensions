@@ -2,7 +2,6 @@ use crate::used_proc_macro::TokenStream;
 
 use alloc::string::{String, ToString};
 
-#[cfg(feature = "derive")]
 use alloc::vec::Vec;
 
 pub(crate) fn remove_whitespaces(x: &str) -> String {
