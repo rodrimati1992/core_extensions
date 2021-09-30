@@ -11,8 +11,8 @@ categories = []
 include = [
     "Cargo.toml", 
     "src/**/*.rs", 
-    "../APACHE_license", 
-    "../MIT_license",
+    "./APACHE_license", 
+    "./MIT_license",
 ]
 
 [features]
