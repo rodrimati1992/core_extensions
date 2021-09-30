@@ -4,6 +4,17 @@ This started being written for the 0.1.19 release, it doesn't cover versions pri
 
 # 1.0
 
+### 1.5.0
+
+Added "derive" and "all_items_no_derive" features. 
+Enabling the "derive" feature (implied by "all_items") also enables the `syn`, `proc-macro2`, and `quote` dependencies for the derive macros, so compile-times go up.
+
+Added derive macros for `ConstDefault` and `TransparentNewtype`, under the "derive" feature.
+
+Added `ConstDefault` impl for `isize` and `usize` 
+
+Added `delegate_transparent_newtype_impl` macro.
+
 ### 1.4.2
 
 Made these macros work inside expressions before Rust 1.45.0:

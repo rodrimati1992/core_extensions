@@ -60,17 +60,17 @@ jobs:
         cargo test --no-default-features --features "${{ env.rust146 }} alloc all_items"
         cargo test --no-default-features --features "${{ env.rust146 }} std all_items"
 
-        cargo test --no-default-features --features "${{ env.rust146 }} all_items derive"
-        cargo test --no-default-features --features "${{ env.rust146 }} alloc all_items derive"
-        cargo test --no-default-features --features "${{ env.rust146 }} std all_items derive"
+        cargo test --no-default-features --features "${{ env.rust146 }} all_items_no_derive"
+        cargo test --no-default-features --features "${{ env.rust146 }} alloc all_items_no_derive"
+        cargo test --no-default-features --features "${{ env.rust146 }} std all_items_no_derive"
 
         cargo test --release --no-default-features --features "${{ env.rust146 }} all_items";
         cargo test --release --no-default-features --features "${{ env.rust146 }} alloc all_items";
         cargo test --release --no-default-features --features "${{ env.rust146 }} std all_items";
 
-        cargo test --release --no-default-features --features "${{ env.rust146 }} all_items derive";
-        cargo test --release --no-default-features --features "${{ env.rust146 }} alloc all_items derive";
-        cargo test --release --no-default-features --features "${{ env.rust146 }} std all_items derive";
+        cargo test --release --no-default-features --features "${{ env.rust146 }} all_items_no_derive";
+        cargo test --release --no-default-features --features "${{ env.rust146 }} alloc all_items_no_derive";
+        cargo test --release --no-default-features --features "${{ env.rust146 }} std all_items_no_derive";
 
   nightly-tests:
     runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
         rustup override set "$MIRI_NIGHTLY"
         rustup component add miri
         cargo miri setup
-        cargo miri test --features "serde all_items rust_1_51 derive"
+        cargo miri test --features "serde all_items rust_1_51"
 
         rm Cargo.lock
         cargo clean
@@ -98,4 +98,4 @@ jobs:
         cargo update
         cargo build --all-features
         
-        cargo test --features "serde all_items rust_1_51 derive"
+        cargo test --features "serde all_items rust_1_51"

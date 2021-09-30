@@ -12,14 +12,44 @@ This crate requires cargo features for enabling items, to get all of them you ca
 
 ```toml
 [dependencies.core_extensions]
-version = "1.0"
+version = "1.5"
 features = ["std", "all_items"]
 ```
 The "std" feature is required to enable impls and items that use [`std`] types,
 otherwise only the [`core`] library is supported.
 
-For enabling features individually, [look here](#cargo-features-section).
-
+Here are all the item features individually([documented here](#cargo-features-section)):
+ 
+```toml
+[dependencies.core_extensions]
+version = "1.5"
+features = [
+    "std",
+    "derive"
+    "bools",
+    "callable",
+    "collections",
+    "const_default",
+    "const_val",
+    "generics_parsing",
+    "integers",
+    "item_parsing",
+    "iterators",
+    "macro_utils",
+    "marker_type",
+    "on_drop",
+    "option_result",
+    "phantom",
+    "self_ops",
+    "slices",
+    "strings",
+    "transparent_newtype",
+    "type_asserts",
+    "type_identity",
+    "type_level_bool",
+    "void",
+]
+```
 This crate currently [requires cargo features](#cargo-features-lang-section)
 to use newer language features,
 
@@ -102,7 +132,14 @@ requiring cargo features to use language features from newer versions.
 ### crate features
 
 The `"all_items"` feature enables all of these features,
-you can use it instead of the ones below if you don't mind longer compile-times:
+you can use it instead of the ones below if you don't mind longer compile-times.
+
+The `"all_items_no_derive"` feature eanbles all the features below
+except for the `"derive"` feature, 
+to reduce compile-times due to enabling the `syn` indirect dependency.
+
+- `"derive"`: Enables derive macros for traits declared in core_extensions.
+If a trait has a derive macro it'll mention and link to it.
 
 - `"bools"`: Enables the [`BoolExt`] trait, extension trait for `bool`.
 
