@@ -224,6 +224,8 @@
 //! associated functions that take `Rc<Self>` or `Arc<Self>` callable as methods.
 //!
 //! - "rust_1_51": Enables the "rust_1_46" feature, and impls of traits for all array lengths.
+//! Enables the `"on_drop"` feature because [`RunOnDrop`] is used by the impls for 
+//! arrays of all lengths.
 //!
 //! - "rust_latest_stable":
 //! Enables all the "rust_1_*" features.
