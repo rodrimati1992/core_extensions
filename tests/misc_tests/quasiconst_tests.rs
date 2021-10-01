@@ -186,3 +186,27 @@ krate::quasiconst!{
 fn with_attributes() {
     assert_eq!(WITH_DERIVE::NEW, WITH_DERIVE::NEW);
 }
+
+
+
+
+#[test]
+fn test_nested_getconst() {
+    let (PhantomData::<u8> , a) = getconst!(::misc_tests::quasiconst_tests::nested::NESTED<..>);
+    assert_eq!(a, 1);
+
+    let (PhantomData::<u16>, b) = getconst!(self::nested::NESTED<..>);
+    assert_eq!(b, 2);
+
+    let (PhantomData::<u32>, c) = getconst!(nested::NESTED<..>);
+    assert_eq!(c, 4);
+}
+
+pub mod nested {
+    use std::marker::PhantomData;
+
+    krate::quasiconst!{
+        pub const NESTED<T>: (PhantomData<T>, usize) = (PhantomData, std::mem::size_of::<T>());
+    }    
+}
+

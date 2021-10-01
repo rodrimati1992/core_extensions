@@ -29,7 +29,8 @@ otherwise only the [`core`] library is supported.
 to use the newest stable language features,
 [here's a list of all the `"rust_1_*"` features](#cargo-features-lang-section),
 
-`"all_items"` enables all of the *item features* ([documented here](#cargo-features-section)):
+`"all_items"` enables all of the features for enabling items from this crate
+([documented here](#cargo-features-section)):
 
 Here is the expanded version of the above configuration:
 ```toml

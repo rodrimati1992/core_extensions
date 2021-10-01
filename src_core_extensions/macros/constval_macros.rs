@@ -69,10 +69,10 @@
 #[macro_export]
 macro_rules! getconst {
     (
-        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* <..>
+        $(:: $(@$leading:tt@)? )? $($path:ident)::* <..>
     ) => ({
         use $crate::ConstVal;
-        $(:: $(@$leading@)? )? $first $(:: $trailing)* ::__CORE_EXTENSIONS__05FFE5XDEJHD07CTUSQMW
+        $(:: $(@$leading@)? )? $($path)::* ::__CORE_EXTENSIONS__05FFE5XDEJHD07CTUSQMW
     });
     ($ty:ty) => {<$ty as $crate::ConstVal>::VAL};
 }
