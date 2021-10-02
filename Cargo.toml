@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "1.5.0"
+version = "1.5.1"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="Extensions for core/std library types, and other miscelaneous features."
 license="MIT/Apache-2.0"
@@ -116,7 +116,7 @@ name = "core_extensions"
 path = "src_core_extensions/lib.rs"
 
 [package.metadata.docs.rs]
-features = ["std", "serde_", "all_items", "rust_1_51", "docsrs"]
+features = ["std", "serde_", "all_items", "rust_latest_stable", "docsrs"]
 
 
 
