@@ -87,6 +87,10 @@ pub unsafe trait TransparentNewtype {
     /// The wrapped type
     type Inner: ?Sized;
 
+    #[doc(hidden)]
+    #[allow(non_upper_case_globals)]
+    const __DUMMY_bCj7dq3Pud: () = ();
+
     /// Converts `*const Self::Inner` to `*const Self`.
     fn from_inner_raw(from: *const Self::Inner) -> *const Self;
     

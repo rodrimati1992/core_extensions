@@ -208,6 +208,8 @@ Enables the [`strings`] module, with the [`StringExt`] extension trait for strin
 
 - `"transparent_newtype"`: Enables the [`transparent_newtype`] module,
 with extension traits and functions for `#[repr(transparent)]` newtypes with public fields.
+<br>
+Enables the `"marker_type"` feature.
 
 - `"type_asserts"`: Enables the [`type_asserts`] module, with type-level assertiosn,
 most useful in tests.

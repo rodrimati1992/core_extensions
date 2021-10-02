@@ -17,6 +17,8 @@ Added `delegate_transparent_newtype_impl` macro.
 
 Fixed compilation error when `"rust_1_51"` feature is enabled, and the `"on_drop"` feature is disabled. Now  the `"rust_1_51"` feature implies `"on_drop"`.
 
+Now the `"transparent_newtype"` feature implies the `"marker_type"` feature.
+
 ### 1.4.2
 
 Made these macros work inside expressions before Rust 1.45.0:

@@ -202,6 +202,8 @@
 //!
 //! - `"transparent_newtype"`: Enables the [`transparent_newtype`] module,
 //! with extension traits and functions for `#[repr(transparent)]` newtypes with public fields.
+//! <br>
+//! Enables the `"marker_type"` feature.
 //!
 //! - `"type_asserts"`: Enables the [`type_asserts`] module, with type-level assertiosn,
 //! most useful in tests.
@@ -557,7 +559,10 @@ pub mod __ {
     mod foo {
         pub type Usize = usize;
     }
-    
+
+    #[cfg(feature = "marker_type")]
+    pub use crate::marker_type::assert_markertype;
+
     #[cfg(feature = "macro_utils")]
     pub use core_extensions_proc_macros::{__priv_rewrap_macro_parameters, count_tts};
 

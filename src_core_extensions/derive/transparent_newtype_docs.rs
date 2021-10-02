@@ -3,6 +3,10 @@
 /// This derive macro requires the type to be a `struct` with a `#[repr(transparent)]` 
 /// representation.
 /// 
+/// If the type has multiple fields, the derive macro errors when 
+/// the non-`#[twrap]`-annotated fields don't ìmplement the [`MarkerType`] trait
+/// (which ensures that those fields are all zero-sized).
+/// 
 /// For examples [look below](#examples)
 /// 
 /// # Attributes
@@ -160,5 +164,6 @@
 /// ```
 /// 
 /// [`TransparentNewtype`]: ./transparent_newtype/trait.TransparentNewtype.html
+/// [`MarkerType`]: ./trait.MarkerType.html
 #[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "derive", feature = "transparent_newtype"))))]
 pub use core_extensions_proc_macros::TransparentNewtype;

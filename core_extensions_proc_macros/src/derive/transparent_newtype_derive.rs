@@ -30,11 +30,19 @@ pub(crate) fn derive_impl(di: DeriveInput) -> syn::Result<TokenStream2> {
         return Err(syn::Error::new(name.span(), "Only structs are supported"));
     }
 
+    let struct_ = &ds.variants[0];
+
     let config = tn_attribute_parsing::parse_attributes(ds)?;
     let extra_predicates = config.shared.extra_predicates.into_iter();
     let crate_path = config.shared.crate_path;
     let field_cfg = config.field;
     let field_ty = field_cfg.field.ty;
+    let wrapped_field_index = field_cfg.field.index.pos;
+    let zst_field_tys = struct_.fields
+        .iter()
+        .filter(|f| f.index.pos != wrapped_field_index )
+        .map(|f| f.ty);
+
 
     let mut delegated_bound = TokenStream2::new();
 
@@ -67,6 +75,12 @@ pub(crate) fn derive_impl(di: DeriveInput) -> syn::Result<TokenStream2> {
                 #( #extra_predicates, )*
                 #delegated_bound
             {
+                const __DUMMY_bCj7dq3Pud: () = {
+                    #(
+                        let _ =  __ce_bCj7dq3Pud::__::assert_markertype::<#zst_field_tys>;
+                    )*
+                };
+
                 #inside_impl
             }
         };
