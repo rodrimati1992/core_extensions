@@ -91,6 +91,8 @@ rust_1_46 = ["core_extensions_proc_macros/rust_1_45"]
 rust_1_51 = ["rust_1_46", "on_drop"]
 rust_latest_stable = ["rust_1_51"]
 
+__test = []
+
 # Enables indicators in the docs for what features are required to enable items.
 docsrs = []
 

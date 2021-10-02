@@ -117,3 +117,25 @@ fn test_require_twrap_attribute() {
     }
 }
 
+#[test]
+fn test_assert_markertype() {
+    macro_rules! stru {
+        ($fields:expr) => (
+            concat!("#[repr(transparent)] struct Foo{", $fields, "}")
+        )
+    }
+
+    {
+        let ret  = dft(stru!("#[twrap] bar: u32")).unwrap();
+        assert!(!ret.consecutive_unspace(&["assert_markertype"]));
+    }
+    {
+        let ret  = dft(stru!("#[twrap] bar: u32, baz: ()")).unwrap();
+        assert!(ret.consecutive_unspace(&["assert_markertype::<()>"]));
+    }
+    {
+        let ret  = dft(stru!("baz: PhandomData<u88>, #[twrap(delegate)] bar: u32")).unwrap();
+        assert!(ret.consecutive_unspace(&["assert_markertype::<PhandomData<u88>>"]));
+    }
+}
+

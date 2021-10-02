@@ -163,6 +163,28 @@
 /// CopyWrapper::from_inner(String::new());
 /// ```
 /// 
+#[cfg_attr(feature = "__test", doc = "
+```rust
+#[derive(Debug, PartialEq, core_extensions::TransparentNewtype)]
+#[repr(transparent)]
+struct Aaaa {
+    ghost: std::marker::PhantomData<()>,
+    #[twrap]
+    value: u32,
+}
+```
+
+```compile_fail
+#[derive(Debug, PartialEq, core_extensions::TransparentNewtype)]
+#[repr(transparent)]
+struct Aaaa {
+    #[twrap]
+    ghost: std::marker::PhantomData<()>,
+    value: u32,
+}
+```
+")]
+/// 
 /// [`TransparentNewtype`]: ./transparent_newtype/trait.TransparentNewtype.html
 /// [`MarkerType`]: ./trait.MarkerType.html
 #[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "derive", feature = "transparent_newtype"))))]

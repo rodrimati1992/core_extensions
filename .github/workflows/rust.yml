@@ -18,15 +18,15 @@ jobs:
     steps:
     - name: enable-rust-1-46
       if: matrix.rust == '1.46.0'
-      run: echo "rustv=rust_1_46" >> $GITHUB_ENV
+      run: echo "rustv=__test rust_1_46" >> $GITHUB_ENV
 
     - name: enable-rust-1-51
       if: matrix.rust == '1.51.0'
-      run: echo "rustv=rust_1_51" >> $GITHUB_ENV
+      run: echo "rustv=__test rust_1_51" >> $GITHUB_ENV
 
     - name: enable-rust-stable
       if: matrix.rust == 'stable' || matrix.rust == 'beta' || matrix.rust == 'nightly'
-      run: echo "rustv=rust_latest_stable" >> $GITHUB_ENV
+      run: echo "rustv=__test rust_latest_stable" >> $GITHUB_ENV
 
     - uses: actions/checkout@v2
     - name: ci-all-versions
@@ -95,7 +95,7 @@ jobs:
         rustup override set "$MIRI_NIGHTLY"
         rustup component add miri
         cargo miri setup
-        cargo miri test --features "serde all_items rust_latest_stable"
+        cargo miri test --features "__test serde all_items rust_latest_stable"
 
         rm Cargo.lock
         cargo clean
@@ -106,4 +106,4 @@ jobs:
         cargo update
         cargo build --all-features
         
-        cargo test --features "serde all_items rust_latest_stable"
+        cargo test --features "__test serde all_items rust_latest_stable"
