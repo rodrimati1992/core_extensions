@@ -245,11 +245,10 @@ impl_const_default!{
     for[T] Option<T> = None,
     for['a] &'a str = "",
     for['a, T:'a] &'a [T] = &[],
-}
 
-impl_const_default!{
     for[T: ConstDefault] Wrapping<T> = Wrapping(T::DEFAULT),
     for[T: ConstDefault] Reverse<T> = Reverse(T::DEFAULT),
+    for[T] std_::iter::Empty<T> = std_::iter::empty(),
 }
 
 impl_const_default!{
@@ -287,11 +286,32 @@ impl_const_default!{
 }
 
 #[cfg(feature = "alloc")]
+use alloc::{
+    borrow::{Cow, ToOwned},
+    collections::LinkedList,
+    string::String,
+    vec::Vec,
+};
+
+#[cfg(feature = "alloc")]
 impl_const_default!{
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
-    for[T] ::alloc::vec::Vec<T> = Self::new(),
+    for[T] Vec<T> = Self::new(),
+
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
-    for[] ::alloc::string::String = Self::new(),
+    for[] String = Self::new(),
+
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+    for[T] LinkedList<T> = Self::new(),
+}
+
+#[cfg(feature = "alloc")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+impl<'a, B: ?Sized + ToOwned + 'a> ConstDefault for Cow<'a, B>
+where
+    B::Owned: ConstDefault + 'a,
+{
+    const DEFAULT: Self = Cow::Owned(<B::Owned as ConstDefault>::DEFAULT);
 }
 
 
@@ -299,7 +319,7 @@ impl_const_default!{
 mod tests{
     use super::*;
 
-    #[derive(Debug,PartialEq)]
+    #[derive(Debug, PartialEq, Clone)]
     struct NoDefault;
 
     #[derive(Debug,PartialEq)]
@@ -347,6 +367,8 @@ mod tests{
 
         assert_eq!(const_def_assert!(Reverse<u8>).0, 0);
         assert_eq!(const_def_assert!(Reverse<bool>).0, false);
+
+        assert_eq!(const_def_assert!(std_::iter::Empty<u8>).next(), None);
     }
 
     #[test]
@@ -399,12 +421,18 @@ mod tests{
     #[test]
     #[cfg(feature = "alloc")]
     fn for_rust_1_39(){
-        use alloc::vec::Vec;
-        use alloc::string::String;
-
         assert_eq!(const_def_assert!(Vec<u8>), Vec::new());
         assert_eq!(const_def_assert!(Vec<NoDefault>), Vec::new());
         assert_eq!(const_def_assert!(String), String::new());
+
+        assert_eq!(const_def_assert!(LinkedList<u8>), LinkedList::new());
+        assert_eq!(const_def_assert!(LinkedList<NoDefault>), LinkedList::new());
+
+        assert_eq!(const_def_assert!(Cow<'_, u8>), Cow::Owned(0u8));
+        assert_eq!(const_def_assert!(Cow<'_, String>), Cow::<str>::Owned(String::new()));
+        assert_eq!(const_def_assert!(Cow<'_, str>), Cow::<str>::Owned(String::new()));
+        assert_eq!(const_def_assert!(Cow<'_, [u8]>), Cow::<[u8]>::Owned(Vec::new()));
+        assert_eq!(const_def_assert!(Cow<'_, [NoDefault]>), Cow::<[NoDefault]>::Owned(Vec::new()));
     }
 
     #[test]

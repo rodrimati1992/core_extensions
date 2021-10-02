@@ -4,6 +4,13 @@ This started being written for the 0.1.19 release, it doesn't cover versions pri
 
 # 1.0
 
+### 1.5.1
+
+Added `ConstDefault` impls for:
+- `core::iter::Empty`
+- `std::borrow::Cow`
+- `std::collections::LinkedList`
+
 ### 1.5.0
 
 Added "derive" and "all_items_no_derive" features. 
