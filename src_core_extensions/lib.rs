@@ -7,16 +7,59 @@
 //! 
 //! ```toml
 //! [dependencies.core_extensions]
-//! version = "1.0"
-//! features = ["std", "all_items"]
+//! version = "1.5"
+//! features = [
+//!     ## enables items that use anything from the standard `std` or `alloc` crates.
+//!     "std",
+//!     ## Requires the latest stable release, enables all the rust-version-dependent features
+//!     "rust_latest_stable",
+//!     ## enables all the item features 
+//!     "all_items",
+//! ]
 //! ```
-//! The "std" feature is required to enable impls and items that use [`std`] types,
+//! The `"std"` feature is required to enable impls and items that use [`std`] types,
 //! otherwise only the [`core`] library is supported.
 //! 
-//! For enabling features individually, [look here](#cargo-features-section).
+//! `"rust_latest_stable"` enables all the `"rust_1_*"` crate features
+//! to use the newest stable language features,
+//! [here's a list of all the `"rust_1_*"` features](#cargo-features-lang-section),
 //! 
-//! This crate currently [requires cargo features](#cargo-features-lang-section)
-//! to use newer language features,
+//! `"all_items"` enables all of the features for enabling items from this crate
+//! ([documented here](#cargo-features-section)):
+//! 
+//! Here is the expanded version of the above configuration:
+//! ```toml
+//! [dependencies.core_extensions]
+//! version = "1.5"
+//! features = [
+//!     "std",
+//!     "rust_latest_stable"
+//!     ## all of the features below are what "all_items" enables
+//!     "derive"
+//!     "bools",
+//!     "callable",
+//!     "collections",
+//!     "const_default",
+//!     "const_val",
+//!     "generics_parsing",
+//!     "integers",
+//!     "item_parsing",
+//!     "iterators",
+//!     "macro_utils",
+//!     "marker_type",
+//!     "on_drop",
+//!     "option_result",
+//!     "phantom",
+//!     "self_ops",
+//!     "slices",
+//!     "strings",
+//!     "transparent_newtype",
+//!     "type_asserts",
+//!     "type_identity",
+//!     "type_level_bool",
+//!     "void",
+//! ]
+//! ```
 //!
 //! # Examples
 //!
@@ -82,23 +125,22 @@
 //!     Debug::fmt(this, f)
 //! }
 //! ```
-//!
-//! # no-std support
-//!
-//! This crate works in `#![no_std]` contexts by default.
-//!
-//! # Supported Rust versions
-//!
-//! This crate support Rust back to 1.41.0,
-//! requiring cargo features to use language features from newer versions.
-//!
 //! <span id = "cargo-features-section"></span>
 //! # Cargo Features
 //!
-//! ### crate features
+//! ### Item features
+//!
+//! Item features enables items from this crate.
 //!
 //! The `"all_items"` feature enables all of these features,
-//! you can use it instead of the ones below if you don't mind longer compile-times:
+//! you can use it instead of the ones below if you don't mind longer compile-times.
+//!
+//! The `"all_items_no_derive"` feature eanbles all the features below
+//! except for the `"derive"` feature, 
+//! to reduce compile-times due to enabling the `syn` indirect dependency.
+//!
+//! - `"derive"`: Enables derive macros for traits declared in core_extensions.
+//! If a trait has a derive macro it'll mention and link to it.
 //!
 //! - `"bools"`: Enables the [`BoolExt`] trait, extension trait for `bool`.
 //!
@@ -132,8 +174,6 @@
 //! Enables the `"macro_utils` and `"generics_parsing"` features.
 //! Enables the [`impl_parse_generics`] and [`impl_split`] macros.
 //!
-//!
-//!
 //! - `"integers"`: Enables the [`integers`] module, with extension traits for integer types.
 //!
 //! - `"iterators"`: Enables the [`iterators`] module, 
@@ -162,6 +202,8 @@
 //!
 //! - `"transparent_newtype"`: Enables the [`transparent_newtype`] module,
 //! with extension traits and functions for `#[repr(transparent)]` newtypes with public fields.
+//! <br>
+//! Enables the `"marker_type"` feature.
 //!
 //! - `"type_asserts"`: Enables the [`type_asserts`] module, with type-level assertiosn,
 //! most useful in tests.
@@ -184,6 +226,13 @@
 //! associated functions that take `Rc<Self>` or `Arc<Self>` callable as methods.
 //!
 //! - "rust_1_51": Enables the "rust_1_46" feature, and impls of traits for all array lengths.
+//! Enables the `"on_drop"` feature because [`RunOnDrop`] is used by the impls for 
+//! arrays of all lengths.
+//!
+//! - "rust_latest_stable":
+//! Enables all the "rust_1_*" features.
+//! This requires the last stable release of Rust,
+//! since more `"rust_1_*"` features can be added at any time.
 //!
 //! ### Support for other crates
 //!
@@ -204,6 +253,17 @@
 //!
 //! `"docsrs"`: Used to document the required features in docs.rs, requires Rust nightly.
 //! Doesn't enable any items itself.
+//!
+//!
+//! # no-std support
+//!
+//! This crate works in `#![no_std]` contexts by default.
+//!
+//! # Supported Rust versions
+//!
+//! This crate support Rust back to 1.41.0,
+//! requiring cargo features to use language features from newer versions.
+//!
 //!
 //! [`collections`]: ./collections/index.html
 //! [`callable`]: ./callable/index.html
@@ -278,10 +338,19 @@ pub extern crate core as std_;
 #[macro_use]
 pub extern crate alloc;
 
+
 #[doc(hidden)]
 #[cfg(feature = "enable_proc_macro_crate")]
 pub extern crate core_extensions_proc_macros;
 
+#[cfg(feature = "derive")]
+extern crate self as core_extensions;
+
+#[cfg(all(feature = "derive", feature = "const_default"))]
+include!{"./derive/const_default_docs.rs"}
+
+#[cfg(all(feature = "derive", feature = "transparent_newtype"))]
+include!{"./derive/transparent_newtype_docs.rs"}
 
 
 #[doc(hidden)]
@@ -490,7 +559,10 @@ pub mod __ {
     mod foo {
         pub type Usize = usize;
     }
-    
+
+    #[cfg(feature = "marker_type")]
+    pub use crate::marker_type::assert_markertype;
+
     #[cfg(feature = "macro_utils")]
     pub use core_extensions_proc_macros::{__priv_rewrap_macro_parameters, count_tts};
 
@@ -500,4 +572,5 @@ pub mod __ {
     #[cfg(feature = "item_parsing")]
     pub use core_extensions_proc_macros::__priv_split_impl;
 }
+
 

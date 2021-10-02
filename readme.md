@@ -12,16 +12,59 @@ This crate requires cargo features for enabling items, to get all of them you ca
 
 ```toml
 [dependencies.core_extensions]
-version = "1.0"
-features = ["std", "all_items"]
+version = "1.5"
+features = [
+    # enables items that use anything from the standard `std` or `alloc` crates.
+    "std",
+    # Requires the latest stable release, enables all the rust-version-dependent features
+    "rust_latest_stable",
+    # enables all the item features 
+    "all_items",
+]
 ```
-The "std" feature is required to enable impls and items that use [`std`] types,
+The `"std"` feature is required to enable impls and items that use [`std`] types,
 otherwise only the [`core`] library is supported.
 
-For enabling features individually, [look here](#cargo-features-section).
+`"rust_latest_stable"` enables all the `"rust_1_*"` crate features
+to use the newest stable language features,
+[here's a list of all the `"rust_1_*"` features](#cargo-features-lang-section),
 
-This crate currently [requires cargo features](#cargo-features-lang-section)
-to use newer language features,
+`"all_items"` enables all of the features for enabling items from this crate
+([documented here](#cargo-features-section)):
+
+Here is the expanded version of the above configuration:
+```toml
+[dependencies.core_extensions]
+version = "1.5"
+features = [
+    "std",
+    "rust_latest_stable"
+    # all of the features below are what "all_items" enables
+    "derive"
+    "bools",
+    "callable",
+    "collections",
+    "const_default",
+    "const_val",
+    "generics_parsing",
+    "integers",
+    "item_parsing",
+    "iterators",
+    "macro_utils",
+    "marker_type",
+    "on_drop",
+    "option_result",
+    "phantom",
+    "self_ops",
+    "slices",
+    "strings",
+    "transparent_newtype",
+    "type_asserts",
+    "type_identity",
+    "type_level_bool",
+    "void",
+]
+```
 
 # Examples
 
@@ -87,31 +130,34 @@ where
 }
 ```
 
-# no-std support
-
-This crate works in `#![no_std]` contexts by default.
-
-# Supported Rust versions
-
-This crate support Rust back to 1.41.0,
-requiring cargo features to use language features from newer versions.
 
 <span id = "cargo-features-section"></span>
 # Cargo Features
 
-### crate features
+### Item features
+
+Item features enables items from this crate.
 
 The `"all_items"` feature enables all of these features,
-you can use it instead of the ones below if you don't mind longer compile-times:
+you can use it instead of the ones below if you don't mind longer compile-times.
+
+The `"all_items_no_derive"` feature eanbles all the features below
+except for the `"derive"` feature, 
+to reduce compile-times due to enabling the `syn` indirect dependency.
+
+- `"derive"`: Enables derive macros for traits declared in core_extensions.
+If a trait has a derive macro it'll mention and link to it.
 
 - `"bools"`: Enables the [`BoolExt`] trait, extension trait for `bool`.
 
-- `"callable"`: Enables the [`callable`] module, with stably implementable equivalents of the `Fn*` traits.
+- `"callable"`: Enables the [`callable`] module, 
+with stably implementable equivalents of the `Fn*` traits.
 
 - `"collections"`: Enables the [`collections`] module, with traits for collection types.
 
 - `"const_default"`:
-Enables the [`ConstDefault`] trait, and [`const_default`] macro, for a `const` equivalent of the `Default` trait.
+Enables the [`ConstDefault`] trait, and [`const_default`] macro,
+for a `const` equivalent of the `Default` trait.
 
 - `"const_val"`:
 Enables the [`ConstVal`] trait (for types that represent constants), 
@@ -134,10 +180,10 @@ These allow macros to parse items with generic parameters.
 Enables the `"macro_utils` and `"generics_parsing"` features.
 Enables the [`impl_parse_generics`] and [`impl_split`] macros.
 
-
 - `"integers"`: Enables the [`integers`] module, with extension traits for integer types.
 
-- `"iterators"`: Enables the [`iterators`] module, with the [`IteratorExt`] extension trait for iterators, and a few iterator types.
+- `"iterators"`: Enables the [`iterators`] module, 
+with the [`IteratorExt`] extension trait for iterators, and a few iterator types.
 
 - `"marker_type"`: Enables the [`MarkerType`] trait,
 for trivially constructible, zero-sized, and aligned-to-1 types.
@@ -162,6 +208,8 @@ Enables the [`strings`] module, with the [`StringExt`] extension trait for strin
 
 - `"transparent_newtype"`: Enables the [`transparent_newtype`] module,
 with extension traits and functions for `#[repr(transparent)]` newtypes with public fields.
+<br>
+Enables the `"marker_type"` feature.
 
 - `"type_asserts"`: Enables the [`type_asserts`] module, with type-level assertiosn,
 most useful in tests.
@@ -169,10 +217,11 @@ most useful in tests.
 - `"type_identity"`: Enables the [`TypeIdentity`] trait,
 for proving that two types are equal, and converting between them in a generic context.
 
-- `"type_level_bool"`: Enables the [`type_level_bool`] module, which encodes `bool`s on the type-level.
+- `"type_level_bool"`: Enables the [`type_level_bool`] module,
+which encodes `bool`s on the type-level.
 
-- `"void"`: Enables the [`Void`] type, a type that can't be constructed, for encodign impossible situations.
-
+- `"void"`: Enables the [`Void`] type, a type that can't be constructed, 
+for encodign impossible situations.
 
 <span id = "cargo-features-lang-section"></span>
 ### Rust Version numbers
@@ -183,6 +232,11 @@ These features enable code that require some Rust version past the minimum suppo
 associated functions that take `Rc<Self>` or `Arc<Self>` callable as methods.
 
 - "rust_1_51": Enables the "rust_1_46" feature, and impls of traits for all array lengths.
+
+- "rust_latest_stable":
+Enables all the "rust_1_*" features.
+This requires the last stable release of Rust,
+since more `"rust_1_*"` features can be added at any time.
 
 ### Support for other crates
 
@@ -203,6 +257,16 @@ and makes `IsNoneError` store where it was constructed.
 
 `"docsrs"`: Used to document the required features in docs.rs, requires Rust nightly.
 Doesn't enable any items itself.
+
+
+# no-std support
+
+This crate works in `#![no_std]` contexts by default.
+
+# Supported Rust versions
+
+This crate support Rust back to 1.41.0,
+requiring cargo features to use language features from newer versions.
 
 
 # License

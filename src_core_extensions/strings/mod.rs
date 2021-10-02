@@ -550,6 +550,7 @@ pub trait StringExt: Borrow<str> {
     /// ```
     ///
     #[cfg(feature = "alloc")]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     fn left_pad(&self, how_much: usize) -> String {
         use alloc::string::ToString;
         self.left_padder(how_much).to_string()

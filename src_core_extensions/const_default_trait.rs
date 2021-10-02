@@ -19,6 +19,9 @@ use std_::sync::atomic;
 
 /// A const equivalent of the `Default` trait.
 ///
+/// This trait can be derived with the [`ConstDefault`] derive macro
+/// (requires the "derive" feature).
+///
 /// # Features
 ///
 /// Enabling the "rust_1_51" feature allows arrays of all lengths to implement this trait,
@@ -26,7 +29,7 @@ use std_::sync::atomic;
 ///
 /// # Example
 ///
-/// Implementing `ConstDefault` for a struct
+/// Manually implementing `ConstDefault` for a struct
 ///
 /// ```rust
 /// use core_extensions::{ConstDefault, const_default};
@@ -54,6 +57,8 @@ use std_::sync::atomic;
 /// assert_eq!(const_default!(Point<Option<()>>), Point{x: None, y: None});
 /// # }
 /// ```
+/// 
+/// [`ConstDefault`]: ./derive.ConstDefault.html    
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_default")))]
 pub trait ConstDefault: Sized {
     /// The default value for `Self`.
@@ -204,6 +209,8 @@ impl_tuple_const_default! {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P}
 macro_rules! impl_const_default{
     (
         $( 
+            $(#[$attr:meta])*
+
             for[$($for:tt)*]
             $ty:ty = 
             $def:expr
@@ -211,6 +218,7 @@ macro_rules! impl_const_default{
         $(,)*
     )=>{
         $(
+            $(#[$attr])*
             impl<$($for)*> ConstDefault for $ty {
                 const DEFAULT: Self= $def;
             }
@@ -219,6 +227,8 @@ macro_rules! impl_const_default{
 }
 
 impl_const_default!{
+    for[] isize=0,
+    for[] usize=0,
     for[] i8=0,
     for[] u8=0,
     for[] i16=0,
@@ -278,7 +288,9 @@ impl_const_default!{
 
 #[cfg(feature = "alloc")]
 impl_const_default!{
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     for[T] ::alloc::vec::Vec<T> = Self::new(),
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
     for[] ::alloc::string::String = Self::new(),
 }
 

@@ -11,14 +11,22 @@ jobs:
 
     strategy:
       matrix: 
-        rust: [stable, beta, nightly, 1.41.0, 1.46.0]
+        rust: [stable, beta, nightly, 1.41.0, 1.46.0, 1.51.0]
 
 
 
     steps:
     - name: enable-rust-1-46
-      if: matrix.rust != '1.41.0'
-      run: echo "rust146=rust_1_46" >> $GITHUB_ENV
+      if: matrix.rust == '1.46.0'
+      run: echo "rustv=__test rust_1_46" >> $GITHUB_ENV
+
+    - name: enable-rust-1-51
+      if: matrix.rust == '1.51.0'
+      run: echo "rustv=__test rust_1_51" >> $GITHUB_ENV
+
+    - name: enable-rust-stable
+      if: matrix.rust == 'stable' || matrix.rust == 'beta' || matrix.rust == 'nightly'
+      run: echo "rustv=__test rust_latest_stable" >> $GITHUB_ENV
 
     - uses: actions/checkout@v2
     - name: ci-all-versions
@@ -27,38 +35,50 @@ jobs:
         cargo -V
         cd "${{github.workspace}}/core_extensions_proc_macros"
         cargo test --features item_parsing
+        cargo test --features item_parsing derive
 
         cd "${{github.workspace}}/"
-        cargo test --no-default-features --features "${{ env.rust146 }} std bools"
-        cargo test --no-default-features --features "${{ env.rust146 }} std callable"
-        cargo test --no-default-features --features "${{ env.rust146 }} std collections"
-        cargo test --no-default-features --features "${{ env.rust146 }} std const_default"
-        cargo test --no-default-features --features "${{ env.rust146 }} std const_val"
-        cargo test --no-default-features --features "${{ env.rust146 }} std macro_utils"
-        cargo test --no-default-features --features "${{ env.rust146 }} std generics_parsing"
-        cargo test --no-default-features --features "${{ env.rust146 }} std item_parsing"
-        cargo test --no-default-features --features "${{ env.rust146 }} std integers"
-        cargo test --no-default-features --features "${{ env.rust146 }} std iterators"
-        cargo test --no-default-features --features "${{ env.rust146 }} std marker_type"
-        cargo test --no-default-features --features "${{ env.rust146 }} std on_drop"
-        cargo test --no-default-features --features "${{ env.rust146 }} std option_result"
-        cargo test --no-default-features --features "${{ env.rust146 }} std phantom"
-        cargo test --no-default-features --features "${{ env.rust146 }} std self_ops"
-        cargo test --no-default-features --features "${{ env.rust146 }} std slices"
-        cargo test --no-default-features --features "${{ env.rust146 }} std strings"
-        cargo test --no-default-features --features "${{ env.rust146 }} std transparent_newtype"
-        cargo test --no-default-features --features "${{ env.rust146 }} std type_asserts"
-        cargo test --no-default-features --features "${{ env.rust146 }} std type_identity"
-        cargo test --no-default-features --features "${{ env.rust146 }} std type_level_bool"
-        cargo test --no-default-features --features "${{ env.rust146 }} std void"
+        cargo test --no-default-features --features "${{ env.rustv }} std derive"
+        cargo test --no-default-features --features "${{ env.rustv }} std bools"
+        cargo test --no-default-features --features "${{ env.rustv }} std callable"
+        cargo test --no-default-features --features "${{ env.rustv }} std collections"
+        cargo test --no-default-features --features "${{ env.rustv }} std const_default"
+        cargo test --no-default-features --features "${{ env.rustv }} std const_default derive"
+        cargo test --no-default-features --features "${{ env.rustv }} std const_val"
+        cargo test --no-default-features --features "${{ env.rustv }} std macro_utils"
+        cargo test --no-default-features --features "${{ env.rustv }} std generics_parsing"
+        cargo test --no-default-features --features "${{ env.rustv }} std item_parsing"
+        cargo test --no-default-features --features "${{ env.rustv }} std integers"
+        cargo test --no-default-features --features "${{ env.rustv }} std iterators"
+        cargo test --no-default-features --features "${{ env.rustv }} std marker_type"
+        cargo test --no-default-features --features "${{ env.rustv }} std on_drop"
+        cargo test --no-default-features --features "${{ env.rustv }} std option_result"
+        cargo test --no-default-features --features "${{ env.rustv }} std phantom"
+        cargo test --no-default-features --features "${{ env.rustv }} std self_ops"
+        cargo test --no-default-features --features "${{ env.rustv }} std slices"
+        cargo test --no-default-features --features "${{ env.rustv }} std strings"
+        cargo test --no-default-features --features "${{ env.rustv }} std transparent_newtype"
+        cargo test --no-default-features --features "${{ env.rustv }} std transparent_newtype derive"
+        cargo test --no-default-features --features "${{ env.rustv }} std type_asserts"
+        cargo test --no-default-features --features "${{ env.rustv }} std type_identity"
+        cargo test --no-default-features --features "${{ env.rustv }} std type_level_bool"
+        cargo test --no-default-features --features "${{ env.rustv }} std void"
 
-        cargo test --no-default-features --features "${{ env.rust146 }} all_items"
-        cargo test --no-default-features --features "${{ env.rust146 }} alloc all_items"
-        cargo test --no-default-features --features "${{ env.rust146 }} std all_items"
+        cargo test --no-default-features --features "${{ env.rustv }} all_items"
+        cargo test --no-default-features --features "${{ env.rustv }} alloc all_items"
+        cargo test --no-default-features --features "${{ env.rustv }} std all_items"
 
-        cargo test --release --no-default-features --features "${{ env.rust146 }} all_items";
-        cargo test --release --no-default-features --features "${{ env.rust146 }} alloc all_items";
-        cargo test --release --no-default-features --features "${{ env.rust146 }} std all_items";
+        cargo test --no-default-features --features "${{ env.rustv }} all_items_no_derive"
+        cargo test --no-default-features --features "${{ env.rustv }} alloc all_items_no_derive"
+        cargo test --no-default-features --features "${{ env.rustv }} std all_items_no_derive"
+
+        cargo test --release --no-default-features --features "${{ env.rustv }} all_items";
+        cargo test --release --no-default-features --features "${{ env.rustv }} alloc all_items";
+        cargo test --release --no-default-features --features "${{ env.rustv }} std all_items";
+
+        cargo test --release --no-default-features --features "${{ env.rustv }} all_items_no_derive";
+        cargo test --release --no-default-features --features "${{ env.rustv }} alloc all_items_no_derive";
+        cargo test --release --no-default-features --features "${{ env.rustv }} std all_items_no_derive";
 
   nightly-tests:
     runs-on: ubuntu-latest
@@ -75,7 +95,7 @@ jobs:
         rustup override set "$MIRI_NIGHTLY"
         rustup component add miri
         cargo miri setup
-        cargo miri test --features "serde all_items rust_1_51"
+        cargo miri test --features "__test serde all_items rust_latest_stable"
 
         rm Cargo.lock
         cargo clean
@@ -86,4 +106,4 @@ jobs:
         cargo update
         cargo build --all-features
         
-        cargo test --features "serde all_items rust_1_51"
+        cargo test --features "__test serde all_items rust_latest_stable"

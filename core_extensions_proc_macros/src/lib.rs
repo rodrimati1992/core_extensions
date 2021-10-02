@@ -5,7 +5,7 @@ extern crate proc_macro;
 #[cfg(not(test))]
 use proc_macro as used_proc_macro;
 
-#[cfg(test)]
+#[cfg(any(test, feature = "derive"))]
 extern crate proc_macro2;
 
 #[cfg(test)]
@@ -19,6 +19,33 @@ extern crate std;
 use crate::used_proc_macro::{Delimiter, Group, Punct, Spacing, Span, TokenStream, TokenTree};
 
 use core::iter::once;
+
+#[cfg(feature = "derive")]
+use proc_macro2::TokenStream as TokenStream2;
+
+#[cfg(feature = "derive")]
+mod derive;
+
+#[cfg(feature = "derive")]
+#[proc_macro_derive(ConstDefault, attributes(cdef))]
+pub fn derive_const_default(input: proc_macro::TokenStream) -> TokenStream {
+    syn::parse(input)
+        .and_then(crate::derive::const_default_derive::derive_impl)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+#[cfg(feature = "derive")]
+#[proc_macro_derive(TransparentNewtype, attributes(twrap))]
+pub fn derive_transparent_newtype(input: proc_macro::TokenStream) -> TokenStream {
+    syn::parse(input)
+        .and_then(crate::derive::transparent_newtype_derive::derive_impl)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+
+
 
 #[cfg(test)]
 mod test_utils;
@@ -185,6 +212,7 @@ macro_rules! mmatches {
 } use mmatches;
 
 // Purely for performance
+#[allow(unused_macros)]
 macro_rules! try_ {
     ( $expr:expr )=>{
         match $expr {
@@ -198,4 +226,6 @@ macro_rules! try_ {
             Err($e) => return Err($map_err),
         }
     };
-} use try_;
+}
+#[allow(unused_imports)]
+use try_;

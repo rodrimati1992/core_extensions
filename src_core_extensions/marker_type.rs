@@ -31,7 +31,7 @@ Implementors of this trait must ensure:
 
 The easiest way to enforce the requirements of being zero-sized and
 having an alignment of 1 is to have structs composed entirely of MarkerType fields
-(ie: `CovariantPhantom` , `PhantomData`).
+(ie: `PhantomData`).
 
 # Built-in impls
 
@@ -71,6 +71,10 @@ pub unsafe trait MarkerType: Copy + Sized {
         Self::MTVAL
     }
 }
+
+#[doc(hidden)]
+#[inline(always)]
+pub fn assert_markertype<T: MarkerType>(){}
 
 unsafe impl<T: ?Sized> MarkerType for PhantomData<T> {}
 

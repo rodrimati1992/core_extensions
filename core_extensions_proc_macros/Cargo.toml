@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions_proc_macros"
-version = "1.4.1"
+version = "1.5.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license="MIT/Apache-2.0"
@@ -11,14 +11,25 @@ categories = []
 include = [
     "Cargo.toml", 
     "src/**/*.rs", 
-    "../APACHE_license", 
-    "../MIT_license",
+    "./APACHE_license", 
+    "./MIT_license",
 ]
 
 [features]
+derive = ["syn", "quote", "proc-macro2"]
 rust_1_45 = []
 item_parsing = ["macro_utils"]
 macro_utils = []
+
+[dependencies.syn]
+version = "1.0.77"
+features = ["full"]
+optional = true
+
+[dependencies]
+proc-macro2 = {version = "1.0.19", optional = true}
+quote = {version = "1.0.9", optional = true}
+
 
 [dev-dependencies.proc-macro2]
 version = "1.0.19"

@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "1.4.2"
+version = "1.5.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="Extensions for core/std library types, and other miscelaneous features."
 license="MIT/Apache-2.0"
@@ -24,6 +24,10 @@ travis-ci = { repository =  "rodrimati1992/core_extensions/" }
 
 # Enables all the items
 all_items = [
+    "all_items_no_derive",
+    "derive",
+]
+all_items_no_derive = [
     "bools",
     "callable",
     "collections",
@@ -53,6 +57,8 @@ alloc=[]
 
 serde_=["serde"]
 
+derive = ["enable_proc_macro_crate", "core_extensions_proc_macros/derive"]
+
 bools=["type_identity"]
 callable=[]
 collections=[]
@@ -70,7 +76,7 @@ phantom=[]
 self_ops=[]
 slices=[]
 strings=["slices"]
-transparent_newtype=[]
+transparent_newtype=["marker_type"]
 type_asserts=["type_identity"]
 type_identity=[]
 type_level_bool=[]
@@ -82,13 +88,17 @@ track_caller = ["rust_1_46"]
 enable_proc_macro_crate = ["core_extensions_proc_macros"]
 
 rust_1_46 = ["core_extensions_proc_macros/rust_1_45"]
-rust_1_51 = ["rust_1_46"]
+rust_1_51 = ["rust_1_46", "on_drop"]
+rust_latest_stable = ["rust_1_51"]
+
+__test = []
 
 # Enables indicators in the docs for what features are required to enable items.
 docsrs = []
 
 [dev-dependencies]
 rand = "0.4.6"
+static_assertions = "1.1"
 
 [dependencies.serde]
 version = "1.0"
@@ -96,7 +106,7 @@ default-features = false
 optional = true
 
 [dependencies.core_extensions_proc_macros]
-version = "=1.4.1"
+version = "=1.5.0"
 path = "./core_extensions_proc_macros"
 optional = true
 
