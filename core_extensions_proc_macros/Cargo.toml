@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions_proc_macros"
-version = "1.5.0"
+version = "1.5.1"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license="MIT/Apache-2.0"
@@ -11,8 +11,8 @@ categories = []
 include = [
     "Cargo.toml", 
     "src/**/*.rs", 
-    "./APACHE_license", 
-    "./MIT_license",
+    "APACHE_license", 
+    "MIT_license",
 ]
 
 [features]
