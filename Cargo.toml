@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "1.5.1"
+version = "1.5.2"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="Extensions for core/std library types, and other miscelaneous features."
 license="MIT/Apache-2.0"
@@ -12,8 +12,8 @@ include = [
     "Cargo.toml", 
     "src_core_extensions/**/*.rs", 
     "build.rs", 
-    "./readme.md", 
-    "./APACHE_license", "./MIT_license"
+    "readme.md", 
+    "APACHE_license", "MIT_license"
 ]
 
 
@@ -106,7 +106,7 @@ default-features = false
 optional = true
 
 [dependencies.core_extensions_proc_macros]
-version = "=1.5.0"
+version = "=1.5.1"
 path = "./core_extensions_proc_macros"
 optional = true
 
