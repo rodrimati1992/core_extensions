@@ -210,3 +210,31 @@ pub mod nested {
     }    
 }
 
+
+#[cfg(feature = "rust_1_59")]
+mod rust_1_59 {
+    use core::marker::PhantomData;
+
+    use krate::{getconst, quasiconst};
+
+    quasiconst!{
+        const WITH_DEF<const F: u32 = 10>: u32 = F;
+        const GENS_ORDER<const F: usize, T>: (usize, PhantomData<T>) = (F, PhantomData::<T>);
+    }
+
+    #[test]
+    fn test_defaulted_const() {
+        assert_eq!(getconst!(WITH_DEF), 10);
+        assert_eq!(getconst!(WITH_DEF<20>), 20);
+    }
+
+    #[test]
+    fn test_const_before_type_param() {
+        assert_eq!(getconst!(GENS_ORDER<15, Vec<u32>>), (15, PhantomData::<Vec<u32>>));
+    }
+}
+
+
+
+
+

@@ -11,9 +11,7 @@ jobs:
 
     strategy:
       matrix: 
-        rust: [stable, beta, nightly, 1.41.0, 1.46.0, 1.51.0]
-
-
+        rust: [stable, beta, nightly, 1.41.0, 1.46.0, 1.51.0, 1.59.0, 1.61.0]
 
     steps:
     - name: enable-rust-1-46
@@ -23,6 +21,10 @@ jobs:
     - name: enable-rust-1-51
       if: matrix.rust == '1.51.0'
       run: echo "rustv=__test rust_1_51" >> $GITHUB_ENV
+
+    - name: enable-rust-1-59
+      if: matrix.rust == '1.59.0'
+      run: echo "rustv=__test rust_1_59" >> $GITHUB_ENV
 
     - name: enable-rust-stable
       if: matrix.rust == 'stable' || matrix.rust == 'beta' || matrix.rust == 'nightly'

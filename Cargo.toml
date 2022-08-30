@@ -89,7 +89,8 @@ enable_proc_macro_crate = ["core_extensions_proc_macros"]
 
 rust_1_46 = ["core_extensions_proc_macros/rust_1_45"]
 rust_1_51 = ["rust_1_46", "on_drop"]
-rust_latest_stable = ["rust_1_51"]
+rust_1_59 = ["rust_1_51"]
+rust_latest_stable = ["rust_1_59"]
 
 __test = []
 
