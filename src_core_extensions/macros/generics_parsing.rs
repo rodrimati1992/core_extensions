@@ -12,7 +12,9 @@
 /// ```rust
 /// use core_extensions::split_generics_and_where;
 /// 
+/// # fn main() {
 /// assert_eq!(hello(), "world");
+/// # }
 /// 
 /// // `split_generics_and_where` calls `crate::foo` here
 /// split_generics_and_where! {
@@ -53,8 +55,6 @@
 /// This demonstrates how you can parse a function.
 /// 
 /// ```rust
-/// use core_extensions::split_generics_and_where;
-/// 
 /// use std::ops::Mul;
 /// 
 /// crate::inject_increment! {
@@ -89,7 +89,7 @@
 ///         $(unsafe $(@$unsafe:tt@)?)?
 ///         fn $name:ident $($rem:tt)*
 ///     ) => {
-///         split_generics_and_where!{
+///         $crate::__::split_generics_and_where!{
 ///             $crate::__priv_inject_increment! {
 ///                 $(#[$attr])*
 ///                 $vis,
@@ -126,6 +126,11 @@
 ///     }
 /// }
 /// 
+/// #[doc(hidden)]
+/// pub mod __ {
+///     pub use core_extensions::split_generics_and_where;
+/// }
+/// 
 /// use std::sync::atomic::{AtomicU64, Ordering as AtomOrd};
 /// 
 /// pub static COUNT: AtomicU64 = AtomicU64::new(0);
@@ -142,16 +147,10 @@
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "generics_parsing")))]
 #[macro_export]
 macro_rules! split_generics_and_where {
-    (
-        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! $prefix:tt
-        ($($generics:tt)*)
-    ) => {
-        $crate::__coerce_item!{
-            $crate::__::__priv_split_generics!{
-                ($($generics)*)
-
-                $(:: $(@$leading@)? )? $first $(:: $trailing)* ! $prefix
-            }
+    ( $($args:tt)* ) => {
+        $crate::__validate_macro_then_parentheses!{
+            ($($args)*)
+            $crate::__::__priv_split_generics!{ $($args)* }
         }
     };
 }
@@ -325,11 +324,11 @@ macro_rules! parse_generics_and_where {
     ) => {
         $crate::__coerce_item!{
             $crate::__::__priv_split_generics!{
-                ($($generics)*)
-
                 $crate::__pgaw_unparsed_generics!{
                     ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
                 }
+                
+                ($($generics)*)
             }
         }
     };
@@ -920,11 +919,11 @@ macro_rules! parse_split_generics_and_where {
     ) => {
         $crate::__coerce_item!{
             $crate::__::__priv_split_generics!{
-                ($($generics)*)
-
                 $crate::__psgw_unparsed_generics!{
                     ($(:: $(@$leading@)? )? $first $(:: $trailing)*) ! $prefix
                 }
+                
+                ($($generics)*)
             }
         }
     };

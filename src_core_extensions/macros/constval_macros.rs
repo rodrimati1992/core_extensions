@@ -244,7 +244,6 @@ macro_rules! quasiconst {
         = $value:expr
         $(; $($rem:tt)* )?
     ) => {
-        $crate::__coerce_item!{
             $crate::parse_generics!{
                 $crate::__declare_const_inner!{
                     (
@@ -260,7 +259,6 @@ macro_rules! quasiconst {
 
                 ($($($generic_params)*)?)
             }
-        }
 
         $($crate::quasiconst!{ $($rem)* })?
     };

@@ -10,11 +10,11 @@ use crate::{
         out_braced_tt,
         parse_count_param, parse_ident, parse_int_or_range_param,
         parse_keyword, parse_check_punct,
-        parse_parentheses, parse_bounded_range_param, parse_macro_invocation,
+        parse_parentheses, parse_bounded_range_param,
         macro_span, out_parenthesized_tt,
         match_token,
     },
-    parsing_shared::out_parenthesized,
+    parsing_shared::{out_parenthesized, parse_macro_invocation},
     mmatches,
     try_,
 };
@@ -69,6 +69,12 @@ pub fn rewrap_macro_parameters(tokens: TokenStream) -> TokenStream {
                     TokenTree::Punct(punct)
                 }
             },
+            tt @ TokenTree::Ident(_) if prev_tilde => {
+                let span = tt.span();
+                let mut group = Group::new(Delimiter::Parenthesis, TokenStream::from(tt));
+                group.set_span(span);
+                TokenTree::Group(group)
+            }
             tt => tt,
         };
 

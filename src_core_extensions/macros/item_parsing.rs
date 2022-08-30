@@ -151,15 +151,12 @@
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "item_parsing")))]
 #[macro_export]
 macro_rules! impl_split {
-    (
-        $(:: $(@$leading:tt@)? )? $first:ident $(:: $trailing:ident)* ! $prefix:tt
-        ($($split:tt)*)
-    ) => {
+    ($($args:tt)*) => {
         $crate::__coerce_item!{
-            $crate::__::__priv_split_impl!{
-                ($($split)*)
+            $crate::__validate_macro_then_parentheses!{
+                ($($args)*)
 
-                $(:: $(@$leading@)? )? $first $(:: $trailing)* ! $prefix
+                $crate::__::__priv_split_impl!{ $($args)* }
             }
         }
     };

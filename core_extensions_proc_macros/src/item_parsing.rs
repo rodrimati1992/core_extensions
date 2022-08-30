@@ -2,7 +2,7 @@ use crate::{
     used_proc_macro::{
         Span, TokenStream, TokenTree
     },
-    parsing_shared::{out_ident, out_parenthesized, parse_paren_args},
+    parsing_shared::{out_ident, out_parenthesized, panicking_parse_macro_invocation, parse_paren_args},
     splitting_generics::{PostGenericsParser, SplitGenerics},
     mmatches,
 };
@@ -60,7 +60,9 @@ impl PostGenericsParser for ImplHeader {
 pub(crate) fn split_impl(ts: TokenStream) -> TokenStream {
     let mut ts = ts.into_iter();
 
-    let parsed_tt = ts.next().expect("skip_generics expected more tokens");
+    let macro_invoc = panicking_parse_macro_invocation(&mut ts);
+
+    let parsed_tt = ts.next().expect("expected more tokens");
 
     let mut parsing = parse_paren_args(&parsed_tt);
 
@@ -91,7 +93,7 @@ pub(crate) fn split_impl(ts: TokenStream) -> TokenStream {
     out_parenthesized(attrs, attrs_span, &mut out);
     out_parenthesized(qualifiers, qualifiers_span, &mut out);
 
-    SplitGenerics::some_consumed(ts, parsing).split_generics(out, ImplHeader{
+    SplitGenerics::some_consumed(ts, parsing).split_generics(macro_invoc, out, ImplHeader{
         type_: TokenStream::new(),
         type_span: Span::call_site(),
         trait_: None,
