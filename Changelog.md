@@ -4,6 +4,12 @@ This started being written for the 0.1.19 release, it doesn't cover versions pri
 
 # 1.0
 
+### 1.5.3
+
+Implemented workaround for [a rustc bug](https://github.com/rust-lang/rust/issues/101211) which caused some macros to fail compilation in Rust 1.61.0 to 1.63.0.
+
+Made support for defaulted const parameters in `quasiconst` macro explicit.
+
 ### 1.5.1
 
 Added `ConstDefault` impls for:
