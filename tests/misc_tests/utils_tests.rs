@@ -13,7 +13,7 @@ pub fn remove_whitespace(s: &str) -> String {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#[track_caller]
+#[cfg_attr(feature = "rust_1_46", track_caller)]
 pub(crate) fn assert_macro_input(
     found: &str,
     expected: &str,

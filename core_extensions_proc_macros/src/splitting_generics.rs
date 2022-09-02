@@ -43,7 +43,10 @@ pub(crate) struct SplitGenerics {
 
 
 impl SplitGenerics {
-    pub(crate) fn new(input_tokens: impl IntoIterator<IntoIter = IntoIter>) -> Self {
+    pub(crate) fn new<I>(input_tokens: I) -> Self 
+    where
+        I: IntoIterator<IntoIter = IntoIter, Item = TokenTree>
+    {
         let mut input_tokens = input_tokens.into_iter();
 
         let parsed_tt = input_tokens.next().expect("skip_generics expected more tokens");

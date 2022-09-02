@@ -8,7 +8,6 @@ use core::iter::{Peekable, once};
 
 
 // Parse the arguments that were passed in parenthesized arguments
-#[track_caller]
 pub(crate) fn parse_paren_args(tt: &TokenTree) -> Peekable<IntoIter> {
     match tt {
         TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
