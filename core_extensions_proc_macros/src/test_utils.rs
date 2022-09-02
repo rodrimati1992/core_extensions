@@ -17,6 +17,7 @@ pub(crate) fn test_proc(
     function: &dyn Fn(TokenStream) -> TokenStream,
 ) {
     for (input, expected) in results {
+        std::println!("input: {:?}\nexpected: {:?}\n-----", input, expected);
         let found = remove_whitespaces(&function(input.parse().unwrap()).to_string());
         let expected = remove_whitespaces(expected);
 
