@@ -184,7 +184,10 @@ fn split_generics(input: TokenStream) -> TokenStream {
         }
     }
 
-    SplitGenerics::new(input).split_generics(TokenStream::new(), UnparsedPostGenerics{
+    let mut input = input.into_iter();
+    let macro_invoc = parsing_shared::panicking_parse_macro_invocation(&mut input);
+
+    SplitGenerics::new(input).split_generics(macro_invoc, TokenStream::new(), UnparsedPostGenerics{
         output: TokenStream::new(),
         output_span: Span::call_site(),
     })

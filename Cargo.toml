@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "1.5.2"
+version = "1.5.3"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="Extensions for core/std library types, and other miscelaneous features."
 license="MIT/Apache-2.0"
@@ -89,7 +89,8 @@ enable_proc_macro_crate = ["core_extensions_proc_macros"]
 
 rust_1_46 = ["core_extensions_proc_macros/rust_1_45"]
 rust_1_51 = ["rust_1_46", "on_drop"]
-rust_latest_stable = ["rust_1_51"]
+rust_1_59 = ["rust_1_51"]
+rust_latest_stable = ["rust_1_59"]
 
 __test = []
 
@@ -106,7 +107,7 @@ default-features = false
 optional = true
 
 [dependencies.core_extensions_proc_macros]
-version = "=1.5.1"
+version = "=1.5.3"
 path = "./core_extensions_proc_macros"
 optional = true
 

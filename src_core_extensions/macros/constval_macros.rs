@@ -179,7 +179,7 @@ macro_rules! getconst {
 ///     = <&'a T>::DEFAULT;
 /// }
 /// quasiconst!{
-///     // The macro parses defaulted const parameters, but they're not supported by Rust yet.
+///     // Defaulted const parameters require Rust 1.59.0
 ///     pub const CONST_GEN<const N: usize>: [u128; N] = {
 ///         let mut array = [1u128; N];
 ///         let mut i = 1;
@@ -244,7 +244,6 @@ macro_rules! quasiconst {
         = $value:expr
         $(; $($rem:tt)* )?
     ) => {
-        $crate::__coerce_item!{
             $crate::parse_generics!{
                 $crate::__declare_const_inner!{
                     (
@@ -260,7 +259,6 @@ macro_rules! quasiconst {
 
                 ($($($generic_params)*)?)
             }
-        }
 
         $($crate::quasiconst!{ $($rem)* })?
     };

@@ -348,56 +348,6 @@ where
 ////////////////////////////////////////////////////////////////////////////////
 
 
-pub(crate) struct MacroInvocation {
-    pub(crate) path_bang: TokenStream,
-    pub(crate) delimiter: Delimiter,
-    pub(crate) delim_span: Span,
-    pub(crate) args: TokenStream,
-}
-
-impl MacroInvocation {
-    pub(crate) fn into_token_stream(mut self) -> TokenStream {
-        let mut args = Group::new(self.delimiter, self.args);
-        args.set_span(self.delim_span);
-        self.path_bang.extend(once(TokenTree::Group(args)));
-        self.path_bang
-    }
-}
-
-
-pub(crate) fn parse_macro_invocation<I>(
-    iter: I
-) -> crate::Result<MacroInvocation> 
-where
-    I: IntoIterator<Item = TokenTree>
-{
-    let mut path_bang = TokenStream::new();
-
-    let mut iter = iter.into_iter();
-
-    loop {
-        match iter.next() {
-            Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::None => {
-                path_bang.extend(group.stream());
-            }
-            Some(TokenTree::Group(group)) => {
-                return Ok(MacroInvocation{
-                    path_bang,
-                    delimiter: group.delimiter(),
-                    delim_span: group.span(),
-                    args: group.stream(),
-                });
-            }
-            Some(x) => {
-                path_bang.extend(once(x));
-            }
-            None => {
-                const M: &str =  "expected `{}` `()` or `[]` after the path to a macro";
-                return Err(crate::Error::end(M));
-            }
-        }
-    }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -559,8 +509,6 @@ where
         }
     }
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -3,7 +3,7 @@ use crate::{
         token_stream::IntoIter,
         Delimiter, Punct, Spacing, Span, TokenStream, TokenTree
     },
-    parsing_shared::{out_parenthesized, parse_paren_args, parse_path_and_args},
+    parsing_shared::{MacroInvocation, out_parenthesized, parse_paren_args, parse_path_and_args},
     mmatches,
 };
 
@@ -43,7 +43,10 @@ pub(crate) struct SplitGenerics {
 
 
 impl SplitGenerics {
-    pub(crate) fn new(input_tokens: TokenStream) -> Self {
+    pub(crate) fn new<I>(input_tokens: I) -> Self 
+    where
+        I: IntoIterator<IntoIter = IntoIter, Item = TokenTree>
+    {
         let mut input_tokens = input_tokens.into_iter();
 
         let parsed_tt = input_tokens.next().expect("skip_generics expected more tokens");
@@ -104,7 +107,7 @@ macro_rules! match_process_gen {
 }
 
 impl SplitGenerics {
-    pub(crate) fn split_generics<P>(mut self, args: TokenStream,mut parsing_pgen: P) -> TokenStream
+    pub(crate) fn split_generics<P>(mut self, callback_macro: MacroInvocation, args: TokenStream,mut parsing_pgen: P) -> TokenStream
     where
         P: PostGenericsParser
     {
@@ -134,14 +137,15 @@ impl SplitGenerics {
             ..
         } = self;
 
-        parse_path_and_args("__priv_split_generics", &mut input_tokens, args, |args| {
+        callback_macro.expand_with_extra_args(|out_args| {
+            out_args.extend(args);
 
-            out_parenthesized(generics, generics_span, args);
+            out_parenthesized(generics, generics_span, out_args);
             
-            parsing_pgen.write_tokens(args);
+            parsing_pgen.write_tokens(out_args);
 
-            out_parenthesized(where_clause, where_clause_span, args);
-            out_parenthesized(after_where, after_where_span, args);
+            out_parenthesized(where_clause, where_clause_span, out_args);
+            out_parenthesized(after_where, after_where_span, out_args);
         })
     }
 

@@ -520,8 +520,9 @@ mod type_identity;
 pub use self::type_identity::{TIdentity, TypeIdentity};
 
 
-#[cfg(test)]
-mod test_utils;
+#[cfg(feature = "__test")]
+#[doc(hidden)]
+pub mod test_utils;
 
 
 #[cfg(feature = "type_asserts")]
@@ -548,7 +549,8 @@ mod void;
 pub use self::void::Void;
 
 
-
+#[cfg(all(test, not(feature = "__test")))]
+compile_error! { "tests must be run with the \"__test\" feature" }
 
 #[doc(hidden)]
 pub mod __ {

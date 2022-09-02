@@ -92,3 +92,104 @@ where
     }
 }
 
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+pub(crate) struct MacroInvocation {
+    pub(crate) path_bang: TokenStream,
+    pub(crate) delimiter: Delimiter,
+    pub(crate) delim_span: Span,
+    pub(crate) args: TokenStream,
+}
+
+impl MacroInvocation {
+    pub(crate) fn into_token_stream(mut self) -> TokenStream {
+        let mut args = Group::new(self.delimiter, self.args);
+        args.set_span(self.delim_span);
+        self.path_bang.extend(once(TokenTree::Group(args)));
+        self.path_bang
+    }
+
+    pub(crate) fn expand_with_extra_args<F>(mut self, f: F) -> TokenStream 
+    where
+        F: FnOnce(&mut TokenStream)
+    {
+        f(&mut self.args);
+        let mut args = Group::new(self.delimiter, self.args);
+        args.set_span(self.delim_span);
+        self.path_bang.extend(once(TokenTree::Group(args)));
+        self.path_bang
+    }
+}
+
+const PARSE_MACRO_CALL_ERR: &str = "could not parse last tokens as a macro invocation";
+
+#[cfg(feature = "macro_utils")]
+pub(crate) fn parse_macro_invocation<I>(
+    iter: I
+) -> crate::Result<MacroInvocation> 
+where
+    I: IntoIterator<Item = TokenTree>
+{
+    let mut path_bang = TokenStream::new();
+
+    let mut iter = iter.into_iter();
+
+    loop {
+        match iter.next() {
+            Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::None => {
+                path_bang.extend(group.stream());
+            }
+            Some(TokenTree::Group(group)) => {
+                return Ok(MacroInvocation{
+                    path_bang,
+                    delimiter: group.delimiter(),
+                    delim_span: group.span(),
+                    args: group.stream(),
+                });
+            }
+            Some(x) => {
+                path_bang.extend(once(x));
+            }
+            None => {
+                return Err(crate::Error::end(PARSE_MACRO_CALL_ERR));
+            }
+        }
+    }
+}
+
+pub(crate) fn panicking_parse_macro_invocation<I>(
+    iter: I
+) -> MacroInvocation
+where
+    I: IntoIterator<Item = TokenTree>
+{
+    let mut path_bang = TokenStream::new();
+
+    let mut iter = iter.into_iter();
+
+    loop {
+        match iter.next() {
+            Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::None => {
+                path_bang.extend(group.stream());
+            }
+            Some(TokenTree::Group(group)) => {
+                return MacroInvocation{
+                    path_bang,
+                    delimiter: group.delimiter(),
+                    delim_span: group.span(),
+                    args: group.stream(),
+                };
+            }
+            Some(x) => {
+                path_bang.extend(once(x));
+            }
+            None => panic!("{}", PARSE_MACRO_CALL_ERR),
+        }
+    }
+}
+

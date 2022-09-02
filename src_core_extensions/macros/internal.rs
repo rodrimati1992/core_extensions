@@ -39,3 +39,24 @@ macro_rules! __coerce_item {
     }
 }
 
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __validate_macro_then_parentheses {
+    (
+        (
+            $(::)? $($path:ident)::* ! $prefix:tt
+            ($($tokens:tt)*)
+        )
+        $($expansion:tt)*
+    ) => {
+        $($expansion)*
+    };
+    (
+        ($($anything:tt)*)
+        $($expansion:tt)*
+    ) => {
+        $crate::__::compile_error!{$crate::__::concat!{
+            "expected arguments to be a macro invocation followed by `()`-delimited arguments"
+        }}
+    };
+}
