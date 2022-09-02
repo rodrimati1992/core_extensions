@@ -1,24 +1,3 @@
-macro_rules! assert_is_inner {
-    (($_:tt) $prefix:tt $output:tt) => {
-        macro_rules! assertions {
-            $output => {};
-            ($_($_tt:tt)*) => { compile_error!{stringify!($_($_tt)*)} }
-        }
-    };
-}
-
-macro_rules! assert_is {
-    ($macro:ident $prefix:tt $suffix:tt $output:tt) => {{
-        mod fooo {
-            assert_is_inner!{($) $prefix $output}
-
-            krate::$macro!{
-                assertions!$prefix
-                $suffix
-            }
-        }
-    }};
-}
 
 
 #[test]
@@ -138,7 +117,7 @@ fn split_type_tests() {
 
 
 #[test]
-fn split_generics_test() {
+fn parse_generics_test() {
     assert_is!{
         impl_parse_generics
         {aa bb}

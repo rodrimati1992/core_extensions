@@ -6,8 +6,10 @@ extern crate alloc;
 extern crate core_extensions as krate;
 extern crate static_assertions;
 
-
 mod misc_tests {
+    #[macro_use]
+    mod utils_tests;
+    
     #[cfg(all(feature = "derive", feature = "const_default"))]
     mod const_default_derive;
 
@@ -18,7 +20,7 @@ mod misc_tests {
     mod type_identity_tests;
 
     #[cfg(feature = "generics_parsing")]
-    mod generics_parsing_tests;
+    mod parse_generics_tests;
 
     #[cfg(feature = "item_parsing")]
     mod item_parsing_tests;
@@ -32,6 +34,5 @@ mod misc_tests {
     #[cfg(feature = "option_result")]
     mod result_option_extension_tests;
     
-    mod utils_tests;
 
 }
