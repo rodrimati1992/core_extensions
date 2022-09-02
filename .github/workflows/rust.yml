@@ -16,19 +16,22 @@ jobs:
     steps:
     - name: enable-rust-1-46
       if: matrix.rust == '1.46.0'
-      run: echo "rustv=__test rust_1_46" >> $GITHUB_ENV
+      run: echo "rustv=rust_1_46" >> $GITHUB_ENV
 
     - name: enable-rust-1-51
       if: matrix.rust == '1.51.0'
-      run: echo "rustv=__test rust_1_51" >> $GITHUB_ENV
+      run: echo "rustv=rust_1_51" >> $GITHUB_ENV
 
     - name: enable-rust-1-59
       if: matrix.rust == '1.59.0'
-      run: echo "rustv=__test rust_1_59" >> $GITHUB_ENV
+      run: echo "rustv=rust_1_59" >> $GITHUB_ENV
 
     - name: enable-rust-stable
       if: matrix.rust == 'stable' || matrix.rust == 'beta' || matrix.rust == 'nightly'
-      run: echo "rustv=__test rust_latest_stable" >> $GITHUB_ENV
+      run: echo "rustv=rust_latest_stable" >> $GITHUB_ENV
+
+    - name: prelude
+      run: echo "rustv= __test ${{env.rustv}}" >> $GITHUB_ENV
 
     - uses: actions/checkout@v2
     - name: ci-all-versions
