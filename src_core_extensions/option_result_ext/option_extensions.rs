@@ -137,6 +137,13 @@ impl IsNoneError {
     }
 }
 
+impl Default for IsNoneError {
+    #[track_caller]
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl std_::cmp::PartialEq for IsNoneError {
     fn eq(&self, _: &IsNoneError) -> bool {
         true
@@ -147,7 +154,10 @@ impl std_::cmp::Eq for IsNoneError {}
 
 impl fmt::Display for IsNoneError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("attempted to unwrap an Option that was None")
+        f.write_str("attempted to unwrap an Option that was None")?;
+        
+        #[cfg(feature = "track_caller")]
+        write!(f, " at {}", self.0)
     }
 }
 

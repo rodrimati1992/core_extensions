@@ -1,7 +1,5 @@
 use crate::misc_tests::utils_tests::remove_whitespace;
 
-use krate::{parse_generics, parse_generics_and_where};
-
 macro_rules! psg {
     ($prefix:tt $suffix:tt) => {{
         mod fooo {

@@ -1,6 +1,7 @@
 use crate::misc_tests::utils_tests::remove_whitespace;
 
 mod default {
+    #[allow(dead_code)]
     pub const X: &str = "";
 }
 
@@ -23,7 +24,9 @@ macro_rules! assert_with_conster {
         $($args:tt)*
     ) => {{
         mod fooo {
+            #[allow(unused_imports)]
             pub use super::default::*;
+            
             krate::tokens_method!{
                 $conster!{hello}
                 $($args)*

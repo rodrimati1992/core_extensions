@@ -318,7 +318,11 @@
 //! [`core`]: https://doc.rust-lang.org/core/
 //! [`std`]: https://doc.rust-lang.org/std/
 //! 
-
+#![allow(clippy::bool_assert_comparison)]
+#![allow(clippy::explicit_auto_deref)]
+#![allow(clippy::manual_map)]
+#![allow(clippy::needless_arbitrary_self_type)]
+#![allow(clippy::needless_doctest_main)]
 #![deny(missing_docs)]
 #![deny(unused_must_use)]
 #![cfg_attr(not(miri), no_std)]
@@ -542,7 +546,7 @@ mod rust_version_assert;
 
 #[cfg(feature = "void")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "void")))]
-mod void;
+pub mod void;
 
 #[cfg(feature = "void")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "void")))]

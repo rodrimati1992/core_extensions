@@ -2,6 +2,8 @@
 //!
 //!
 //!
+#![allow(unexpected_cfgs)]
+#![allow(clippy::legacy_numeric_constants)]
 
 use std_::{cmp, hash::Hash, fmt, ops};
 
@@ -533,14 +535,13 @@ macro_rules! impl_absolute_unsigned_numbers {
     )*}
 }
 
-#[cfg(target_pointer_width = "8")]
-type UWord = u8;
 #[cfg(target_pointer_width = "16")]
 type UWord = u16;
 #[cfg(target_pointer_width = "32")]
 type UWord = u32;
 #[cfg(target_pointer_width = "64")]
 type UWord = u64;
+
 #[cfg(target_pointer_width = "128")]
 type UWord = u128;
 

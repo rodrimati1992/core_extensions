@@ -44,6 +44,7 @@ in `#[repr(C)]` types not being zero sized on MSVC.
 [`Default`]: https://doc.rust-lang.org/std/default/trait.Default.html
 */
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "marker_type")))]
+#[allow(renamed_and_removed_lints)]
 pub unsafe trait MarkerType: Copy + Sized {
     /// The value of Self.
     #[allow(const_err)]
@@ -97,9 +98,9 @@ unsafe impl MarkerType for () {}
 #[cfg(feature = "rust_1_51")]
 macro_rules! impl_zero_sized_array {
     ()=>{
-        /// When the "const_params" feature is disabled,
+        /// When the "rust_1_51" feature is disabled,
         /// the MarkerType trait is implemented for arrays up to 32 elements long.
-        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_params")))]
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "rust_1_51")))]
         unsafe impl<T, const N: usize> MarkerType for [T; N]
         where T: MarkerType
         {}

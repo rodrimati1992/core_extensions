@@ -22,7 +22,7 @@ pub trait SelfOps {
     ///
     /// ```
     fn eq_id(&self, other: &Self) -> bool {
-        (self as *const Self) == (other as *const Self)
+        core::ptr::eq(self as *const Self, other as *const Self)
     }
 
     /// Emulates the pipeline operator, allowing method syntax in more places.

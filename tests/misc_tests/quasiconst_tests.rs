@@ -98,6 +98,7 @@ mod module {
     }
 }
 
+#[allow(unused_imports)]
 use self::module::*;
 use self::module::submod::*;
 
@@ -116,7 +117,7 @@ krate::quasiconst!{
     
     const BOUND_DEF[T: Copy + std::fmt::Debug = u8]: (PhantomData<T>, usize) = {
         fn bounded<T: Copy + std::fmt::Debug>(){}
-        bounded::<T>;
+        _ = bounded::<T>;
 
         (PhantomData, std::mem::size_of::<T>() * 2)
     };

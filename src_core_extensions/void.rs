@@ -68,7 +68,7 @@ impl From<std_::convert::Infallible> for Void {
     }
 }
 
-#[cfg(std)]
+#[cfg(feature = "std")]
 impl std_::error::Error for Void {
     fn description(&self) -> &str {
         match *self {}

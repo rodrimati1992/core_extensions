@@ -213,6 +213,8 @@ mod test{
     #[test]
     fn with_every_mapper(){
 
+        // Vec here is needed for by-value iter in pre-1.51.0 versions
+        #[allow(clippy::useless_vec)]
         for mapper in vec![ mapper_0 as fn(&_)->_,mapper_1,mapper_2 ] {
             assert_eq!(func(&vec![] ,mapper_0),vec![]);
             assert_eq!(rfunc(&vec![] ,mapper_0),vec![]);
@@ -236,6 +238,8 @@ mod test{
             expected.reverse();
             assert_eq!(rfunc(&list_0,mapper_0),expected);
         }
+        // Vec here is needed for by-value iter in pre-1.51.0 versions
+        #[allow(clippy::useless_vec)]
         for list in vec![new_list_1(),new_list_2()] {
             let mut expected=list.iter()
                 .map(|x| (mapper_0(x),vec![*x]) )
@@ -248,6 +252,8 @@ mod test{
 
     #[test]
     fn with_mapper_1(){
+        // Vec here is needed for by-value iter in pre-1.51.0 versions
+        #[allow(clippy::useless_vec)]
         for list in vec![new_list_0(),new_list_1(),new_list_2()] {
             let mut expected=list.iter().map(spair).collect::<Vec<_>>();
             assert_eq!(func(&list,mapper_1),expected);

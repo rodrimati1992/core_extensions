@@ -190,11 +190,11 @@ pub unsafe fn impossible() -> ! {
 /// and must not be used again.
 #[allow(dead_code)]
 pub(crate) unsafe fn take_manuallydrop<T>(slot: &mut ManuallyDrop<T>) -> T {
-    #[cfg(feature = "rust_1_42")]
+    #[cfg(feature = "rust_1_46")]
     {
         ManuallyDrop::take(slot)
     }
-    #[cfg(not(feature = "rust_1_42"))]
+    #[cfg(not(feature = "rust_1_46"))]
     {
         ::std_::ptr::read(slot as *mut ManuallyDrop<T> as *mut T)
     }

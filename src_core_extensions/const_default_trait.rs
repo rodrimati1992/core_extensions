@@ -2,8 +2,7 @@
 //!
 //!
 //!
-
-use crate::const_default;
+#![allow(clippy::declare_interior_mutable_const)]
 
 use std_::{
     cell::{Cell,RefCell,UnsafeCell},
@@ -70,9 +69,9 @@ pub trait ConstDefault: Sized {
 #[cfg(feature = "rust_1_51")]
 macro_rules! impl_array_const_default {
     ()=>{
-        /// When the "const_params" feature is disabled,
+        /// When the "rust_1_51" feature is disabled,
         /// the ConstDefault trait is implemented for arrays up to 32 elements long.
-        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_params")))]
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "rust_1_51")))]
         impl<T: ConstDefault, const N: usize> ConstDefault for [T; N] {
             const DEFAULT: Self = [T::DEFAULT; N];
         }
@@ -317,6 +316,9 @@ where
 
 #[cfg(test)]
 mod tests{
+    #![allow(clippy::bool_assert_comparison)]
+    #![allow(clippy::owned_cow)]
+
     use super::*;
 
     #[derive(Debug, PartialEq, Clone)]
@@ -347,7 +349,7 @@ mod tests{
         assert_eq!(const_def_assert!([u8;16]), [0;16]);
         assert_eq!(const_def_assert!([u8;32]), [0;32]);
         
-        assert_eq!(const_def_assert!(()), ());
+        let _: () = const_def_assert!(());
         assert_eq!(const_def_assert!((u8,)), (0,));
         assert_eq!(const_def_assert!((u8,u16)), (0,0));
         assert_eq!(const_def_assert!((u8,u16,u32)), (0,0,0));
@@ -375,7 +377,7 @@ mod tests{
     fn for_rust_1_22(){
         assert_eq!(const_def_assert!([NonCopy;2]), [NonCopy,NonCopy]);
         
-        assert_eq!(const_def_assert!(()), ());
+        let _: () = const_def_assert!(());
         assert_eq!(const_def_assert!((NonCopy,)), (NonCopy,));
         assert_eq!(const_def_assert!((NonCopy,NonCopy)), (NonCopy,NonCopy));
         assert_eq!(const_def_assert!((NonCopy,NonCopy,NonCopy)), (NonCopy,NonCopy,NonCopy));

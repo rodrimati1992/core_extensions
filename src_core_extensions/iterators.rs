@@ -191,12 +191,10 @@ where
 #[cfg(test)]
 #[cfg(feature = "alloc")]
 mod test_replace_nth {
-    use alloc::vec::Vec;
-
     use super::*;
     #[test]
     fn nth_method() {
-        let list = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+        let list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
         for i in 0..list.len() {
             let mut iter = ReplaceNth::new(list.iter().cloned(), i, 100);

@@ -25,10 +25,10 @@ use utils::impossible;
 ///   then [`ResultLike::into_result_`](#tymethod.into_result_) must return `Err`.
 ///
 /// - [`ResultLike::is_error`](#method.is_error) must not equal
-///         [`ResultLike::is_item`](#tymethod.is_item) for the same value.
+///   [`ResultLike::is_item`](#tymethod.is_item) for the same value.
 ///
 /// - If [`ResultLike::from_result_`](#method.from_result_) is overriden,
-/// it must return a value equivalent to the default implementation.
+///   it must return a value equivalent to the default implementation.
 ///
 ///
 /// # Examples
@@ -543,6 +543,8 @@ pub trait ResultLikeExt: ResultLike {
     {
         match self.into_result_() {
             Ok(x) => x,
+
+            #[allow(unreachable_code)]
             Err(e) => match Infallible::from(e) {},
         }
     }
@@ -583,7 +585,9 @@ pub trait ResultLikeExt: ResultLike {
         Infallible: From<Self::Item>,
     {
         match self.into_result_() {
+            #[allow(unreachable_code)]
             Ok(x) => match Infallible::from(x) {},
+
             Err(e) => e,
         }
     }
@@ -614,6 +618,7 @@ mod for_abort {
 
     impl<T> Drop for AbortBomb<T>{
         #[allow(unreachable_code, unused_variables)]
+        #[allow(clippy::diverging_sub_expression)]
         fn drop(&mut self) {
             cfg_if!{
                 (feature = "track_caller") {

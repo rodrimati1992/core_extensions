@@ -58,7 +58,7 @@ impl PartialEq<ComparableTT> for TokenTree {
         match (self, other) {
             (TokenTree::Ident(l), ComparableTT::Ident(r)) => l.to_string() == *r,
             (TokenTree::Punct(l), ComparableTT::Punct(r)) => 
-                l.as_char() == r.as_char() && l.spacing() == r.spacing() ,
+                l.as_char() == r.as_char(),
             (TokenTree::Literal(l), ComparableTT::Literal(r)) => l.to_string() == *r,
             (TokenTree::Group(l), ComparableTT::Group(r)) => {
                 l.stream().into_iter().eq(r.stream.iter()) &&
