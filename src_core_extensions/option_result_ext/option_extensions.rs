@@ -157,7 +157,9 @@ impl fmt::Display for IsNoneError {
         f.write_str("attempted to unwrap an Option that was None")?;
         
         #[cfg(feature = "track_caller")]
-        write!(f, " at {}", self.0)
+        write!(f, " at {}", self.0)?;
+
+        Ok(())
     }
 }
 
