@@ -4,6 +4,21 @@ This started being written for the 0.1.19 release, it doesn't cover versions pri
 
 # 1.0
 
+### 1.5.4
+
+Changed `tokens_method` macro to not take spacing into consideration when comparing tokens. Taking spacing into consideration caused errors due to changed spacing of the tokens across Rust versions.
+
+Fixed cfg used for enabling impls for arrays (of any size) of these traits:
+- `Cloned`
+- `ConstDefault`
+- `MarkerType `
+it previously used the nonexistent `"const_params"` feature, now it uses the `"rust_1_51"` feature.
+
+Added `Default` impl for `IsNoneError`.
+
+Added location of where a `IsNoneError` was constructed in its Display impl.
+
+
 ### 1.5.3
 
 Implemented workaround for [a rustc bug](https://github.com/rust-lang/rust/issues/101211) which caused some macros to fail compilation in Rust 1.61.0 to 1.63.0.
