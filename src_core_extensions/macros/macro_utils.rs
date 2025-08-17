@@ -190,9 +190,9 @@ if_rust_1_46!{
 /// - An integer literal
 /// 
 /// - `count(....)`: Which counts the amount of token trees in `(....)`.
-/// Macro parameters (eg: `$foo`) are one token tree,
-/// and matched pairs of `[]`/`()`/`{}` count as one token tree regardless of 
-/// the tokens inside.
+///   Macro parameters (eg: `$foo`) are one token tree,
+///   and matched pairs of `[]`/`()`/`{}` count as one token tree regardless of 
+///   the tokens inside.
 /// 
 /// [`count_tts`]: ./macro.count_tts.html
 /// 

@@ -12,8 +12,7 @@ where
     let now = ::std_::time::Instant::now();
     let ret = f();
     let duration = now.elapsed();
-    let microseconds = Duration::from(duration);
-    (microseconds, ret)
+    (duration, ret)
 }
 
 /// Measures the time taken by fallible function `f` to execute,

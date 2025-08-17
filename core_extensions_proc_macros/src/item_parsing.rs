@@ -93,7 +93,7 @@ pub(crate) fn split_impl(ts: TokenStream) -> TokenStream {
     out_parenthesized(attrs, attrs_span, &mut out);
     out_parenthesized(qualifiers, qualifiers_span, &mut out);
 
-    SplitGenerics::some_consumed(ts, parsing).split_generics(macro_invoc, out, ImplHeader{
+    SplitGenerics::some_consumed(parsing).split_generics(macro_invoc, out, ImplHeader{
         type_: TokenStream::new(),
         type_span: Span::call_site(),
         trait_: None,

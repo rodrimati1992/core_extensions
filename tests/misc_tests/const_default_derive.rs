@@ -46,6 +46,7 @@ mod bounds {
     #[cdef(crate = krate)]
     pub struct With<T>(pub PD<T>);
 
+    #[allow(dead_code)]
     #[derive(Debug, PartialEq, ConstDefault)]
     #[cdef(bound(T: ))]
     #[cdef(crate = krate)]
@@ -135,7 +136,8 @@ fn test_container_field_bound_attr(){
 }
 
 
-struct WCA(u8);
+struct Wca(u8);
+#[allow(non_local_definitions)]
 mod wc {
     use super::*;
 
@@ -145,7 +147,7 @@ mod wc {
         where
             T: Copy,
             [(); {
-                impl ConstDefault for WCA {
+                impl ConstDefault for Wca {
                     const DEFAULT: Self = Self(3);
                 }
                 0
@@ -164,7 +166,7 @@ fn test_where_clause_attr(){
 
     assert_eq!(wc::WC::<u32>::DEFAULT, wc::WC(0));
     assert_eq!(wc::WC::<()>::DEFAULT, wc::WC(()));
-    assert_eq!(WCA::DEFAULT.0, 3);
+    assert_eq!(Wca::DEFAULT.0, 3);
 }
 
 
@@ -184,6 +186,7 @@ mod defs {
             #[cdef(default = pow(3))]
             baz: u32,
         },
+        #[allow(dead_code)]
         Bar,
     }
 

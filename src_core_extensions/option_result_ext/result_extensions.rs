@@ -1,7 +1,7 @@
-#[cfg(any(feature = "alloc"))]
+#[cfg(feature = "alloc")]
 use std_::fmt;
 
-#[cfg(any(feature = "alloc"))]
+#[cfg(feature = "alloc")]
 use alloc::string::String;
 
 use super::ResultLike;
@@ -27,7 +27,7 @@ pub trait ResultExt<T, E>: Sized + ResultLike + TypeIdentity<Type = Result<T, E>
     ///
     /// ```
     #[inline]
-    #[cfg(any(feature = "alloc"))]
+    #[cfg(feature = "alloc")]
     fn format_debug_err(self) -> Result<T, String>
     where
         E: fmt::Debug,
@@ -49,7 +49,7 @@ pub trait ResultExt<T, E>: Sized + ResultLike + TypeIdentity<Type = Result<T, E>
     ///
     /// ```
     #[inline]
-    #[cfg(any(feature = "alloc"))]
+    #[cfg(feature = "alloc")]
     fn format_alt_debug_err(self) -> Result<T, String>
     where
         E: fmt::Debug,

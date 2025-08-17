@@ -3,8 +3,6 @@ use crate::{
     split_generics,
 };
 
-use alloc::string::{String, ToString};
-
 
 const SPLIT_GENERICS_CASES: &[(&str, &str)] = &[
     (

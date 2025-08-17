@@ -1,3 +1,5 @@
+#![allow(clippy::needless_borrow)]
+
 use krate::TypeIdentity;
 
 #[test]

@@ -19,7 +19,9 @@ use alloc::{
 /// A type definition(enum,struct,union).
 #[derive(Clone)]
 pub struct DataStructure<'a> {
+    #[allow(dead_code)]
     pub vis: &'a Visibility,
+
     pub name: &'a Ident,
     pub generics: &'a Generics,
     pub attrs: &'a [Attribute],
@@ -175,7 +177,10 @@ pub struct Field<'a> {
     pub attrs: &'a [Attribute],
     /// identifier for the field,which is either an index(in a tuple struct) or a name.
     pub ident: FieldIdent<'a>,
+
+    #[allow(dead_code)]
     pub pattern_ident: Ident,
+
     pub ty: &'a Type,
 }
 
@@ -205,6 +210,7 @@ impl<'a> Field<'a> {
     }
 
     /// Gets the identifier of this field as an `&Ident`.
+    #[allow(dead_code)]
     pub fn pattern_ident(&self) -> &Ident {
         &self.pattern_ident
     }

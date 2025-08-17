@@ -1,7 +1,6 @@
 //! Extension trait for string types.
 
 use std_::borrow::Borrow;
-use std_::cmp;
 use std_::fmt;
 use std_::str::CharIndices;
 
@@ -294,8 +293,7 @@ pub trait StringExt: Borrow<str> {
     /// ```
     fn nth_char_index(&self, nth: usize) -> usize {
         let this = self.borrow();
-        this.borrow()
-            .char_indices()
+        this.char_indices()
             .nth(nth)
             .map_or(this.len(), |(i, _)| i)
     }
@@ -370,8 +368,7 @@ pub trait StringExt: Borrow<str> {
         let index = this
             .char_indices()
             .rev()
-            .skip(n - 1)
-            .next()
+            .nth(n - 1)
             .map_or(0, |(i, _)| i);
         &this[index..]
     }
@@ -394,6 +391,7 @@ pub trait StringExt: Borrow<str> {
     /// assert_eq!(word.from_nth_char(5), "");
     /// assert_eq!(word.from_nth_char(6), "");
     /// ```
+    #[allow(clippy::wrong_self_convention)]
     fn from_nth_char(&self, n: usize) -> &str {
         let this = self.borrow();
         &this[this.nth_char_index(n)..]
@@ -487,7 +485,7 @@ pub trait StringExt: Borrow<str> {
     /// assert_eq!(word.char_indices_to(100).collect::<Vec<_>>(), expected_c);
     /// ```
     ///
-    fn char_indices_to(&self, to: usize) -> CharIndices {
+    fn char_indices_to(&self, to: usize) -> CharIndices<'_> {
         let this = self.borrow();
         let to = this.left_char_boundary(to);
         this[..to].char_indices()
@@ -527,7 +525,7 @@ pub trait StringExt: Borrow<str> {
     /// assert_eq!(word.char_indices_from(9).collect::<Vec<_>>(), vec![]);
     ///
     /// ```
-    fn char_indices_from(&self, from: usize) -> CharIndicesFrom {
+    fn char_indices_from(&self, from: usize) -> CharIndicesFrom<'_> {
         let this = self.borrow();
         let from = this.left_char_boundary(from);
         CharIndicesFrom {
@@ -592,7 +590,7 @@ pub trait StringExt: Borrow<str> {
     ///
     /// ```
     ///
-    #[cfg(any(core_str_methods, feature = "alloc"))]
+    #[cfg(feature = "alloc")]
     fn line_indentation(&self) -> usize {
         let this = self.borrow().lines().next().unwrap_or("");
         this.len() - this.trim_start().len()
@@ -614,7 +612,7 @@ pub trait StringExt: Borrow<str> {
     ///
     /// ```
     ///
-    #[cfg(any(core_str_methods, feature = "alloc"))]
+    #[cfg(feature = "alloc")]
     fn min_indentation(&self) -> usize {
         self.borrow()
             .lines()
@@ -637,7 +635,7 @@ pub trait StringExt: Borrow<str> {
     ///
     /// ```
     ///
-    #[cfg(any(core_str_methods, feature = "alloc"))]
+    #[cfg(feature = "alloc")]
     fn max_indentation(&self) -> usize {
         self.borrow()
             .lines()

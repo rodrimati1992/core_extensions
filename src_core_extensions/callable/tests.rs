@@ -1,3 +1,5 @@
+#![allow(clippy::bool_assert_comparison)]
+
 use crate::{
     impl_call,
     CallExt, CallRef, CallMut, CallInto,

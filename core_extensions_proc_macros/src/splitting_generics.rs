@@ -3,7 +3,7 @@ use crate::{
         token_stream::IntoIter,
         Delimiter, Punct, Spacing, Span, TokenStream, TokenTree
     },
-    parsing_shared::{MacroInvocation, out_parenthesized, parse_paren_args, parse_path_and_args},
+    parsing_shared::{MacroInvocation, out_parenthesized, parse_paren_args},
     mmatches,
 };
 
@@ -22,8 +22,6 @@ pub(crate) trait PostGenericsParser {
 
 
 pub(crate) struct SplitGenerics {
-    // All of the tokens passed to this
-    input_tokens: IntoIter,
     // The parsed tokens from the generic parameter list to after the where clause
     parsing: Peekable<IntoIter>,
     curr_is_joint: bool,
@@ -53,12 +51,11 @@ impl SplitGenerics {
 
         let parsing = parse_paren_args(&parsed_tt);
 
-        Self::some_consumed(input_tokens, parsing)
+        Self::some_consumed(parsing)
     }
 
-    pub(crate) fn some_consumed(input_tokens: IntoIter, parsing: Peekable<IntoIter>) -> Self {
+    pub(crate) fn some_consumed(parsing: Peekable<IntoIter>) -> Self {
         Self {
-            input_tokens,
             parsing,
             curr_is_joint: false,
             prev_is_joint: false,
@@ -130,7 +127,6 @@ impl SplitGenerics {
         self.process_from_where_clause();
 
         let Self{
-            mut input_tokens, 
             generics, generics_span,
             where_clause, where_clause_span,
             after_where, after_where_span,

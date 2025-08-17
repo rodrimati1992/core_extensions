@@ -1,6 +1,6 @@
 [package]
 name = "core_extensions"
-version = "1.5.3"
+version = "1.5.4"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 description="Extensions for core/std library types, and other miscelaneous features."
 license="MIT/Apache-2.0"
@@ -87,18 +87,24 @@ track_caller = ["rust_1_46"]
 
 enable_proc_macro_crate = ["core_extensions_proc_macros"]
 
-rust_1_46 = ["core_extensions_proc_macros/rust_1_45"]
+rust_1_46 = ["core_extensions_proc_macros/rust_1_46"]
 rust_1_51 = ["rust_1_46", "on_drop"]
 rust_1_59 = ["rust_1_51"]
 rust_latest_stable = ["rust_1_59"]
 
-__test = []
+# __test for older Rust versions for which rand doesn't compile
+__test_older = []
+
+__test = ["__test_older", "rand"]
 
 # Enables indicators in the docs for what features are required to enable items.
 docsrs = []
 
+[dependencies.rand]
+version = "0.4.6"
+optional = true
+
 [dev-dependencies]
-rand = "0.4.6"
 static_assertions = "1.1"
 
 [dependencies.serde]
@@ -107,7 +113,7 @@ default-features = false
 optional = true
 
 [dependencies.core_extensions_proc_macros]
-version = "=1.5.3"
+version = "=1.5.4"
 path = "./core_extensions_proc_macros"
 optional = true
 

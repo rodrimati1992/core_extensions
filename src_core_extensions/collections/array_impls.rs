@@ -17,9 +17,9 @@ macro_rules! array_impls {
             const V: MaybeUninit<T> = MaybeUninit::uninit();
         }
 
-        /// When the "const_params" feature is disabled,
+        /// When the "rust_1_51" feature is disabled,
         /// the Cloned trait is implemented for arrays up to 32 elements long.
-        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_params")))]
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "rust_1_51")))]
         impl<'a, T, const N: usize> Cloned for [T; N]
         where
             T: Cloned

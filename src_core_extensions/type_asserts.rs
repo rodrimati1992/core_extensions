@@ -1,4 +1,5 @@
 //! Type-level assertions, most useful for tests.
+#![allow(clippy::type_complexity)]
 
 use crate::TypeIdentity;
 

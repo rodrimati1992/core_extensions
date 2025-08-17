@@ -163,7 +163,7 @@
 /// CopyWrapper::from_inner(String::new());
 /// ```
 /// 
-#[cfg_attr(feature = "__test", doc = "
+#[cfg_attr(feature = "__test_older", doc = "
 ```rust
 #[derive(Debug, PartialEq, core_extensions::TransparentNewtype)]
 #[repr(transparent)]

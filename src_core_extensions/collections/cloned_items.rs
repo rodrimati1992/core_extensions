@@ -138,7 +138,7 @@ declare_cloned_this!{
 
 use super::Cloned;
 
-impl<'a, T> Cloned for &'a T
+impl<T> Cloned for &T
 where
     T: ?Sized + CloneBound,
 {
@@ -149,7 +149,7 @@ where
     }
 }
 
-impl<'a, T> Cloned for &'a mut T
+impl<T> Cloned for &mut T
 where
     T: ?Sized + CloneBound,
 {
@@ -193,6 +193,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unnecessary_mut_passed)]
+
     use super::*;
 
     #[cfg(feature = "alloc")]

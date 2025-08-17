@@ -28,7 +28,7 @@ mod derive;
 
 #[cfg(feature = "derive")]
 #[proc_macro_derive(ConstDefault, attributes(cdef))]
-pub fn derive_const_default(input: proc_macro::TokenStream) -> TokenStream {
+pub fn derive_const_default(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     syn::parse(input)
         .and_then(crate::derive::const_default_derive::derive_impl)
         .unwrap_or_else(syn::Error::into_compile_error)
@@ -37,7 +37,7 @@ pub fn derive_const_default(input: proc_macro::TokenStream) -> TokenStream {
 
 #[cfg(feature = "derive")]
 #[proc_macro_derive(TransparentNewtype, attributes(twrap))]
-pub fn derive_transparent_newtype(input: proc_macro::TokenStream) -> TokenStream {
+pub fn derive_transparent_newtype(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     syn::parse(input)
         .and_then(crate::derive::transparent_newtype_derive::derive_impl)
         .unwrap_or_else(syn::Error::into_compile_error)
@@ -77,8 +77,13 @@ type Result<T> = core::result::Result<T, Error>;
 
 #[cfg(feature = "macro_utils")]
 #[proc_macro_attribute]
-pub fn macro_attr(attr: TokenStream, item: TokenStream) -> TokenStream {
-    crate::macro_utils::macro_attr(attr, item).unwrap_or_else(Error::into_compile_error)
+pub fn macro_attr(
+    attr: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    crate::macro_utils::macro_attr(attr.into(), item.into())
+        .unwrap_or_else(Error::into_compile_error)
+        .into()
 }
 
 

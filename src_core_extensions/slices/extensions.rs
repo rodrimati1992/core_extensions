@@ -659,6 +659,8 @@ mod slice_impls {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::bool_assert_comparison)]
+
     use super::*;
 
     #[cfg(feature = "alloc")]
@@ -671,6 +673,7 @@ mod tests {
         inner: T,
         _dummy:  std_::cell::Cell<u32>,
     }
+    #[allow(non_snake_case)]
     fn Unpromoted<T>(inner: T) -> Unpromoted<T> {
         Unpromoted {
             inner,
@@ -733,9 +736,9 @@ mod tests {
             assert_eq!(slice_c.contains_slice(&*other), false);
 
             assert_eq!(other.contains_slice(&list), false);
-            assert_eq!(other.contains_slice(&slice_a), false);
-            assert_eq!(other.contains_slice(&slice_b), false);
-            assert_eq!(other.contains_slice(&slice_c), false);
+            assert_eq!(other.contains_slice(slice_a), false);
+            assert_eq!(other.contains_slice(slice_b), false);
+            assert_eq!(other.contains_slice(slice_c), false);
         }
     }
     #[test]
@@ -784,9 +787,9 @@ mod tests {
             assert_eq!(slice_c.offset_of_slice(&*other), 4);
 
             assert_eq!(other.offset_of_slice(&list), 12);
-            assert_eq!(other.offset_of_slice(&slice_a), 12);
-            assert_eq!(other.offset_of_slice(&slice_b), 12);
-            assert_eq!(other.offset_of_slice(&slice_c), 12);
+            assert_eq!(other.offset_of_slice(slice_a), 12);
+            assert_eq!(other.offset_of_slice(slice_b), 12);
+            assert_eq!(other.offset_of_slice(slice_c), 12);
         }
     }
     #[test]
@@ -836,9 +839,9 @@ mod tests {
             assert_eq!(slice_c.get_offset_of_slice(&*other), None);
 
             assert_eq!(other.get_offset_of_slice(&list), None);
-            assert_eq!(other.get_offset_of_slice(&slice_a), None);
-            assert_eq!(other.get_offset_of_slice(&slice_b), None);
-            assert_eq!(other.get_offset_of_slice(&slice_c), None);
+            assert_eq!(other.get_offset_of_slice(slice_a), None);
+            assert_eq!(other.get_offset_of_slice(slice_b), None);
+            assert_eq!(other.get_offset_of_slice(slice_c), None);
         }
     }
     #[test]
@@ -946,7 +949,7 @@ mod tests {
     #[test]
     #[cfg(feature = "alloc")]
     fn slice_lossy_slice_examples() {
-        let list = vec![0, 1, 2, 3, 4, 5];
+        let list = [0, 1, 2, 3, 4, 5];
         assert_eq!(list.slice_lossy(0..list.len(), ()), &list[..]);
         assert_eq!(list.slice_lossy(0..1000, ()), &list[..]);
         assert_eq!(list.slice_lossy(0..1000, ()), &list[..]);
@@ -964,13 +967,13 @@ mod tests {
 
         assert!(word
             .slice_lossy(0..word.len(), SliceBias::OUT)
-            .is_slice(&word[..]));
+            .is_slice(word));
         assert!(word
             .slice_lossy(0..1000, SliceBias::OUT)
-            .is_slice(&word[..]));
+            .is_slice(word));
         assert!(word
             .slice_lossy(0..1000, SliceBias::OUT)
-            .is_slice(&word[..]));
+            .is_slice(word));
         assert!(word
             .slice_lossy(10..10000, SliceBias::OUT)
             .is_slice(&word[word.len()..]));
@@ -1041,6 +1044,7 @@ mod tests {
     #[cfg(feature = "alloc")]
     // Too slow to run in miri, and there's no unsafe code here.
     #[cfg(not(miri))]
+    #[cfg(feature = "rand")]
     fn slice_lossy_slice_no_panic() {
         use rand::Rng;
 
@@ -1065,6 +1069,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "rand")]
     #[cfg(feature = "alloc")]
     // Too slow to run in miri, and there's no unsafe code here.
     #[cfg(not(miri))]

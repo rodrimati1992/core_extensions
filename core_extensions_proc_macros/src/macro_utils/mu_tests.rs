@@ -5,8 +5,6 @@ use crate::{
     Error,
 };
 
-use alloc::string::{String, ToString};
-
 
 const UNBOUNDED_ERR_CASES: &[(&str, &str)] = &[
     ("f!() last: range(1..)", "Expected a bounded"),

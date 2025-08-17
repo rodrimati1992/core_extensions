@@ -18,7 +18,8 @@ pub(crate) trait ParseBufferExt {
         F: FnOnce(X) -> P + Peek,
         P: Parse;
 
-    fn peek_parse_paren(&self) -> Result<Option<syn::parse::ParseBuffer>, syn::Error>;
+    #[allow(dead_code)]
+    fn peek_parse_paren(&self) -> Result<Option<syn::parse::ParseBuffer<'_>>, syn::Error>;
 }
 
 impl ParseBufferExt for ParseBuffer<'_> {
@@ -34,7 +35,7 @@ impl ParseBufferExt for ParseBuffer<'_> {
         }
     }
 
-    fn peek_parse_paren(&self) -> Result<Option<syn::parse::ParseBuffer>, syn::Error> {
+    fn peek_parse_paren(&self) -> Result<Option<syn::parse::ParseBuffer<'_>>, syn::Error> {
         if self.peek(syn::token::Paren) {
             let content;
             syn::parenthesized!(content in self);

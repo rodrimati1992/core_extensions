@@ -78,7 +78,7 @@ where
 
 }
 
-impl<'a, T, F> Drop for RunOnDrop<T, F>
+impl<T, F> Drop for RunOnDrop<T, F>
 where
     F: FnOnce(T),
 {
