@@ -47,7 +47,7 @@ fn test_repr_attr() {
 
 #[test]
 fn test_crate_attr() {
-    #[track_caller]
+    #[cfg_attr(feature = "rust_1_46", track_caller)]
     fn assert_renamed(in_: &str, expected: &str) {
         let ret = dft(&format!(single!("{}"), in_)).unwrap();
         assert!(ret.consecutive_unspace(&[expected]));

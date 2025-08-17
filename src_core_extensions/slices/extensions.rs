@@ -1044,6 +1044,7 @@ mod tests {
     #[cfg(feature = "alloc")]
     // Too slow to run in miri, and there's no unsafe code here.
     #[cfg(not(miri))]
+    #[cfg(feature = "rand")]
     fn slice_lossy_slice_no_panic() {
         use rand::Rng;
 
@@ -1068,6 +1069,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "rand")]
     #[cfg(feature = "alloc")]
     // Too slow to run in miri, and there's no unsafe code here.
     #[cfg(not(miri))]

@@ -364,7 +364,7 @@ pub mod macros;
 #[cfg(feature = "serde_")]
 extern crate serde;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "rand"))]
 extern crate rand;
 
 
@@ -524,7 +524,7 @@ mod type_identity;
 pub use self::type_identity::{TIdentity, TypeIdentity};
 
 
-#[cfg(feature = "__test")]
+#[cfg(feature = "__test_older")]
 #[doc(hidden)]
 pub mod test_utils;
 
@@ -553,8 +553,8 @@ pub mod void;
 pub use self::void::Void;
 
 
-#[cfg(all(test, not(feature = "__test")))]
-compile_error! { "tests must be run with the \"__test\" feature" }
+#[cfg(all(test, not(feature = "__test_older")))]
+compile_error! { "tests must be run with the \"__test_older\" feature" }
 
 #[doc(hidden)]
 pub mod __ {

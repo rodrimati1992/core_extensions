@@ -145,6 +145,7 @@ impl From<(BiasDirection, BiasDirection)> for SliceBias {
 }
 
 #[cfg(test)]
+#[cfg(feature = "rand")]
 mod test {
     use super::*;
 

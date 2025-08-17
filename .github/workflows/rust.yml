@@ -28,10 +28,10 @@ jobs:
 
     - name: enable-rust-stable
       if: matrix.rust == 'stable' || matrix.rust == 'beta' || matrix.rust == 'nightly'
-      run: echo "rustv=rust_latest_stable" >> $GITHUB_ENV
+      run: echo "rustv= __test rust_latest_stable" >> $GITHUB_ENV
 
     - name: prelude
-      run: echo "rustv= __test ${{env.rustv}}" >> $GITHUB_ENV
+      run: echo "rustv= __test_older ${{env.rustv}}" >> $GITHUB_ENV
 
     - uses: actions/checkout@v2
     - name: ci-all-versions

@@ -117,7 +117,7 @@ krate::quasiconst!{
     
     const BOUND_DEF[T: Copy + std::fmt::Debug = u8]: (PhantomData<T>, usize) = {
         fn bounded<T: Copy + std::fmt::Debug>(){}
-        _ = bounded::<T>;
+        let _ = bounded::<T>;
 
         (PhantomData, std::mem::size_of::<T>() * 2)
     };

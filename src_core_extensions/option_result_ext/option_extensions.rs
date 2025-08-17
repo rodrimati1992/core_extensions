@@ -138,7 +138,7 @@ impl IsNoneError {
 }
 
 impl Default for IsNoneError {
-    #[track_caller]
+    #[cfg_attr(feature = "rust_1_46", track_caller)]
     fn default() -> Self {
         Self::new()
     }
