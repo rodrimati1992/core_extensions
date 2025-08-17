@@ -75,12 +75,9 @@ jobs:
     # required due to changing Minimum Supported Rust Versions of dependencies
     - name: newer-versions-features
       if: matrix.rust != '1.41.0' && matrix.rust != '1.46.0' && matrix.rust != '1.51.0'
-      run:
+      run: |
         echo "rustv=__test" >> $GITHUB_ENV
 
-    - name: newer-versions-tests
-      if: matrix.rust != '1.41.0' && matrix.rust != '1.46.0' && matrix.rust != '1.51.0'
-      run:
         rustup override set ${{ matrix.rust }}
         cargo -V
         cd "${{github.workspace}}/core_extensions_proc_macros"
