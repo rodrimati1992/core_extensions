@@ -68,6 +68,7 @@ where
 
 
 
+#[allow(dead_code)]
 pub trait TestStrExt {
     fn as_str(&self) -> &str;
 
@@ -94,12 +95,14 @@ pub trait TestStrExt {
     }
 }
 
+
 impl TestStrExt for str {
     #[inline(always)]
     fn as_str(&self) -> &str {
         self
     }
 }
+
 
 impl TestStrExt for alloc::string::String {
     #[inline(always)]
